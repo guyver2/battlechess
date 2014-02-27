@@ -137,6 +137,26 @@ class Board():
 		else :
 			return 0
 
+	def isEnrocable(self, ki, kj, ri, rj, c):
+  # check if the path is clear
+  # check if the check?
+		if c == 'w':
+			if ki == 0 and kj == 4 and ri == 0:
+				if rj == 0:
+					return 1
+ 				elif rj == 7:
+					return 2
+				else :
+					return 0
+		else :
+			if ki == 7 and kj == 4 and ri == 7:
+				if rj == 0 :
+					return 1
+				elif rj == 7:
+					return 2
+				else :
+					return 0
+		return 0 
 
 	def getRookReach(self, i, j, color):
 		a = 1
