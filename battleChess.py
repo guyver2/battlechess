@@ -232,6 +232,9 @@ class Board():
 				pos.append([i+1,j+1])
 			if self.isFree(i+1, j-1, 'b') == 2:
 				pos.append([i+1,j-1])
+			if i == 1 and self.isFree(i+2, j) == 1 \
+								and self.isFree(i+1, j) == 1:
+				pos.append([i+2,j])
 		elif c == 'pw':
 			if self.isFree(i-1, j, 'w') == 1:
 				pos.append([i-1,j])
@@ -239,6 +242,9 @@ class Board():
 				pos.append([i-1,j+1])
 			if self.isFree(i-1, j-1, 'w') == 2:
 				pos.append([i-1,j-1])
+			if i == 6 and self.isFree(i-2, j) == 1 \
+								and self.isFree(i-1, j) == 1:
+				pos.append([i-2,j])
 		elif c[0] == 'k':
 			pos.append([i,j+1])
 			pos.append([i,j-1])
@@ -285,12 +291,16 @@ class Board():
 				pos.append([i+1,j+1])
 			if self.isFree(i+1, j-1, 'b') == 2:
 				pos.append([i+1,j-1])
+			if i == 1 and self.isFree(i+1, j) == 1:
+				pos.append([i+2,j])
 		elif c == 'pw':
 			pos.append([i-1,j])
 			if self.isFree(i-1, j+1, 'w') == 2:
 				pos.append([i-1,j+1])
 			if self.isFree(i-1, j-1, 'w') == 2:
 				pos.append([i-1,j-1])
+			if i == 6 and self.isFree(i-1, j) == 1:
+				pos.append([i-2,j])
 		elif c[0] == 'k':
 			pos.append([i,j+1])
 			pos.append([i,j-1])
