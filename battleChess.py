@@ -75,21 +75,21 @@ class Board():
 							for dj in xrange(-1,2):
 								if self.isIn(i+di, j+dj) :
 									self.visibility[i+di][j+dj] = True
+			fog = pygame.Surface((38, 38))
+			fog.set_alpha(255)
+			fog.fill((0, 0, 0))
 			for i in xrange(8):
 				for j in xrange(8):
 					if not self.visibility[i][j] :
-						s = pygame.Surface((38, 38))
-						s.set_alpha(255)
-						s.fill((0, 0, 0))
-						screen.blit(s, (106+j*40, 30+i*40))		
+						screen.blit(fog, (106+j*40, 30+i*40))		
 		# draw possible displacement positions	
+		s = pygame.Surface((34, 34))
+		s.set_alpha(128)
+		s.fill((255, 0, 255))
 		if selected:
 			pos = self.getPossiblePosition(selected[0], selected[1])
 			#pos = self.getReachablePosition(selected[0], selected[1])
 			for p in pos :
-				s = pygame.Surface((34, 34))
-				s.set_alpha(128)
-				s.fill((255, 0, 255))
 				screen.blit(s, (106+p[1]*40, 30+p[0]*40))
 		# draw taken pieces
 		# white 
