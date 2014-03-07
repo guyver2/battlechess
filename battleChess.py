@@ -5,6 +5,7 @@ import math
 import socket
 import threading
 import random
+import urllib
 from pygame.locals import *
 
 # GLOBAL VARIABLES
@@ -629,8 +630,8 @@ def replay(argv):
 	if len(argv) < 3 :
 		print "missing replay file"
 		sys.exit()
-	 
-	fic = open(argv[2], 'r')
+	fic = urllib.urlopen(argv[2])
+	#fic = open(argv[2], 'r')
 	matchup = fic.readline()
 
 	pygame.init()
