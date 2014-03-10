@@ -514,7 +514,11 @@ def networkGame(argv):
 		localPlayer = BLACK
 	#send nickname
 	sendN(sock, NICK)
-	# wait for other player
+
+	# get replay filename
+	print "Game replay at :", receiveN(sock)
+
+	# wait for other player ("ready" message)
 	msg = myreceive(sock, 5)
 	print "ready ? ", msg
 	# get his nickname

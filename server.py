@@ -39,7 +39,8 @@ class GameThread(threading.Thread):
 		log = open(filename, "w")
 		log.write(self.nick_1+' Vs. '+self.nick_2+'\n')
 		
-
+		sendN(client_1, "http://git.sxbn.org/battleChess/"+filename)
+		sendN(client_2, "http://git.sxbn.org/battleChess/"+filename)
 		self.client_1.send("ready")
 		self.client_2.send("ready")
 
@@ -72,7 +73,9 @@ class GameThread(threading.Thread):
 		finally :
 			#print "finishing the game"
 			self.client_1.send("over")
+			#sendN(client_1, "http://git.sxbn.org/battleChess/"+filename)
 			self.client_2.send("over")
+			#sendN(client_1, "http://git.sxbn.org/battleChess/"+filename)
 			self.client_1.close()
 			self.client_2.close()
 			log.close()
