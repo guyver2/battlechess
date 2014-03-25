@@ -74,7 +74,6 @@ That new rule has some direct consequences on the gameplay.
 Regular game :
 	White play first. To move a piece, click on it and then click on the desired destination. Your piece will move ther, if it can.
 	You know it's your turn to move when the message on the top left says your color.
-	When a king gets eaten, the window just abruptly closes, that's a feature not a bug...
 	You can exit the game anytime with ESCAPE.
 
 Replay mode :

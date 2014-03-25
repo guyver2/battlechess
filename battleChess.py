@@ -17,9 +17,10 @@ WHITE, BLACK = True, False # players
 
 
 class Board():
-	def __init__(self, sprite_pieces, sniper):
+	def __init__(self, sprite_pieces, sprite_board, sniper):
 		self.reset()
 		self.sprite_pieces = sprite_pieces
+		self.sprite_board = sprite_board
 		self.sniper = sniper
 		self.taken = []
 		self.visibility = None
@@ -46,6 +47,7 @@ class Board():
 		return res
 
 	def draw(self, screen, selected=None, turn=None):
+		screen.blit(self.sprite_board, (0,0))
 		for i in xrange(8):
 			for j in xrange(8) :
 				c = self.board[i][j]
@@ -452,69 +454,65 @@ class SockThread(threading.Thread):
 		self.sock.close()
 
 
+class ConnectionThread(threading.Thread):
+	def __init__(self, host, port, nick):
+		super(ConnectionThread, self).__init__()
+		self.host = host
+		self.port = port
+		self.nick = nick
+		self.opponent = None
+		self.localPlayer = None
+		self.sock = None
+		self.done = False
+		self.running = True
+		
+
+	def run(self):
+		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		#self.sock.settimeout(0.01)
+		#create socket and connect
+		print 'connecting to' , (self.host, self.port)
+		self.sock.connect((self.host, self.port))
+		# get player color
+		msg = waitForMessage(self.sock, 'COLR')
+		print "I'll be player ", msg
+		if msg == "white" :
+			self.localPlayer = WHITE
+		else :
+			self.localPlayer = BLACK
+		#send nickname
+		sendData(self.sock, 'NICK', self.nick)
+
+		# get replay filename
+		replayURL = waitForMessage(self.sock, 'URLR')
+		print "Game replay at :", replayURL
+
+		# get his nickname
+		self.opponent = waitForMessage(self.sock, 'NICK')
+		print "Playing against", self.opponent
+
+		self.done = True
+		while self.running :
+			time.sleep(0.1)
+		
+		# return [sock, sockThread, localPlayer]
+
+
+
+
+
 # ****************************************************************************
 
-# regular two player game over network
-def networkGame(argv):
-
-	PORT = 8887
-	HOST = "sxbn.org" # "iccvlabsrv16.epfl.ch" #  
-	NICK = "anon_%d"%(random.randint(0,100))
-	if len(argv) == 1 :
-		print "Usage:\n\t", argv[0], "NICKNAME HOST PORT"
-	if len(argv) > 1 :
-		NICK = argv[1].replace(' ', '_')
-	if len(argv) > 2 :
-		HOST = argv[2]
-	if len(argv) > 3 :
-		PORT = int(argv[3])
-
-	print "connecting to", HOST+":"+str(PORT)
-
-	pygame.init()
-	pygame.mixer.init()
-	screen = pygame.display.set_mode((W,H))
-	sprite_board, sprite_pieces, sniper = loadData()
-	#pygame.mixer.music.load('data/sniper.mp3')
-	#pygame.mixer.music.play()
-	board = Board(sprite_pieces, sniper)
+def mainGameState(screen, localPlayer, sockThread, sock, board):
 
 	clickCell = None
-	localPlayer = None
 	turn = WHITE
-	#create socket and connect
-	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	sock.connect((HOST, PORT))
-	# get player color
-	msg = waitForMessage(sock, 'COLR')
-	print "I'll be player ", msg
-	if msg == "white" :
-		localPlayer = WHITE
-	else :
-		localPlayer = BLACK
-	#send nickname
-	sendData(sock, 'NICK', NICK)
-
-	# get replay filename
-	replayURL = waitForMessage(sock, 'URLR')
-	print "Game replay at :", replayURL
-
-	# get his nickname
-	opponent = waitForMessage(sock, 'NICK')
-	print "Playing against", opponent
-	pygame.display.set_caption(NICK+" Vs. "+opponent)
-
-	# start socket thread
-	sockThread = SockThread(sock)
-	sockThread.start()
-
-	# MAIN GAME LOOP
 	loop = True
-	while(loop):
+	winner = None
+	font = pygame.font.Font(None, 20)
+	while loop :
 		screen.fill(black)
-		screen.blit(sprite_board, (0,0))
 		board.draw(screen, clickCell, localPlayer)
-		font = pygame.font.Font(None, 20)
 		if turn :
 			text = font.render("White", 1, (0, 0, 0))
 		else :
@@ -525,6 +523,7 @@ def networkGame(argv):
 			loop, _ , _ = events() # grab events and throw them away :)
 			if sockThread.ready :
 				if sockThread.header == 'OVER':
+					winner = localPlayer
 					print "You WON !"
 					loop = False
 					continue
@@ -537,6 +536,7 @@ def networkGame(argv):
 					sockThread.ready = False
 				# if he lands on a king
 				if board.board[ii][jj].startswith('k'):
+					winner = not localPlayer
 					print "you are a pathetic loser..."
 					sendData(sock, 'OVER', None)
 					loop = False
@@ -578,6 +578,94 @@ def networkGame(argv):
 						clickCell = None
 		pygame.display.update()
 		time.sleep(0.01)
+
+	return winner
+
+
+# prevents abrupt ending by displaying the complete board
+def endGameState(screen, winner, localPlayer, board):
+	loop = True
+	font = pygame.font.Font(None, 50)
+	while loop:
+		loop, _ , _ = events()
+		screen.fill(black)
+		board.draw(screen, None, None)
+		if winner == localPlayer :
+			text = font.render("You WON !", 1, (255, 0, 0))
+		else :
+			text = font.render("You lose...", 1, (255, 0, 0))
+		screen.blit(text,(int(W/2.-text.get_width()/2.), int(H/2.-text.get_height()/2.)))
+		pygame.display.update()
+		time.sleep(0.01)
+
+# intro state waiting for opponenent
+def introGameState(screen, board, connectionThread = None) :
+	loop = True
+	t0 = time.time()
+	font = pygame.font.Font(None, 50)
+	text = font.render("Waiting for opponent . .", 1, (255, 0, 0))
+	posMess = (int(W/2.-text.get_width()/2.), int(H/2.-text.get_height()/2.))
+	while not connectionThread.done and loop :
+		loop, _ , _ = events()
+		screen.fill(black)
+		board.draw(screen, None, None)
+		message = "Waiting for opponent "+'. '*(int(2*time.time()-2*t0) % 4)
+		text = font.render(message, 1, (255, 0, 0))
+		screen.blit(text, posMess)
+		pygame.display.update()
+		time.sleep(0.01)
+
+	return loop
+
+
+
+# regular two player game over network
+def networkGame(argv):
+
+	PORT = 8887
+	HOST = "sxbn.org" # "iccvlabsrv16.epfl.ch" #  
+	NICK = "anon_%d"%(random.randint(0,100))
+	if len(argv) == 1 :
+		print "Usage:\n\t", argv[0], "NICKNAME HOST PORT"
+	if len(argv) > 1 :
+		NICK = argv[1].replace(' ', '_')
+	if len(argv) > 2 :
+		HOST = argv[2]
+	if len(argv) > 3 :
+		PORT = int(argv[3])
+
+	print "connecting to", HOST+":"+str(PORT)
+
+	pygame.init()
+	pygame.mixer.init()
+	screen = pygame.display.set_mode((W,H))
+	localPlayer = None
+
+	sprite_board, sprite_pieces, sniper = loadData()
+	board = Board(sprite_pieces, sprite_board, sniper)
+	
+	connectionThread = ConnectionThread(HOST, PORT, NICK)
+	connectionThread.start()
+
+	# MAIN GAME LOOP
+	# TODO : FIND A WAY TO KILL THE CONNECTION THREAD IN CASE OF EARLY EXIT
+	loop = introGameState(screen, board, connectionThread)
+
+	# get info from connection Thread
+	opponent = connectionThread.opponent
+	localPlayer = connectionThread.localPlayer
+	sock = connectionThread.sock
+	connectionThread.running = False
+	connectionThread.join()
+	
+	pygame.display.set_caption(NICK+" Vs. "+opponent)
+	sockThread = SockThread(sock)
+	sockThread.start()
+	
+
+	winner = mainGameState(screen, localPlayer, sockThread, sock, board)
+	endGameState(screen, winner, localPlayer, board)
+
 
 	# EXITING
 	try :
