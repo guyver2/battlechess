@@ -415,8 +415,8 @@ class Board():
 # ****************************************************************************
 
 def loadData():
-	sprite_board = pygame.image.load('data/board_big.png').convert(24)
-	sprite_pieces = pygame.image.load('data/pieces_big.png').convert(24)
+	sprite_board = pygame.image.load('data/board.png').convert(24)
+	sprite_pieces = pygame.image.load('data/pieces.png').convert(24)
 	sprite_pieces.set_colorkey((255,255,255))
 	sprite_pieces = sprite_pieces.convert_alpha(sprite_pieces)
 	sniper = pygame.mixer.Sound('data/sniper.wav')
@@ -534,7 +534,11 @@ def networkGame(argv):
 		localPlayer = BLACK
 	#send nickname
 	sendN(sock, NICK)
-	# wait for other player
+
+	# get replay filename
+	print "Game replay at :", receiveN(sock)
+
+	# wait for other player ("ready" message)
 	msg = myreceive(sock, 5)
 	print "ready ? ", msg
 	# get his nickname
