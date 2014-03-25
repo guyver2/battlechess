@@ -37,7 +37,7 @@ class GameThread(threading.Thread):
 					loop = False
 					continue
 				i, j, ii, jj = move
-				print "got move from", [i,j], "to", [ii,jj], "from white"
+				#print "got move from", [i,j], "to", [ii,jj], "from white"
 				log.write("%d %d %d %d\n"%(i,j,ii,jj))
 				sendData(self.client_2, 'MOVE', move)
 
@@ -46,13 +46,13 @@ class GameThread(threading.Thread):
 					loop = False
 					continue
 				i, j, ii, jj = move
-				print "got move from", [i,j], "to", [ii,jj], "from black"
+				#print "got move from", [i,j], "to", [ii,jj], "from black"
 				log.write("%d %d %d %d\n"%(i,j,ii,jj))
 				sendData(self.client_1, 'MOVE', move)
 		except :
 			pass
 		finally : # Always close the game
-			print "finishing the game"
+			#print "finishing the game"
 			sendData(self.client_1, 'OVER', None)
 			sendData(self.client_2, 'OVER', None)
 			self.client_1.close()
@@ -63,16 +63,19 @@ class GameThread(threading.Thread):
 if __name__ == '__main__':
 	
 	PORT = 8887
+	HOST = '' # default value
 	if len(sys.argv) == 1 :
 		print "Usage:\n\t", sys.argv[0], "PORT"
-	if len(sys.argv) == 2 :
+	if len(sys.argv) > 1 :
 		PORT = int(sys.argv[1])
-
-	print " starting server on "+socket.gethostname()+":"+str(PORT)
+	if len(sys.argv) > 2 :
+		HOST = sys.argv[2]
+	
+	#print " starting server on "+socket.gethostname()+":"+str(PORT)
 
 	#create an INET, STREAMing socket
 	serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	serversocket.bind(('', PORT))
+	serversocket.bind((HOST, PORT))
 	#become a server socket
 	serversocket.listen(5)
 	loop = True
@@ -80,11 +83,9 @@ if __name__ == '__main__':
 		try :
 			#accept connections from outside
 			(client_1, address) = serversocket.accept()
-			print 'new client'
 			sendData(client_1, 'COLR', 'white')
 			(client_2, address) = serversocket.accept()
 			sendData(client_2, 'COLR', 'black')
-			print 'second client, ready to go'
 			game = GameThread(client_1, client_2)
 			game.start()
 		except Exception as e:
