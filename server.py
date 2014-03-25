@@ -2,25 +2,7 @@ import socket
 import sys
 import threading
 import time
-
-
-def myreceive(sock, MSGLEN):
-	msg = ''
-	while len(msg) < MSGLEN:
-		chunk = sock.recv(MSGLEN-len(msg))
-		if chunk == '':
-			raise RuntimeError("socket connection broken")
-		msg = msg + chunk
-	return msg
-
-
-def sendN(sock, msg):
-	sock.send("%05d"%len(msg))
-	sock.send(msg)
-
-def receiveN(sock):
-	size = int(myreceive(sock, 5))
-	return myreceive(sock, size)
+from communication import sendData, recvData, waitForMessage
 
 
 class GameThread(threading.Thread):
@@ -32,50 +14,47 @@ class GameThread(threading.Thread):
 		self.nick_2 = ""
 
 	def run(self):
-		self.nick_1 = receiveN(self.client_1)
-		self.nick_2 = receiveN(self.client_2)
+		self.nick_1 = waitForMessage(self.client_1, 'NICK')
+		self.nick_2 = waitForMessage(self.client_2, 'NICK')
 		filename = time.strftime("games/%Y_%m_%d_%H_%M_%S")
 		filename += "_"+self.nick_1+"_Vs_"+self.nick_2+".txt"
 		log = open(filename, "w")
 		log.write(self.nick_1+' Vs. '+self.nick_2+'\n')
 		
-		sendN(client_1, "http://git.sxbn.org/battleChess/"+filename)
-		sendN(client_2, "http://git.sxbn.org/battleChess/"+filename)
-		self.client_1.send("ready")
-		self.client_2.send("ready")
+		sendData(self.client_1, 'URLR', "http://git.sxbn.org/battleChess/"+filename)
+		sendData(self.client_2, 'URLR', "http://git.sxbn.org/battleChess/"+filename)
 
-		sendN(self.client_1, self.nick_2)
-		sendN(self.client_2, self.nick_1)
+
+		sendData(self.client_1, 'NICK', self.nick_2)
+		sendData(self.client_2, 'NICK', self.nick_1)
 
 
 		loop = True
 		try :
 			while loop:
-				move = myreceive(self.client_1, 4)
-				if move == "over" :
+				head, move = recvData(self.client_1)
+				if head == "OVER" :
 					loop = False
 					continue
-				i, j, ii, jj = [int(c) for c in move]
-				#print "got move from", [i,j], "to", [ii,jj], "from white"
+				i, j, ii, jj = move
+				print "got move from", [i,j], "to", [ii,jj], "from white"
 				log.write("%d %d %d %d\n"%(i,j,ii,jj))
-				self.client_2.send(move)
+				sendData(self.client_2, 'MOVE', move)
 
-				move = myreceive(self.client_2, 4)
-				if move == "over" :
+				head, move = recvData(self.client_2)
+				if head == "OVER" :
 					loop = False
 					continue
-				i, j, ii, jj = [int(c) for c in move]
-				#print "got move from", [i,j], "to", [ii,jj], "from black"
+				i, j, ii, jj = move
+				print "got move from", [i,j], "to", [ii,jj], "from black"
 				log.write("%d %d %d %d\n"%(i,j,ii,jj))
-				self.client_1.send(move)
+				sendData(self.client_1, 'MOVE', move)
 		except :
 			pass
-		finally :
-			#print "finishing the game"
-			self.client_1.send("over")
-			#sendN(client_1, "http://git.sxbn.org/battleChess/"+filename)
-			self.client_2.send("over")
-			#sendN(client_1, "http://git.sxbn.org/battleChess/"+filename)
+		finally : # Always close the game
+			print "finishing the game"
+			sendData(self.client_1, 'OVER', None)
+			sendData(self.client_2, 'OVER', None)
 			self.client_1.close()
 			self.client_2.close()
 			log.close()
@@ -101,12 +80,14 @@ if __name__ == '__main__':
 		try :
 			#accept connections from outside
 			(client_1, address) = serversocket.accept()
-			client_1.send("white")
+			print 'new client'
+			sendData(client_1, 'COLR', 'white')
 			(client_2, address) = serversocket.accept()
-			client_2.send("black")
-
+			sendData(client_2, 'COLR', 'black')
+			print 'second client, ready to go'
 			game = GameThread(client_1, client_2)
 			game.start()
-		except :
+		except Exception as e:
+			print e
 			loop = False
 			serversocket.close()

@@ -7,6 +7,7 @@ import threading
 import random
 import urllib
 from pygame.locals import *
+from communication import sendData, recvData, waitForMessage
 
 # GLOBAL VARIABLES
 W, H = 512, 384 # wibndow prop
@@ -427,25 +428,6 @@ def events():
 
 
 
-def myreceive(sock, MSGLEN):
-	msg = ''
-	while len(msg) < MSGLEN:
-		chunk = sock.recv(MSGLEN-len(msg))
-		if chunk == '':
-			raise RuntimeError("socket connection broken")
-		msg = msg + chunk
-	return msg
-
-def sendN(sock, msg):
-	sock.send("%05d"%len(msg))
-	sock.send(msg)
-
-def receiveN(sock):
-	size = int(myreceive(sock, 5))
-	return myreceive(sock, size)
-
-
-
 class SockThread(threading.Thread):
 	def __init__(self, sock):
 		super(SockThread, self).__init__()
@@ -453,23 +435,21 @@ class SockThread(threading.Thread):
 		self.sock.settimeout(0.01)
 		self.ready = False
 		self.data = None
+		self.header = None
 		self.running = True
 
 	def run(self):
 		while self.running :
 			if not self.ready :
 				try :
-					self.data = myreceive(self.sock, 4)
-					if self.data == 'over' :
+					self.header, self.data = recvData(self.sock)
+					if self.header == 'OVER' :
 						self.running = False
 					self.ready = True
 				except :
 					pass
 			time.sleep(0.01)
 		self.sock.close()
-
-		
-
 
 
 # ****************************************************************************
@@ -506,23 +486,21 @@ def networkGame(argv):
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sock.connect((HOST, PORT))
 	# get player color
-	msg = myreceive(sock, 5)
+	msg = waitForMessage(sock, 'COLR')
 	print "I'll be player ", msg
 	if msg == "white" :
 		localPlayer = WHITE
 	else :
 		localPlayer = BLACK
 	#send nickname
-	sendN(sock, NICK)
+	sendData(sock, 'NICK', NICK)
 
 	# get replay filename
-	print "Game replay at :", receiveN(sock)
+	replayURL = waitForMessage(sock, 'URLR')
+	print "Game replay at :", replayURL
 
-	# wait for other player ("ready" message)
-	msg = myreceive(sock, 5)
-	print "ready ? ", msg
 	# get his nickname
-	opponent = receiveN(sock)
+	opponent = waitForMessage(sock, 'NICK')
 	print "Playing against", opponent
 	pygame.display.set_caption(NICK+" Vs. "+opponent)
 
@@ -546,16 +524,21 @@ def networkGame(argv):
 		if turn != localPlayer:
 			loop, _ , _ = events() # grab events and throw them away :)
 			if sockThread.ready :
-				if sockThread.data == 'over':
+				if sockThread.header == 'OVER':
 					print "You WON !"
 					loop = False
 					continue
-				i, j, ii, jj = [int(c) for c in sockThread.data]
-				sockThread.ready = False
+				elif sockThread.header != 'MOVE':
+					print 'got', sockThread.header, 'instead of move, still waiting'
+					sockThread.ready = False
+					continue
+				else :
+					i, j, ii, jj = sockThread.data
+					sockThread.ready = False
 				# if he lands on a king
 				if board.board[ii][jj].startswith('k'):
 					print "you are a pathetic loser..."
-					sock.send("over")
+					sendData(sock, 'OVER', None)
 					loop = False
 				board.move(i,j, ii,jj)
 				#reset clicked state 
@@ -577,7 +560,7 @@ def networkGame(argv):
 				if cell :
 					valid, pos = board.move(clickCell[0], clickCell[1], cell[0], cell[1])
 			if valid :
-				sock.send(''.join([str(e) for e in pos]))
+				sendData(sock, 'MOVE', pos)
 				turn = not turn
 			else :
 				clickCell = board.click(mpos)
