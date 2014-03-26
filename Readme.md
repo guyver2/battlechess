@@ -10,11 +10,10 @@
   
   
 ## Abstract 
-*    quick game :  
-```python battleChess.py```  
-*    download :  
-```git clone http://git.sxbn.org/battleChess.git``` 
-
+- Quick game :  
+	`python battleChess.py`  
+- Download :  
+	`git clone http://git.sxbn.org/battleChess.git`  
 
 
 ## Introduction :  
