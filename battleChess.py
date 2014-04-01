@@ -24,6 +24,8 @@ class Board():
 		self.sniper = sniper
 		self.taken = []
 		self.visibility = None
+		self.unrockable = []
+
 		# debug purpose
 		#self.board[1][5] = 'pw'
 		# self.board[2][3] = 'pw'
@@ -141,6 +143,28 @@ class Board():
 		else :
 			return 0
 
+	def isEnrocable(self, ki, kj, ri, rj, c):
+  # check if the path is clear
+  # check if the check?
+		if self.unrockable.__contains__(king) or self.unrockable.__contains__(tower):
+			return false
+		if c == 'w':
+			if ki == 0 and kj == 4 and ri == 0:
+				if rj == 0:
+					return 1
+ 				elif rj == 7:
+					return 2
+				else :
+					return 0
+		else :
+			if ki == 7 and kj == 4 and ri == 7:
+				if rj == 0 :
+					return 1
+				elif rj == 7:
+					return 2
+				else :
+					return 0
+		return 0 
 
 	def getRookReach(self, i, j, color):
 		a = 1
@@ -258,6 +282,23 @@ class Board():
 			pos.append([i-1,j+1])
 			pos.append([i-1,j-1])
 			pos.append([i-1,j])
+			if not self.unrockable.__contains__(c):
+				if c[1] == 'b':
+					if not self.unrockable.__contains__('rqw'):
+						if self.isFree(7,1) == 1  and self.isFree(7,2) == 1 \
+																 and self.isFree(7,3) == 1 :
+							pos.append([7,2])
+					if not self.unrockable.__contains__('rkw'):
+						if self.isFree(7,6) == 1 and self.isFree(7,5) == 1:
+							pos.append([7,6])
+				elif c[1] == 'b':
+					if not self.unrockable.__contains__('rqb'):
+						if self.isFree(0,1) == 1 and self.isFree(0,2) == 1 \
+            										 and self.isFree(0,3) == 1:
+							pos.append([0,2])
+					if not self.unrockable.__contains__('rkb'):
+						if self.isFree(0,6) == 1 and self.isFree(0,5) == 1:
+							pos.append([0,6])
 		elif c[0] == 'n':
 			pos.append([i+1,j+2])
 			pos.append([i+1,j-2])
@@ -314,6 +355,23 @@ class Board():
 			pos.append([i-1,j+1])
 			pos.append([i-1,j-1])
 			pos.append([i-1,j])
+			if not self.unrockable.__contains__(c):
+				if c[1] == 'w':
+					if not self.unrockable.__contains__('rqw'):
+						if self.isFree(7,1) == 1  and self.isFree(7,2) == 1 \
+																 and self.isFree(7,3) == 1 :
+							pos.append([7,2])
+					if not self.unrockable.__contains__('rkw'):
+						if self.isFree(7,6) == 1 and self.isFree(7,5) == 1:
+							pos.append([7,6])
+				elif c[1] == 'b':
+					if not self.unrockable.__contains__('rqb'):
+						if self.isFree(0,1) == 1 and self.isFree(0,2) == 1 \
+            										 and self.isFree(0,3) == 1:
+							pos.append([0,2])
+					if not self.unrockable.__contains__('rkb'):
+						if self.isFree(0,6) == 1 and self.isFree(0,5) == 1:
+							pos.append([0,6])
 		elif c[0] == 'n':
 			pos.append([i+1,j+2])
 			pos.append([i+1,j-2])
