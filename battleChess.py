@@ -94,7 +94,7 @@ class Board():
 		s.fill((255, 0, 255))
 		if selected:
 			pos = self.getPossiblePosition(selected[0], selected[1])
-			#pos = self.getReachablePosition(selected[0], selected[1])
+			#pos, rock = self.getReachablePosition(selected[0], selected[1])
 			for p in pos :
 				screen.blit(s, (106+p[1]*40, 30+p[0]*40))
 		# draw taken pieces
@@ -250,8 +250,9 @@ class Board():
 	def getReachablePosition(self, i, j):
 		c = self.board[i][j]
 		pos = []
+		rock = ''
 		if c == '':
-			return []
+			return [], rock
 		color = c[1]
 		if c == 'pb':
 			if self.isFree(i+1, j, 'b') == 1:
@@ -282,23 +283,27 @@ class Board():
 			pos.append([i-1,j+1])
 			pos.append([i-1,j-1])
 			pos.append([i-1,j])
-			if not self.unrockable.__contains__(c):
-				if c[1] == 'b':
-					if not self.unrockable.__contains__('rqw'):
+			if c not in self.unrockable:
+				if c[1] == 'w':
+					if 'rqw' not in self.unrockable:
 						if self.isFree(7,1) == 1  and self.isFree(7,2) == 1 \
 																 and self.isFree(7,3) == 1 :
 							pos.append([7,2])
-					if not self.unrockable.__contains__('rkw'):
+ 							rock = 'rqw'
+					if 'rkw' not in self.unrockable:
 						if self.isFree(7,6) == 1 and self.isFree(7,5) == 1:
 							pos.append([7,6])
+							rock = 'rkw'
 				elif c[1] == 'b':
-					if not self.unrockable.__contains__('rqb'):
+					if 'rqb' not in self.unrockable:
 						if self.isFree(0,1) == 1 and self.isFree(0,2) == 1 \
             										 and self.isFree(0,3) == 1:
 							pos.append([0,2])
-					if not self.unrockable.__contains__('rkb'):
+ 							rock = 'rqb'
+					if 'rkb' not in self.unrockable:
 						if self.isFree(0,6) == 1 and self.isFree(0,5) == 1:
 							pos.append([0,6])
+ 							rock = 'rkb'
 		elif c[0] == 'n':
 			pos.append([i+1,j+2])
 			pos.append([i+1,j-2])
@@ -321,7 +326,7 @@ class Board():
 		for p in pos:
 			if self.isFree(p[0], p[1], color):
 				res.append(p)
-		return list(res)
+		return list(res), rock
 
 
 	def getPossiblePosition(self, i, j):
@@ -355,22 +360,16 @@ class Board():
 			pos.append([i-1,j+1])
 			pos.append([i-1,j-1])
 			pos.append([i-1,j])
-			if not self.unrockable.__contains__(c):
+			if c not in self.unrockable:
 				if c[1] == 'w':
-					if not self.unrockable.__contains__('rqw'):
-						if self.isFree(7,1) == 1  and self.isFree(7,2) == 1 \
-																 and self.isFree(7,3) == 1 :
+					if 'rqw' not in self.unrockable:
 							pos.append([7,2])
-					if not self.unrockable.__contains__('rkw'):
-						if self.isFree(7,6) == 1 and self.isFree(7,5) == 1:
+					if 'rkw' not in self.unrockable:
 							pos.append([7,6])
 				elif c[1] == 'b':
-					if not self.unrockable.__contains__('rqb'):
-						if self.isFree(0,1) == 1 and self.isFree(0,2) == 1 \
-            										 and self.isFree(0,3) == 1:
+					if 'rqb' not in self.unrockable:
 							pos.append([0,2])
-					if not self.unrockable.__contains__('rkb'):
-						if self.isFree(0,6) == 1 and self.isFree(0,5) == 1:
+					if 'rkb' not in self.unrockable:
 							pos.append([0,6])
 		elif c[0] == 'n':
 			pos.append([i+1,j+2])
@@ -430,7 +429,7 @@ class Board():
 		return None
 
 	def move(self, i, j, ii, jj):
-		reach = self.getReachablePosition(i,j) # actually possible destination (obstacles, ennemies)
+		reach, rock = self.getReachablePosition(i,j) # actually possible destination (obstacles, ennemies)
 		pos = self.getPossiblePosition(i,j) # anything in the range of the piece
 		if [ii,jj] not in pos:
 			return False, []
@@ -450,6 +449,33 @@ class Board():
 		if self.board[ii][jj][0] == 'p' and (ii==0 or ii==7) :
 			self.board[ii][jj] = 'q'+self.board[ii][jj][1]
 		self.board[i][j] = ''
+		# if k or r, roque for that piece forbbiden in the future
+		if self.board[ii][jj][0] == 'k' and self.board[ii][jj] not in self.unrockable:
+			self.unrockable.append(self.board[ii][jj])	
+		elif self.board[ii][jj][0] == 'r':
+			if [ii, jj] == [0,0] and 'rqb' not in self.unrockable:
+				self.unrockable.append('rqb')
+			elif [ii, jj] == [0,7] and 'rkb' not in self.unrockable:
+				self.unrockable.append('rkb')
+			elif [ii, jj] == [7,0] and 'rqw' not in self.unrockable:
+				self.unrockable.append('rqw')
+			elif [ii, jj] == [7,7] and 'rkw' not in self.unrockable:
+				self.unrockable.append('rkw')
+    # if we were performing a roque, move the tower too 
+		if rock != '':
+			if rock == 'rqb':
+				self.board[0][0] = ''
+				self.board[0][3] = 'rb'
+			elif rock == 'rkb':
+				self.board[0][7] = '' 
+				self.board[0][5] = 'rb' 
+			elif rock == 'rqw':
+				self.board[7][0] = '' 
+				self.board[7][3] = 'rw' 
+			elif rock == 'rkw':
+				self.board[7][7] = '' 
+				self.board[7][5] = 'rw' 
+		
 		return True, [i,j,ii,jj]
 
 
