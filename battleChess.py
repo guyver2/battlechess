@@ -27,7 +27,7 @@ class Board():
 		self.unrockable = []
 
 		# debug purpose
-		#self.board[1][5] = 'pw'
+		# self.board[1][5] = 'pw'
 		# self.board[2][3] = 'pw'
 		# self.board[2][5] = 'pw'
 		# self.board[4][4] = 'qb'
@@ -43,9 +43,10 @@ class Board():
 
 	# make a deep copy of the board
 	def copy(self):
-		res = Board(self.sprite_pieces, self.sniper)
+		res = Board(self.sprite_pieces, self.sprite_board, self.sniper)
 		res.taken = list(self.taken)
 		res.board = [list(l) for l in self.board]
+		res.unrockable = list(self.unrockable)
 		return res
 
 	def draw(self, screen, selected=None, turn=None):
@@ -780,7 +781,7 @@ def replay(argv):
 	sprite_board, sprite_pieces, sniper = loadData()
 	# load moves
 	moves = [[int(c) for c in l.split()] for l in fic]
-	boards = [Board(sprite_pieces, sniper)]
+	boards = [Board(sprite_pieces, sprite_board, sniper)]
 	for m in moves :
 		boards.append(boards[-1].copy())
 		boards[-1].move(*m)
