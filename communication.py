@@ -4,6 +4,15 @@ import cPickle
 
 KNOWN_HEADERS = ['NICK', 'COLR', 'OVER', 'URLR', 'MOVE', 'BORD', 'VALD']
 
+# NICK : Nickname, data is a string
+# COLR : Player color, data is a string
+# OVER : Game is Over, data is None
+# URLR : URL for the replay, data is a string
+# MOVE : Player's move, data is a 4 int list
+# BORD : Game state, data is TO BE DETERMINED
+# VALD : Confirmation from the server for a client's action, data is a boolean
+
+
 # generic receive function
 def myreceive(sock, MSGLEN):
 	msg = ''

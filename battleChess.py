@@ -35,7 +35,7 @@ class Board():
 		self.sniper = sniper
 		self.taken = []
 		self.visibility = None
-		self.castleable = CASTEABLE
+		self.castleable = list(CASTEABLE)
 
 		# debug purpose
 		# self.board[1][5] = 'pw'
