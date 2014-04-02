@@ -252,8 +252,9 @@ class Board():
 	def getReachablePosition(self, i, j):
 		c = self.board[i][j]
 		pos = []
+		rock = ''
 		if c == '':
-			return []
+			return [], rock
 		color = c[1]
 		if c == 'pb':
 			if self.isFree(i+1, j, 'b') == 1:
@@ -323,7 +324,7 @@ class Board():
 		for p in pos:
 			if self.isFree(p[0], p[1], color):
 				res.append(p)
-		return list(res)
+		return list(res), rock
 
 
 	def getPossiblePosition(self, i, j):
@@ -426,7 +427,7 @@ class Board():
 		return None
 
 	def move(self, i, j, ii, jj):
-		reach = self.getReachablePosition(i,j) # actually possible destination (obstacles, ennemies)
+		reach, rock = self.getReachablePosition(i,j) # actually possible destination (obstacles, ennemies)
 		pos = self.getPossiblePosition(i,j) # anything in the range of the piece
 		if [ii,jj] not in pos:
 			return False, []
