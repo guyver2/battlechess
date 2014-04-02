@@ -13,6 +13,17 @@ from communication import sendData, recvData, waitForMessage
 W, H = 512, 384 # wibndow prop
 black = (0, 0, 0, 255) # background
 WHITE, BLACK = True, False # players
+RQBPOS = [0,0]
+RKBPOS = [0,7]
+RQWPOS = [7,0]
+RKWPOS = [7,7]
+KBPOS = [0,4]
+KWPOS = [7,4]
+CASTLEQBPOS = [0,2]
+CASTLEKBPOS = [0,6]
+CASTLEQWPOS = [7,2]
+CASTLEKWPOS = [7,6]
+CASTEABLE = ['kb', 'kw', 'rqb', 'rkb', 'rqw', 'rkw']
 #--------------------------
 
 
@@ -24,7 +35,7 @@ class Board():
 		self.sniper = sniper
 		self.taken = []
 		self.visibility = None
-		self.unrockable = []
+		self.castleable = CASTEABLE
 
 		# debug purpose
 		# self.board[1][5] = 'pw'
@@ -95,7 +106,7 @@ class Board():
 		s.fill((255, 0, 255))
 		if selected:
 			pos = self.getPossiblePosition(selected[0], selected[1])
-			#pos, rock = self.getReachablePosition(selected[0], selected[1])
+			#pos= self.getReachablePosition(selected[0], selected[1])
 			for p in pos :
 				screen.blit(s, (106+p[1]*40, 30+p[0]*40))
 		# draw taken pieces
@@ -144,28 +155,19 @@ class Board():
 		else :
 			return 0
 
-	def isEnrocable(self, ki, kj, ri, rj, c):
-  # check if the path is clear
-  # check if the check?
-		if self.unrockable.__contains__(king) or self.unrockable.__contains__(tower):
-			return false
-		if c == 'w':
-			if ki == 0 and kj == 4 and ri == 0:
-				if rj == 0:
-					return 1
- 				elif rj == 7:
-					return 2
-				else :
-					return 0
-		else :
-			if ki == 7 and kj == 4 and ri == 7:
-				if rj == 0 :
-					return 1
-				elif rj == 7:
-					return 2
-				else :
-					return 0
-		return 0 
+	def castleInfo(self, piece, i, j, ii, jj):
+		if piece in self.castleable:
+			if piece[1] == 'w':
+				if [KWPOS,CASTLEQWPOS] == [[i,j],[ii,jj]] and 'rqw' in self.castleable:
+						return 'rqw'
+				if [KWPOS,CASTLEKWPOS] == [[i,j],[ii,jj]] and 'rkw' in self.castleable:
+						return 'rkw'
+			elif piece[1] == 'b':
+				if [KBPOS,CASTLEQBPOS] == [[i,j],[ii,jj]] and 'rqb' in self.castleable:
+						return 'rqb'
+				if [KBPOS,CASTLEKBPOS] == [[i,j],[ii,jj]] and 'rkb' in self.castleable:
+						return 'rkb'
+		return ''
 
 	def getRookReach(self, i, j, color):
 		a = 1
@@ -284,27 +286,23 @@ class Board():
 			pos.append([i-1,j+1])
 			pos.append([i-1,j-1])
 			pos.append([i-1,j])
-			if c not in self.unrockable:
+			if c in self.castleable:
 				if c[1] == 'w':
-					if 'rqw' not in self.unrockable:
+					if 'rqw' in self.castleable:
 						if self.isFree(7,1) == 1  and self.isFree(7,2) == 1 \
 																 and self.isFree(7,3) == 1 :
 							pos.append([7,2])
- 							rock = 'rqw'
-					if 'rkw' not in self.unrockable:
+					if 'rkw' in self.castleable:
 						if self.isFree(7,6) == 1 and self.isFree(7,5) == 1:
 							pos.append([7,6])
-							rock = 'rkw'
 				elif c[1] == 'b':
-					if 'rqb' not in self.unrockable:
+					if 'rqb' in self.castleable:
 						if self.isFree(0,1) == 1 and self.isFree(0,2) == 1 \
             										 and self.isFree(0,3) == 1:
 							pos.append([0,2])
- 							rock = 'rqb'
-					if 'rkb' not in self.unrockable:
+					if 'rkb' in self.castleable:
 						if self.isFree(0,6) == 1 and self.isFree(0,5) == 1:
 							pos.append([0,6])
- 							rock = 'rkb'
 		elif c[0] == 'n':
 			pos.append([i+1,j+2])
 			pos.append([i+1,j-2])
@@ -361,16 +359,16 @@ class Board():
 			pos.append([i-1,j+1])
 			pos.append([i-1,j-1])
 			pos.append([i-1,j])
-			if c not in self.unrockable:
+			if c in self.castleable:
 				if c[1] == 'w':
-					if 'rqw' not in self.unrockable:
+					if 'rqw' in self.castleable:
 							pos.append([7,2])
-					if 'rkw' not in self.unrockable:
+					if 'rkw' in self.castleable:
 							pos.append([7,6])
 				elif c[1] == 'b':
-					if 'rqb' not in self.unrockable:
+					if 'rqb' in self.castleable:
 							pos.append([0,2])
-					if 'rkb' not in self.unrockable:
+					if 'rkb' in self.castleable:
 							pos.append([0,6])
 		elif c[0] == 'n':
 			pos.append([i+1,j+2])
@@ -450,33 +448,32 @@ class Board():
 		if self.board[ii][jj][0] == 'p' and (ii==0 or ii==7) :
 			self.board[ii][jj] = 'q'+self.board[ii][jj][1]
 		self.board[i][j] = ''
-		# if k or r, roque for that piece forbbiden in the future
-		if self.board[ii][jj][0] == 'k' and self.board[ii][jj] not in self.unrockable:
-			self.unrockable.append(self.board[ii][jj])	
+    # if we were performing a castle, move the tower too 
+		whichRock = self.castleInfo(self.board[ii][jj],i,j,ii,jj)  
+		if whichRock == 'rqb':
+			self.board[0][0] = ''
+			self.board[0][3] = 'rb'
+		elif whichRock == 'rkb':
+			self.board[0][7] = '' 
+			self.board[0][5] = 'rb' 
+		elif whichRock == 'rqw':
+			self.board[7][0] = '' 
+			self.board[7][3] = 'rw' 
+		elif whichRock == 'rkw':
+			self.board[7][7] = '' 
+			self.board[7][5] = 'rw' 
+		# if k or r, castle for that piece forbbiden in the future
+		if self.board[ii][jj][0] == 'k' and self.board[ii][jj] in self.castleable:
+			self.castleable.remove(self.board[ii][jj])	
 		elif self.board[ii][jj][0] == 'r':
-			if [ii, jj] == [0,0] and 'rqb' not in self.unrockable:
-				self.unrockable.append('rqb')
-			elif [ii, jj] == [0,7] and 'rkb' not in self.unrockable:
-				self.unrockable.append('rkb')
-			elif [ii, jj] == [7,0] and 'rqw' not in self.unrockable:
-				self.unrockable.append('rqw')
-			elif [ii, jj] == [7,7] and 'rkw' not in self.unrockable:
-				self.unrockable.append('rkw')
-    # if we were performing a roque, move the tower too 
-		if rock != '':
-			if rock == 'rqb':
-				self.board[0][0] = ''
-				self.board[0][3] = 'rb'
-			elif rock == 'rkb':
-				self.board[0][7] = '' 
-				self.board[0][5] = 'rb' 
-			elif rock == 'rqw':
-				self.board[7][0] = '' 
-				self.board[7][3] = 'rw' 
-			elif rock == 'rkw':
-				self.board[7][7] = '' 
-				self.board[7][5] = 'rw' 
-		
+			if [ii, jj] == RQBPOS and 'rqb' in self.castleable:
+				self.castleable.remove('rqb')
+			elif [ii, jj] == RKBPOS and 'rkb' in self.castleable:
+				self.castleable.remove('rkb')
+			elif [ii, jj] == RQWPOS and 'rqw' in self.castleable:
+				self.castleable.remove('rqw')
+			elif [ii, jj] == RKWPOS and 'rkw' in self.castleable:
+				self.castleable.remove('rkw')
 		return True, [i,j,ii,jj]
 
 
