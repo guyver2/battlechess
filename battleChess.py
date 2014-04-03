@@ -35,7 +35,7 @@ class Board():
 		self.sniper = sniper
 		self.taken = []
 		self.visibility = None
-		self.castleable = CASTEABLE
+		self.castleable = list(CASTEABLE)
 
 		# debug purpose
 		# self.board[1][5] = 'pw'
@@ -57,7 +57,7 @@ class Board():
 		res = Board(self.sprite_pieces, self.sprite_board, self.sniper)
 		res.taken = list(self.taken)
 		res.board = [list(l) for l in self.board]
-		res.unrockable = list(self.unrockable)
+		res.castleable = list(self.castleable)
 		return res
 
 	def draw(self, screen, selected=None, turn=None):
