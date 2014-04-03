@@ -150,11 +150,34 @@ class SockThread(threading.Thread):
 	def __init__(self, sock):
 		super(SockThread, self).__init__()
 		self.sock = sock
-		self.sock.settimeout(0.01)
+		self.sock.settimeout(0.1)
 		self.ready = False
 		self.data = None
 		self.header = None
 		self.running = True
+
+	# wait for a given message
+	def waitForMessage(self, header):
+		while self.running :
+			if self.ready :
+				if self.header == 'OVER':
+					return [False, None, None]
+				if self.header == header :
+					head, data = self.getDataAndRelease()
+					return [True, head, data] # object is there, ready to be read
+				else : # JUNK
+					print 'got', self.header, 'instead of', header, ', still waiting'
+					self.getDataAndRelease()
+			else : # don't check too much
+				time.sleep(0.01)
+		return False # if thread stoped in the meantime
+
+	# unary copy of the data and release the socket to make it ready to read more data
+	def getDataAndRelease(self):
+		head = list(self.header)
+		data = self.data
+		self.ready = False
+		return list([head, data])
 
 	def run(self):
 		while self.running :
@@ -164,7 +187,9 @@ class SockThread(threading.Thread):
 					if self.header == 'OVER' :
 						self.running = False
 					self.ready = True
-				except :
+				except Exception as e:
+					#print "GOT EXCEPTION IN MAIN LOOP"
+					#print e
 					pass
 			time.sleep(0.01)
 		self.sock.close()
@@ -243,20 +268,14 @@ def mainGameState(screen, localPlayer, sockThread, sock, board):
 					print "You WON !"
 					loop = False
 					continue
-				elif sockThread.header != 'MOVE':
-					print 'got', sockThread.header, 'instead of move, still waiting'
+				elif sockThread.header != 'BORD':
+					print 'got', sockThread.header, 'instead of BORD, still waiting'
 					sockThread.ready = False
 					continue
 				else :
-					i, j, ii, jj = sockThread.data
+					newBoard = sockThread.data
+					board.updateFromBoard(newBoard)
 					sockThread.ready = False
-				# if he lands on a king
-				if board.board[ii][jj].startswith('k'):
-					winner = not localPlayer
-					print "you are a pathetic loser..."
-					sendData(sock, 'OVER', None)
-					loop = False
-				board.move(i,j, ii,jj)
 				#reset clicked state 
 				clickCell = None
 				mpos = None
@@ -274,9 +293,12 @@ def mainGameState(screen, localPlayer, sockThread, sock, board):
 			if clickCell :
 				cell = board.click(mpos)
 				if cell :
-					valid, pos = board.move(clickCell[0], clickCell[1], cell[0], cell[1])
+					sendData(sock, 'MOVE', [clickCell[0], clickCell[1], cell[0], cell[1]])
+					loop, header, valid = sockThread.waitForMessage('VALD')
+					#valid, pos = board.move(clickCell[0], clickCell[1], cell[0], cell[1])
 			if valid :
-				sendData(sock, 'MOVE', pos)
+				loop, header, newBoard = sockThread.waitForMessage('BORD')
+				board.updateFromBoard(newBoard)
 				turn = not turn
 			else :
 				clickCell = board.click(mpos)
@@ -292,6 +314,15 @@ def mainGameState(screen, localPlayer, sockThread, sock, board):
 				elif turn == BLACK :
 					if board.board[clickCell[0]][clickCell[1]][1] != 'b':
 						clickCell = None
+
+		# check wether we have a winner
+		if board.winner :
+			if board.winner == 'w':
+				winner = WHITE
+			else :
+				winner = BLACK
+			loop = False
+
 		pygame.display.update()
 		time.sleep(0.01)
 

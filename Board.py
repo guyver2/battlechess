@@ -18,6 +18,7 @@ class Board(object):
 		self.reset()
 		self.taken = []
 		self.castleable = list(CASTEABLE)
+		self.winner = None
 
 		# debug purpose
 		# self.board[1][5] = 'pw'
@@ -40,6 +41,7 @@ class Board(object):
 		res.taken = list(self.taken)
 		res.board = [list(l) for l in self.board]
 		res.castleable = list(self.castleable)
+		res.winner = self.winner
 		return res
 			
 
@@ -380,6 +382,13 @@ class Board(object):
 				self.castleable.remove('rqw')
 			elif [i, j] == RKWPOS and 'rkw' in self.castleable:
 				self.castleable.remove('rkw')
+
+		# check if we have a winner
+		if 'kb' in self.taken :
+			self.winner = 'w'
+		elif 'kw' in self.taken :
+			self.winner = 'b'
+
 		return True, [i,j,ii,jj]
 
 
@@ -400,13 +409,14 @@ class Board(object):
 				for j in xrange(8) :
 					if not visibility[i][j] :
 						boardCopy.board[i][j] = ''
-		return cPickle.dumps(boardCopy, -1) # use compressed pickle
+		return boardCopy
 
 
 	def updateFromBoard(self, board):
 		self.taken = list(board.taken)
 		self.board = [list(l) for l in board.board]
 		self.castleable = list(board.castleable)
+		self.winner = board.winner
 
 
 
