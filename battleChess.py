@@ -26,6 +26,11 @@ class BoardPlayer(Board):
 		self.sniper = sniper
 		self.visibility = None
 
+	def copy(self):
+		board = super(BoardPlayer, self).copy()
+		res = BoardPlayer(self.sprite_pieces, self.sprite_board, self.sniper)
+		res.updateFromBoard(board)
+		return res
 
 	def draw(self, screen, selected=None, turn=None):
 		screen.blit(self.sprite_board, (0,0))
