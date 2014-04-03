@@ -466,13 +466,13 @@ class Board():
 		if self.board[ii][jj][0] == 'k' and self.board[ii][jj] in self.castleable:
 			self.castleable.remove(self.board[ii][jj])	
 		elif self.board[ii][jj][0] == 'r':
-			if [ii, jj] == RQBPOS and 'rqb' in self.castleable:
+			if [i, j] == RQBPOS and 'rqb' in self.castleable:
 				self.castleable.remove('rqb')
-			elif [ii, jj] == RKBPOS and 'rkb' in self.castleable:
+			elif [i, j] == RKBPOS and 'rkb' in self.castleable:
 				self.castleable.remove('rkb')
-			elif [ii, jj] == RQWPOS and 'rqw' in self.castleable:
+			elif [ii, j] == RQWPOS and 'rqw' in self.castleable:
 				self.castleable.remove('rqw')
-			elif [ii, jj] == RKWPOS and 'rkw' in self.castleable:
+			elif [i, j] == RKWPOS and 'rkw' in self.castleable:
 				self.castleable.remove('rkw')
 		return True, [i,j,ii,jj]
 
