@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import socket
 import sys
 import signal
@@ -56,6 +58,8 @@ class GameThread(threading.Thread):
 					sendData(self.client_1, 'BORD', endBoard)
 					sendData(self.client_2, 'BORD', endBoard)
 				else :
+					print 'WHITE data'
+					#self.board.toString('w')
 					sendData(self.client_1, 'BORD', self.board.dump('w'))
 					sendData(self.client_2, 'BORD', self.board.dump('b'))
 

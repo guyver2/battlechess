@@ -21,7 +21,7 @@ class Board(object):
 		self.winner = None
 
 		# debug purpose
-		# self.board[1][5] = 'pw'
+		#self.board[1][4] = 'kw'
 		# self.board[2][3] = 'pw'
 		# self.board[2][5] = 'pw'
 		# self.board[4][4] = 'qb'
@@ -410,6 +410,35 @@ class Board(object):
 					if not visibility[i][j] :
 						boardCopy.board[i][j] = ''
 		return boardCopy
+
+	# dump as a string to ease portability with other apps
+	def toString(self, color=None):
+		visibility = [[True for i in xrange(8)] for j in xrange(8)]
+		if color : # hide if necessary
+			visibility = [[False for i in xrange(8)] for j in xrange(8)]
+			for i in xrange(8):
+				for j in xrange(8) :
+					if boardCopy.board[i][j].endswith(color) :
+						for di in xrange(-1,2):
+							for dj in xrange(-1,2):
+								if boardCopy.isIn(i+di, j+dj) :
+									visibility[i+di][j+dj] = True
+		boardStr = ''
+		for i in xrange(8):
+			for j in xrange(8) :
+				if not visibility[i][j] :
+					boardStr += '_' # 3 spaces
+				else :
+					boardStr += self.board[i][j]+'_'
+		boardStr = boardStr[:-1] # remove last '_'
+		takenStr = '_'.join(self.taken)
+		castleableStr = '_'.join(self.castleable)
+		if self.winner : winnerStr = self.winner
+		else : winnerStr = 'n'
+		res = boardStr+'#'+takenStr+'#'+castleableStr+'#'+winnerStr
+		print res
+		return res
+
 
 
 	def updateFromBoard(self, board):

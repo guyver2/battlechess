@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import pygame
 import sys
 import time
@@ -211,6 +213,7 @@ class ConnectionThread(threading.Thread):
 		self.sock = None
 		self.done = False
 		self.running = True
+		self.replayURL = None
 		
 
 	def run(self):
@@ -230,8 +233,8 @@ class ConnectionThread(threading.Thread):
 		sendData(self.sock, 'NICK', self.nick)
 
 		# get replay filename
-		replayURL = waitForMessage(self.sock, 'URLR')
-		print "Game replay at :", replayURL
+		self.replayURL = waitForMessage(self.sock, 'URLR')
+		print "Game replay at :", self.replayURL
 
 		# get his nickname
 		self.opponent = waitForMessage(self.sock, 'NICK')
@@ -336,10 +339,21 @@ def mainGameState(screen, localPlayer, sockThread, sock, board):
 
 # prevents abrupt ending by displaying the complete board
 def endGameState(screen, winner, localPlayer, board):
+	replay_sprite = pygame.image.load('data/replay.png').convert(24)
+	newGame_sprite = pygame.image.load('data/new_game.png').convert(24)
 	loop = True
 	font = pygame.font.Font(None, 50)
 	while loop:
-		loop, _ , _ = events()
+		loop, mpos , _ = events()
+
+		if mpos :
+			x, y = mpos
+			if x>50 and x<206 and y>288 and y<338:
+				print 'r'
+				return 'r'
+			elif x>306 and x<462 and y>288 and y<338:
+				print 'new game'
+				return 'g' 
 		screen.fill(black)
 		board.draw(screen, None, None)
 		if winner == localPlayer :
@@ -347,8 +361,11 @@ def endGameState(screen, winner, localPlayer, board):
 		else :
 			text = font.render("You lose...", 1, (255, 0, 0))
 		screen.blit(text,(int(W/2.-text.get_width()/2.), int(H/2.-text.get_height()/2.)))
+		screen.blit(replay_sprite,(50, 3*H/4))
+		screen.blit(newGame_sprite,(306, 3*H/4))
 		pygame.display.update()
 		time.sleep(0.01)
+	return 'n' # nothing
 
 # intro state waiting for opponenent
 def introGameState(screen, board, connectionThread = None) :
@@ -372,10 +389,12 @@ def introGameState(screen, board, connectionThread = None) :
 
 
 # regular two player game over network
-def networkGame(argv):
+def networkGame(argv, screen, sprite_board, sprite_pieces, sniper):
+
+	board = BoardPlayer(sprite_pieces, sprite_board, sniper)
 
 	PORT = 8887
-	HOST = "sxbn.org" # "iccvlabsrv16.epfl.ch" #  
+	HOST = "sxbn.org"  
 	NICK = "anon_%d"%(random.randint(0,100))
 	if len(argv) == 1 :
 		print "Usage:\n\t", argv[0], "NICKNAME HOST PORT"
@@ -388,14 +407,9 @@ def networkGame(argv):
 
 	print "connecting to", HOST+":"+str(PORT)
 
-	pygame.init()
-	pygame.mixer.init()
-	screen = pygame.display.set_mode((W,H))
-	localPlayer = None
 
-	sprite_board, sprite_pieces, sniper = loadData()
-	board = BoardPlayer(sprite_pieces, sprite_board, sniper)
 	
+	localPlayer = None
 	connectionThread = ConnectionThread(HOST, PORT, NICK)
 	connectionThread.start()
 
@@ -407,6 +421,7 @@ def networkGame(argv):
 	opponent = connectionThread.opponent
 	localPlayer = connectionThread.localPlayer
 	sock = connectionThread.sock
+	url = connectionThread.replayURL
 	connectionThread.running = False
 	connectionThread.join()
 	
@@ -416,8 +431,7 @@ def networkGame(argv):
 	
 
 	winner = mainGameState(screen, localPlayer, sockThread, sock, board)
-	endGameState(screen, winner, localPlayer, board)
-
+	whatNext = endGameState(screen, winner, localPlayer, board)
 
 	# EXITING
 	try :
@@ -426,26 +440,24 @@ def networkGame(argv):
 		sockThread.sock.close()
 	except :
 		pass
-	pygame.quit()
-	sys.exit()
+
+	if whatNext == 'r' :
+		replay(url, screen, sprite_board, sprite_pieces, sniper)
+	elif whatNext == 'g':
+		networkGame(argv, screen, sprite_board, sprite_pieces, sniper)
 
 
 
 
-def replay(argv):
 
-	if len(argv) < 3 :
-		print "missing replay file"
-		sys.exit()
-	fic = urllib.urlopen(argv[2])
+
+def replay(url, screen, sprite_board, sprite_pieces, sniper):
+	
+	fic = urllib.urlopen(url)
 	#fic = open(argv[2], 'r')
 	matchup = fic.readline()
-
-	pygame.init()
-	pygame.mixer.init()
-	screen = pygame.display.set_mode((W,H))
 	pygame.display.set_caption(matchup)
-	sprite_board, sprite_pieces, sniper = loadData()
+
 	# load moves
 	moves = [[int(c) for c in l.split()] for l in fic]
 	boards = [BoardPlayer(sprite_pieces, sprite_board, sniper)]
@@ -493,8 +505,6 @@ def replay(argv):
 		time.sleep(0.01)
 
 	# out of the game loop
-	pygame.quit()
-	sys.exit()
 
 
 
@@ -504,10 +514,24 @@ def replay(argv):
 
 
 if __name__ == '__main__':
+
+	pygame.init()
+	pygame.mixer.init()
+	screen = pygame.display.set_mode((W,H))
+	sprite_board, sprite_pieces, sniper = loadData()
+	
+
 	if len(sys.argv) > 2 :
 		if sys.argv[1] == '-p' :
-			replay(sys.argv)
+			if len(sys.argv) < 3 :
+				print "missing replay file"
+				sys.exit()
+			replay(sys.argv[2], screen, sprite_board, sprite_pieces, sniper)
+			pygame.quit()
+			sys.exit()
 
-	networkGame(sys.argv)
 
+	networkGame(sys.argv, screen, sprite_board, sprite_pieces, sniper)
+	pygame.quit()
+	sys.exit()
 	
