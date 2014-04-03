@@ -57,7 +57,7 @@ class GameThread(threading.Thread):
 					endBoard = self.board.dump()
 					sendData(self.client_1, 'BORD', endBoard)
 					sendData(self.client_2, 'BORD', endBoard)
-					continue
+					break
 				else :
 					#self.board.toString('w')
 					sendData(self.client_1, 'BORD', self.board.dump('w'))
@@ -83,6 +83,7 @@ class GameThread(threading.Thread):
 					endBoard = self.board.dump()
 					sendData(self.client_1, 'BORD', endBoard)
 					sendData(self.client_2, 'BORD', endBoard)
+					break
 				else :
 					sendData(self.client_1, 'BORD', self.board.dump('w'))
 					sendData(self.client_2, 'BORD', self.board.dump('b'))
