@@ -1,7 +1,9 @@
 import socket
 import sys
+import signal
 import threading
 import time
+from Board import Board
 from communication import sendData, recvData, waitForMessage
 
 
@@ -12,6 +14,7 @@ class GameThread(threading.Thread):
 		self.client_2 = client_2
 		self.nick_1 = ""
 		self.nick_2 = ""
+		self.board = Board()
 
 	def run(self):
 		self.nick_1 = waitForMessage(self.client_1, 'NICK')
@@ -32,24 +35,55 @@ class GameThread(threading.Thread):
 		loop = True
 		try :
 			while loop:
-				head, move = recvData(self.client_1)
-				if head == "OVER" :
-					loop = False
-					continue
-				i, j, ii, jj = move
-				#print "got move from", [i,j], "to", [ii,jj], "from white"
-				log.write("%d %d %d %d\n"%(i,j,ii,jj))
-				sendData(self.client_2, 'MOVE', move)
+				valid = False
+				while not valid :
+					head, move = recvData(self.client_1)
+					if head == "OVER" :
+						loop = False
+						raise # jump to finaly
+					elif head == 'MOVE':
+						i, j, ii, jj = move
+						valid, pos = self.board.move(i,j,ii,jj)
+						#print "got move from", [i,j], "to", [ii,jj], "from white", valid
+						sendData(self.client_1, str('VALD'), valid)
+					else :
+						print 'error : server was expecting MOVE, not', head
+						raise 
 
-				head, move = recvData(self.client_2)
-				if head == "OVER" :
-					loop = False
-					continue
-				i, j, ii, jj = move
-				#print "got move from", [i,j], "to", [ii,jj], "from black"
 				log.write("%d %d %d %d\n"%(i,j,ii,jj))
-				sendData(self.client_1, 'MOVE', move)
-		except :
+				if self.board.winner : # if we have awinner, send the whole board
+					endBoard = self.board.dump()
+					sendData(self.client_1, 'BORD', endBoard)
+					sendData(self.client_2, 'BORD', endBoard)
+				else :
+					sendData(self.client_1, 'BORD', self.board.dump('w'))
+					sendData(self.client_2, 'BORD', self.board.dump('b'))
+
+				valid = False
+				while not valid :
+					head, move = recvData(self.client_2)
+					if head == "OVER" :
+						loop = False
+						raise # jump to finaly
+					elif head == 'MOVE':
+						i, j, ii, jj = move
+						valid, pos = self.board.move(i,j,ii,jj)
+						#print "got move from", [i,j], "to", [ii,jj], "from black", valid
+						sendData(self.client_2, str('VALD'), valid)
+					else :
+						print 'error : server was expecting MOVE, not', head
+						raise 	
+
+				log.write("%d %d %d %d\n"%(i,j,ii,jj))
+				if self.board.winner : # if we have awinner, send the whole board
+					endBoard = self.board.dump()
+					sendData(self.client_1, 'BORD', endBoard)
+					sendData(self.client_2, 'BORD', endBoard)
+				else :
+					sendData(self.client_1, 'BORD', self.board.dump('w'))
+					sendData(self.client_2, 'BORD', self.board.dump('b'))
+		except Exception as e:
+			#print e
 			pass
 		finally : # Always close the game
 			#print "finishing the game"
@@ -58,10 +92,11 @@ class GameThread(threading.Thread):
 			self.client_1.close()
 			self.client_2.close()
 			log.close()
-		
+
+
+
 
 if __name__ == '__main__':
-	
 	PORT = 8887
 	HOST = '' # default value
 	if len(sys.argv) == 1 :
@@ -76,6 +111,14 @@ if __name__ == '__main__':
 	#create an INET, STREAMing socket
 	serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	serversocket.bind((HOST, PORT))
+
+	# register SIGINT to close socket
+	def signal_handler(signal, frame):
+		print('You pressed Ctrl+C!')
+		serversocket.close()
+		sys.exit(0)
+
+
 	#become a server socket
 	serversocket.listen(5)
 	loop = True

@@ -6,6 +6,7 @@ import socket
 import threading
 import random
 import urllib
+from Board import Board
 from pygame.locals import *
 from communication import sendData, recvData, waitForMessage
 
@@ -13,51 +14,22 @@ from communication import sendData, recvData, waitForMessage
 W, H = 512, 384 # wibndow prop
 black = (0, 0, 0, 255) # background
 WHITE, BLACK = True, False # players
-RQBPOS = [0,0]
-RKBPOS = [0,7]
-RQWPOS = [7,0]
-RKWPOS = [7,7]
-KBPOS = [0,4]
-KWPOS = [7,4]
-CASTLEQBPOS = [0,2]
-CASTLEKBPOS = [0,6]
-CASTLEQWPOS = [7,2]
-CASTLEKWPOS = [7,6]
-CASTEABLE = ['kb', 'kw', 'rqb', 'rkb', 'rqw', 'rkw']
+
 #--------------------------
 
 
-class Board():
+class BoardPlayer(Board):
 	def __init__(self, sprite_pieces, sprite_board, sniper):
-		self.reset()
+		super(BoardPlayer, self).__init__()
 		self.sprite_pieces = sprite_pieces
 		self.sprite_board = sprite_board
 		self.sniper = sniper
-		self.taken = []
 		self.visibility = None
-		self.castleable = list(CASTEABLE)
 
-		# debug purpose
-		# self.board[1][5] = 'pw'
-		# self.board[2][3] = 'pw'
-		# self.board[2][5] = 'pw'
-		# self.board[4][4] = 'qb'
-		# self.board[4][3] = 'bb'
-		# self.board[4][5] = 'rb'
-
-	def reset(self):
-		self.board = [['' for i in xrange(8)] for j in xrange(8)]
-		self.board[0] = ['rb', 'nb', 'bb', 'qb', 'kb', 'bb', 'nb', 'rb']
-		self.board[1] = ['pb', 'pb', 'pb', 'pb', 'pb', 'pb', 'pb', 'pb']
-		self.board[7] = ['rw', 'nw', 'bw', 'qw', 'kw', 'bw', 'nw', 'rw']
-		self.board[6] = ['pw', 'pw', 'pw', 'pw', 'pw', 'pw', 'pw', 'pw']
-
-	# make a deep copy of the board
 	def copy(self):
-		res = Board(self.sprite_pieces, self.sprite_board, self.sniper)
-		res.taken = list(self.taken)
-		res.board = [list(l) for l in self.board]
-		res.castleable = list(self.castleable)
+		board = super(BoardPlayer, self).copy()
+		res = BoardPlayer(self.sprite_pieces, self.sprite_board, self.sniper)
+		res.updateFromBoard(board)
 		return res
 
 	def draw(self, screen, selected=None, turn=None):
@@ -135,7 +107,6 @@ class Board():
 			screen.blit(self.sprite_pieces, (426+(i%2)*40, 338-(i/2)*40), patch_rect)
 			
 
-
 	def click(self, pos):
 		i = (pos[1]-30)/40
 		j = (pos[0]-106)/40
@@ -143,338 +114,6 @@ class Board():
 			return [i, j]
 		return None
 
-	def isIn(self, i, j):
-		return i>-1 and i<8 and j>-1 and j<8
-
-	def isFree(self, i, j, c=''):
-		if self.isIn(i,j) :
-			if self.board[i][j] == '' :
-				return 1
-			if self.board[i][j][1] != c :
-				return 2
-		else :
-			return 0
-
-	def castleInfo(self, piece, i, j, ii, jj):
-		if piece in self.castleable:
-			if piece[1] == 'w':
-				if [KWPOS,CASTLEQWPOS] == [[i,j],[ii,jj]] and 'rqw' in self.castleable:
-						return 'rqw'
-				if [KWPOS,CASTLEKWPOS] == [[i,j],[ii,jj]] and 'rkw' in self.castleable:
-						return 'rkw'
-			elif piece[1] == 'b':
-				if [KBPOS,CASTLEQBPOS] == [[i,j],[ii,jj]] and 'rqb' in self.castleable:
-						return 'rqb'
-				if [KBPOS,CASTLEKBPOS] == [[i,j],[ii,jj]] and 'rkb' in self.castleable:
-						return 'rkb'
-		return ''
-
-	def getRookReach(self, i, j, color):
-		a = 1
-		pos = []
-		while a:
-			f = self.isFree(i,j+a, color)
-			if f :
-				pos.append([i,j+a])
-				a+=1
-				if f == 2 : break
-			else :
-				break
-		a = 1
-		while True:
-			f = self.isFree(i,j-a, color)
-			if f :
-				pos.append([i,j-a])
-				a+=1
-				if f == 2 : break
-			else :
-				break
-		a = 1
-		while True:
-			f = self.isFree(i+a,j, color)
-			if f :
-				pos.append([i+a,j])
-				a+=1
-				if f == 2 : break
-			else :
-				break
-		a = 1
-		while True:
-			f = self.isFree(i-a,j, color)
-			if f :
-				pos.append([i-a,j])
-				a+=1
-				if f == 2 : break
-			else :
-				break
-		return pos
-
-	def getBishopReach(self, i, j, color):
-		a = 1
-		pos = []
-		while True:
-			f = self.isFree(i+a,j+a, color)
-			if f :
-				pos.append([i+a,j+a])
-				a+=1
-				if f == 2 : break
-			else :
-				break
-		a = 1
-		while True:
-			f = self.isFree(i-a,j-a, color)
-			if f :
-				pos.append([i-a,j-a])
-				a+=1
-				if f == 2 : break
-			else :
-				break
-		a = 1
-		while True:
-			f = self.isFree(i+a,j-a, color)
-			if f :
-				pos.append([i+a,j-a])
-				a+=1
-				if f == 2 : break
-			else :
-				break
-		a = 1
-		while True:
-			f = self.isFree(i-a,j+a, color)
-			if f :
-				pos.append([i-a,j+a])
-				a+=1
-				if f == 2 : break
-			else :
-				break
-		return pos
-
-
-	def getReachablePosition(self, i, j):
-		c = self.board[i][j]
-		pos = []
-		rock = ''
-		if c == '':
-			return [], rock
-		color = c[1]
-		if c == 'pb':
-			if self.isFree(i+1, j, 'b') == 1:
-				pos.append([i+1,j])
-			if self.isFree(i+1, j+1, 'b') == 2:
-				pos.append([i+1,j+1])
-			if self.isFree(i+1, j-1, 'b') == 2:
-				pos.append([i+1,j-1])
-			if i == 1 and self.isFree(i+2, j) == 1 \
-								and self.isFree(i+1, j) == 1:
-				pos.append([i+2,j])
-		elif c == 'pw':
-			if self.isFree(i-1, j, 'w') == 1:
-				pos.append([i-1,j])
-			if self.isFree(i-1, j+1, 'w') == 2:
-				pos.append([i-1,j+1])
-			if self.isFree(i-1, j-1, 'w') == 2:
-				pos.append([i-1,j-1])
-			if i == 6 and self.isFree(i-2, j) == 1 \
-								and self.isFree(i-1, j) == 1:
-				pos.append([i-2,j])
-		elif c[0] == 'k':
-			pos.append([i,j+1])
-			pos.append([i,j-1])
-			pos.append([i+1,j+1])
-			pos.append([i+1,j-1])
-			pos.append([i+1,j])
-			pos.append([i-1,j+1])
-			pos.append([i-1,j-1])
-			pos.append([i-1,j])
-			if c in self.castleable:
-				if c[1] == 'w':
-					if 'rqw' in self.castleable:
-						if self.isFree(7,1) == 1  and self.isFree(7,2) == 1 \
-																 and self.isFree(7,3) == 1 :
-							pos.append([7,2])
-					if 'rkw' in self.castleable:
-						if self.isFree(7,6) == 1 and self.isFree(7,5) == 1:
-							pos.append([7,6])
-				elif c[1] == 'b':
-					if 'rqb' in self.castleable:
-						if self.isFree(0,1) == 1 and self.isFree(0,2) == 1 \
-            										 and self.isFree(0,3) == 1:
-							pos.append([0,2])
-					if 'rkb' in self.castleable:
-						if self.isFree(0,6) == 1 and self.isFree(0,5) == 1:
-							pos.append([0,6])
-		elif c[0] == 'n':
-			pos.append([i+1,j+2])
-			pos.append([i+1,j-2])
-			pos.append([i-1,j+2])
-			pos.append([i-1,j-2])
-			pos.append([i+2,j+1])
-			pos.append([i+2,j-1])
-			pos.append([i-2,j+1])
-			pos.append([i-2,j-1])
-		elif c[0] == 'r':
-			pos = self.getRookReach(i,j, color)
-		elif c[0] == 'b':
-			pos = self.getBishopReach(i,j,color)
-		elif c[0] == 'q':
-			# rook
-			pos.extend(self.getRookReach(i,j,color))
-			# bishop
-			pos.extend(self.getBishopReach(i,j,color))
-		res = []
-		for p in pos:
-			if self.isFree(p[0], p[1], color):
-				res.append(p)
-		return list(res), rock
-
-
-	def getPossiblePosition(self, i, j):
-		c = self.board[i][j]
-		pos = []
-		if c == '':
-			return []
-		color = c[1]
-		if c == 'pb':
-			pos.append([i+1,j])
-			if self.isFree(i+1, j+1, 'b') == 2:
-				pos.append([i+1,j+1])
-			if self.isFree(i+1, j-1, 'b') == 2:
-				pos.append([i+1,j-1])
-			if i == 1 and self.isFree(i+1, j) == 1:
-				pos.append([i+2,j])
-		elif c == 'pw':
-			pos.append([i-1,j])
-			if self.isFree(i-1, j+1, 'w') == 2:
-				pos.append([i-1,j+1])
-			if self.isFree(i-1, j-1, 'w') == 2:
-				pos.append([i-1,j-1])
-			if i == 6 and self.isFree(i-1, j) == 1:
-				pos.append([i-2,j])
-		elif c[0] == 'k':
-			pos.append([i,j+1])
-			pos.append([i,j-1])
-			pos.append([i+1,j+1])
-			pos.append([i+1,j-1])
-			pos.append([i+1,j])
-			pos.append([i-1,j+1])
-			pos.append([i-1,j-1])
-			pos.append([i-1,j])
-			if c in self.castleable:
-				if c[1] == 'w':
-					if 'rqw' in self.castleable:
-							pos.append([7,2])
-					if 'rkw' in self.castleable:
-							pos.append([7,6])
-				elif c[1] == 'b':
-					if 'rqb' in self.castleable:
-							pos.append([0,2])
-					if 'rkb' in self.castleable:
-							pos.append([0,6])
-		elif c[0] == 'n':
-			pos.append([i+1,j+2])
-			pos.append([i+1,j-2])
-			pos.append([i-1,j+2])
-			pos.append([i-1,j-2])
-			pos.append([i+2,j+1])
-			pos.append([i+2,j-1])
-			pos.append([i-2,j+1])
-			pos.append([i-2,j-1])
-		elif c[0] == 'r':
-			for a in xrange(1,8):
-				pos.append([i,j+a])
-				pos.append([i+a,j])
-				pos.append([i,j-a])
-				pos.append([i-a,j])
-		elif c[0] == 'b':
-			for a in xrange(1,8):
-				pos.append([i+a,j+a])
-				pos.append([i-a,j+a])
-				pos.append([i+a,j-a])
-				pos.append([i-a,j-a])
-		elif c[0] == 'q':
-			for a in xrange(1,8):
-				pos.append([i,j+a])
-				pos.append([i+a,j])
-				pos.append([i,j-a])
-				pos.append([i-a,j])
-				pos.append([i+a,j+a])
-				pos.append([i-a,j+a])
-				pos.append([i+a,j-a])
-				pos.append([i-a,j-a])
-		res = []
-		for p in pos:
-			if self.isIn(*p):
-				res.append(p)
-		return list(res)
-	
-	def getClosest(self, i, j, ti, tj, reach):
-		d = 20
-		res = None
-		if ti - i == 0:
-			di = 0
-		elif ti - i < 0 :
-			di = -1
-		else :
-			di =  1
-		if tj - j == 0:
-			dj = 0
-		elif tj - j < 0 :
-			dj = -1
-		else :
-			dj =  1
-		for a in xrange(7,0,-1):
-			if [i+a*di, j+a*dj] in reach :
-				return [i+a*di, j+a*dj]
-		return None
-
-	def move(self, i, j, ii, jj):
-		reach, rock = self.getReachablePosition(i,j) # actually possible destination (obstacles, ennemies)
-		pos = self.getPossiblePosition(i,j) # anything in the range of the piece
-		if [ii,jj] not in pos:
-			return False, []
-		elif [ii,jj] not in reach :
-			res = self.getClosest(i,j,ii,jj,reach)
-			if res :
-				ii, jj = res
-			else :
-				return False, []
-		if self.board[ii][jj] != '':
-			if self.visibility : # check if we're not in playback mode
-				if (abs(ii-i) > 1 or abs(jj-j) > 1) and (self.visibility[ii][jj] == False or self.visibility[i][j] == False):
-					self.sniper.play()
-			self.taken.append(str(self.board[ii][jj]))
-		self.board[ii][jj] = self.board[i][j]
-		# if a pawn reached the end of the board, it becomse a queen
-		if self.board[ii][jj][0] == 'p' and (ii==0 or ii==7) :
-			self.board[ii][jj] = 'q'+self.board[ii][jj][1]
-		self.board[i][j] = ''
-    # if we were performing a castle, move the tower too 
-		whichRock = self.castleInfo(self.board[ii][jj],i,j,ii,jj)  
-		if whichRock == 'rqb':
-			self.board[0][0] = ''
-			self.board[0][3] = 'rb'
-		elif whichRock == 'rkb':
-			self.board[0][7] = '' 
-			self.board[0][5] = 'rb' 
-		elif whichRock == 'rqw':
-			self.board[7][0] = '' 
-			self.board[7][3] = 'rw' 
-		elif whichRock == 'rkw':
-			self.board[7][7] = '' 
-			self.board[7][5] = 'rw' 
-		# if k or r, castle for that piece forbbiden in the future
-		if self.board[ii][jj][0] == 'k' and self.board[ii][jj] in self.castleable:
-			self.castleable.remove(self.board[ii][jj])	
-		elif self.board[ii][jj][0] == 'r':
-			if [i, j] == RQBPOS and 'rqb' in self.castleable:
-				self.castleable.remove('rqb')
-			elif [i, j] == RKBPOS and 'rkb' in self.castleable:
-				self.castleable.remove('rkb')
-			elif [ii, j] == RQWPOS and 'rqw' in self.castleable:
-				self.castleable.remove('rqw')
-			elif [i, j] == RKWPOS and 'rkw' in self.castleable:
-				self.castleable.remove('rkw')
-		return True, [i,j,ii,jj]
 
 
 # ****************************************************************************
@@ -516,11 +155,34 @@ class SockThread(threading.Thread):
 	def __init__(self, sock):
 		super(SockThread, self).__init__()
 		self.sock = sock
-		self.sock.settimeout(0.01)
+		self.sock.settimeout(0.1)
 		self.ready = False
 		self.data = None
 		self.header = None
 		self.running = True
+
+	# wait for a given message
+	def waitForMessage(self, header):
+		while self.running :
+			if self.ready :
+				if self.header == 'OVER':
+					return [False, None, None]
+				if self.header == header :
+					head, data = self.getDataAndRelease()
+					return [True, head, data] # object is there, ready to be read
+				else : # JUNK
+					print 'got', self.header, 'instead of', header, ', still waiting'
+					self.getDataAndRelease()
+			else : # don't check too much
+				time.sleep(0.01)
+		return False # if thread stoped in the meantime
+
+	# unary copy of the data and release the socket to make it ready to read more data
+	def getDataAndRelease(self):
+		head = list(self.header)
+		data = self.data
+		self.ready = False
+		return list([head, data])
 
 	def run(self):
 		while self.running :
@@ -530,7 +192,9 @@ class SockThread(threading.Thread):
 					if self.header == 'OVER' :
 						self.running = False
 					self.ready = True
-				except :
+				except Exception as e:
+					#print "GOT EXCEPTION IN MAIN LOOP"
+					#print e
 					pass
 			time.sleep(0.01)
 		self.sock.close()
@@ -609,20 +273,14 @@ def mainGameState(screen, localPlayer, sockThread, sock, board):
 					print "You WON !"
 					loop = False
 					continue
-				elif sockThread.header != 'MOVE':
-					print 'got', sockThread.header, 'instead of move, still waiting'
+				elif sockThread.header != 'BORD':
+					print 'got', sockThread.header, 'instead of BORD, still waiting'
 					sockThread.ready = False
 					continue
 				else :
-					i, j, ii, jj = sockThread.data
+					newBoard = sockThread.data
+					board.updateFromBoard(newBoard)
 					sockThread.ready = False
-				# if he lands on a king
-				if board.board[ii][jj].startswith('k'):
-					winner = not localPlayer
-					print "you are a pathetic loser..."
-					sendData(sock, 'OVER', None)
-					loop = False
-				board.move(i,j, ii,jj)
 				#reset clicked state 
 				clickCell = None
 				mpos = None
@@ -640,9 +298,12 @@ def mainGameState(screen, localPlayer, sockThread, sock, board):
 			if clickCell :
 				cell = board.click(mpos)
 				if cell :
-					valid, pos = board.move(clickCell[0], clickCell[1], cell[0], cell[1])
+					sendData(sock, 'MOVE', [clickCell[0], clickCell[1], cell[0], cell[1]])
+					loop, header, valid = sockThread.waitForMessage('VALD')
+					#valid, pos = board.move(clickCell[0], clickCell[1], cell[0], cell[1])
 			if valid :
-				sendData(sock, 'MOVE', pos)
+				loop, header, newBoard = sockThread.waitForMessage('BORD')
+				board.updateFromBoard(newBoard)
 				turn = not turn
 			else :
 				clickCell = board.click(mpos)
@@ -658,6 +319,15 @@ def mainGameState(screen, localPlayer, sockThread, sock, board):
 				elif turn == BLACK :
 					if board.board[clickCell[0]][clickCell[1]][1] != 'b':
 						clickCell = None
+
+		# check wether we have a winner
+		if board.winner :
+			if board.winner == 'w':
+				winner = WHITE
+			else :
+				winner = BLACK
+			loop = False
+
 		pygame.display.update()
 		time.sleep(0.01)
 
@@ -724,7 +394,7 @@ def networkGame(argv):
 	localPlayer = None
 
 	sprite_board, sprite_pieces, sniper = loadData()
-	board = Board(sprite_pieces, sprite_board, sniper)
+	board = BoardPlayer(sprite_pieces, sprite_board, sniper)
 	
 	connectionThread = ConnectionThread(HOST, PORT, NICK)
 	connectionThread.start()
@@ -778,7 +448,7 @@ def replay(argv):
 	sprite_board, sprite_pieces, sniper = loadData()
 	# load moves
 	moves = [[int(c) for c in l.split()] for l in fic]
-	boards = [Board(sprite_pieces, sprite_board, sniper)]
+	boards = [BoardPlayer(sprite_pieces, sprite_board, sniper)]
 	for m in moves :
 		boards.append(boards[-1].copy())
 		boards[-1].move(*m)
