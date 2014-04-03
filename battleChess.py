@@ -454,7 +454,6 @@ def networkGame(argv, screen, sprite_board, sprite_pieces, sniper):
 def replay(url, screen, sprite_board, sprite_pieces, sniper):
 	
 	fic = urllib.urlopen(url)
-	#fic = open(argv[2], 'r')
 	matchup = fic.readline()
 	pygame.display.set_caption(matchup)
 

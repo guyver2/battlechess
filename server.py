@@ -53,10 +53,11 @@ class GameThread(threading.Thread):
 						raise 
 
 				log.write("%d %d %d %d\n"%(i,j,ii,jj))
-				if self.board.winner : # if we have awinner, send the whole board
+				if self.board.winner : # if we have a winner, send the whole board
 					endBoard = self.board.dump()
 					sendData(self.client_1, 'BORD', endBoard)
 					sendData(self.client_2, 'BORD', endBoard)
+					continue
 				else :
 					#self.board.toString('w')
 					sendData(self.client_1, 'BORD', self.board.dump('w'))
@@ -90,6 +91,7 @@ class GameThread(threading.Thread):
 			pass
 		finally : # Always close the game
 			#print "finishing the game"
+			log.flush()
 			log.close()
 			sendData(self.client_1, 'OVER', None)
 			sendData(self.client_2, 'OVER', None)
