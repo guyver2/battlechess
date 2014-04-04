@@ -335,6 +335,9 @@ class Board(object):
 		return None
 
 	def move(self, i, j, ii, jj):
+		if self.board[ii][jj] != '' and self.board[i][j][1] == self.board[ii][jj][1]:
+			print "same color"
+			return False, []
 		reach, rock = self.getReachablePosition(i,j) # actually possible destination (obstacles, ennemies)
 		pos = self.getPossiblePosition(i,j) # anything in the range of the piece
 		if [ii,jj] not in pos:
@@ -356,7 +359,7 @@ class Board(object):
 		if self.board[ii][jj][0] == 'p' and (ii==0 or ii==7) :
 			self.board[ii][jj] = 'q'+self.board[ii][jj][1]
 		self.board[i][j] = ''
-    # if we were performing a castle, move the tower too 
+    	# if we were performing a castle, move the tower too 
 		whichRock = self.castleInfo(self.board[ii][jj],i,j,ii,jj)  
 		if whichRock == 'rqb':
 			self.board[0][0] = ''
