@@ -85,7 +85,7 @@ That new rule has some direct consequences on the gameplay.
 	Antoine Letouzey -- [antoine.letouzey@gmail.com](antoine.letouzey@gmail.com)    
 	Pol Monsó-Purtí  -- [pol.monso@gmail.com](pol.monso@gmail.com)  
 
-- Licence : WTFPL
+- Licence : GPL
 
 ## Screenshots :
 ![img1](http://git.sxbn.org/battleChess/1.jpeg)  
