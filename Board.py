@@ -421,10 +421,10 @@ class Board(object):
 			visibility = [[False for i in xrange(8)] for j in xrange(8)]
 			for i in xrange(8):
 				for j in xrange(8) :
-					if boardCopy.board[i][j].endswith(color) :
+					if self.board[i][j].endswith(color) :
 						for di in xrange(-1,2):
 							for dj in xrange(-1,2):
-								if boardCopy.isIn(i+di, j+dj) :
+								if self.isIn(i+di, j+dj) :
 									visibility[i+di][j+dj] = True
 		boardStr = ''
 		for i in xrange(8):
@@ -439,9 +439,25 @@ class Board(object):
 		if self.winner : winnerStr = self.winner
 		else : winnerStr = 'n'
 		res = boardStr+'#'+takenStr+'#'+castleableStr+'#'+winnerStr
-		print res
 		return res
 
+	# update whole state from a string
+	def updateFromString(self, data):
+		boardStr, takenStr, castleableStr, winnerStr = data.split('#')
+		for i, c in enumerate(boardStr.split('_')):
+			self.board[i/8][i%8] = c
+		if takenStr == '':
+			self.taken = []
+		else :
+			self.taken = takenStr.split('_')
+		if castleableStr == '':
+			self.castleable = []
+		else :
+			self.castleable = castleableStr.split('_')
+		if winnerStr == 'n':
+			self.winner = None
+		else :
+			self.winner = winnerStr
 
 
 	def updateFromBoard(self, board):
@@ -450,6 +466,32 @@ class Board(object):
 		self.castleable = list(board.castleable)
 		self.winner = board.winner
 
+
+if __name__ == '__main__':
+	board = Board()
+
+	for i in xrange(8):
+		for j in xrange(8):
+			print "%4s"%board.board[i][j],
+		print
+	print board.taken
+	print board.castleable
+	print board.winner
+
+	board.move(6,2,4,2)
+
+	print '----------------'
+
+	board.updateFromString(board.toString('w'))
+
+
+	for i in xrange(8):
+		for j in xrange(8):
+			print "%4s"%board.board[i][j],
+		print
+	print board.taken
+	print board.castleable
+	print board.winner
 
 
 

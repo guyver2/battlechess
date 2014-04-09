@@ -80,7 +80,6 @@ class BoardPlayer(Board):
 		s.fill((255, 0, 255))
 		if selected:
 			pos = self.getPossiblePosition(selected[0], selected[1])
-			#pos= self.getReachablePosition(selected[0], selected[1])
 			for p in pos :
 				screen.blit(s, (106+p[1]*40, 30+p[0]*40))
 		# draw taken pieces
@@ -181,7 +180,7 @@ class SockThread(threading.Thread):
 
 	# unary copy of the data and release the socket to make it ready to read more data
 	def getDataAndRelease(self):
-		head = list(self.header)
+		head = str(self.header)
 		data = self.data
 		self.ready = False
 		return list([head, data])
@@ -282,7 +281,7 @@ def mainGameState(screen, localPlayer, sockThread, sock, board):
 					continue
 				else :
 					newBoard = sockThread.data
-					board.updateFromBoard(newBoard)
+					board.updateFromString(newBoard)
 					sockThread.ready = False
 				#reset clicked state 
 				clickCell = None
@@ -291,37 +290,36 @@ def mainGameState(screen, localPlayer, sockThread, sock, board):
 			
 			pygame.display.update()
 			time.sleep(0.01)
-			continue
-
-		# my turn
-		loop, mpos , keys = events()
-		if mpos :
-			valid = False
-			# already clicked, try to move
-			if clickCell :
-				cell = board.click(mpos)
-				if cell :
-					sendData(sock, 'MOVE', [clickCell[0], clickCell[1], cell[0], cell[1]])
-					loop, header, valid = sockThread.waitForMessage('VALD')
-					#valid, pos = board.move(clickCell[0], clickCell[1], cell[0], cell[1])
-			if valid :
-				loop, header, newBoard = sockThread.waitForMessage('BORD')
-				board.updateFromBoard(newBoard)
-				turn = not turn
-			else :
-				clickCell = board.click(mpos)
+			#continue
+		else :
+			# my turn
+			loop, mpos , keys = events()
+			if mpos :
+				valid = False
+				# already clicked, try to move
 				if clickCell :
-					piece = board.board[clickCell[0]][clickCell[1]]  
+					cell = board.click(mpos)
+					if cell :
+						sendData(sock, 'MOVE', [clickCell[0], clickCell[1], cell[0], cell[1]])
+						loop, header, valid = sockThread.waitForMessage('VALD')
+				if valid :
+					loop, header, newBoard = sockThread.waitForMessage('BORD')
+					board.updateFromString(newBoard)
+					turn = not turn
 				else :
-					piece = ''
-				if piece == '':
-					clickCell = None
-				elif turn == WHITE :
-					if board.board[clickCell[0]][clickCell[1]][1] != 'w':
+					clickCell = board.click(mpos)
+					if clickCell :
+						piece = board.board[clickCell[0]][clickCell[1]]  
+					else :
+						piece = ''
+					if piece == '':
 						clickCell = None
-				elif turn == BLACK :
-					if board.board[clickCell[0]][clickCell[1]][1] != 'b':
-						clickCell = None
+					elif turn == WHITE :
+						if board.board[clickCell[0]][clickCell[1]][1] != 'w':
+							clickCell = None
+					elif turn == BLACK :
+						if board.board[clickCell[0]][clickCell[1]][1] != 'b':
+							clickCell = None
 
 		# check wether we have a winner
 		if board.winner :

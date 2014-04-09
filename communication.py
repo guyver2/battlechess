@@ -1,5 +1,4 @@
 import socket
-import cPickle 
 
 
 KNOWN_HEADERS = ['NICK', 'COLR', 'OVER', 'URLR', 'MOVE', 'BORD', 'VALD']
@@ -8,9 +7,42 @@ KNOWN_HEADERS = ['NICK', 'COLR', 'OVER', 'URLR', 'MOVE', 'BORD', 'VALD']
 # COLR : Player color, data is a string
 # OVER : Game is Over, data is None
 # URLR : URL for the replay, data is a string
-# MOVE : Player's move, data is a 4 int list
+# MOVE : Player's move, data is a 4 int list (int from 0 to 7, so always 1 char)
 # BORD : Game state, data is TO BE DETERMINED
 # VALD : Confirmation from the server for a client's action, data is a boolean
+
+
+# generic tow way conversion from raw data to string representation
+def dataToString(header, data):
+	if header in ['NICK', 'COLR', 'URLR', 'BORD'] :
+		return data
+	elif header == 'OVER':
+		return 'None'
+	elif header == 'MOVE':
+		return str(data[0])+str(data[1])+str(data[2])+str(data[3])
+	elif header == 'VALD':
+		if data :
+			return 'T'
+		else :
+			return 'F'
+	else :
+		print 'Unknown message type :', header
+		raise
+
+# and from string to raw data
+def stringToData(header, data):
+	if header in ['NICK', 'COLR', 'URLR', 'BORD'] :
+		return data
+	elif header == 'OVER':
+		return None
+	elif header == 'MOVE':
+		return [int(data[0]), int(data[1]), int(data[2]), int(data[3])]
+	elif header == 'VALD':
+		return data == 'T'
+	else :
+		print 'Unknown message type :', header
+		raise
+
 
 
 # generic receive function
@@ -26,7 +58,7 @@ def myreceive(sock, MSGLEN):
 # send an object over the network
 def sendData(sock, header, data):
 	pack  = header
-	datas = cPickle.dumps(data)
+	datas = dataToString(header, data)
 	pack += "%05d"%(len(datas))
 	pack += datas
 	sock.send(pack)
@@ -37,8 +69,8 @@ def sendData(sock, header, data):
 def recvData(sock):
 	header = myreceive(sock, 4)
 	size   = int(myreceive(sock, 5))
-	msg    = myreceive(sock, size)
-	data   = cPickle.loads(msg)
+	datas  = myreceive(sock, size)
+	data   = stringToData(header, datas)
 	if header not in KNOWN_HEADERS :
 		print 'Unknown message type :', header
 	return list([header, data])
@@ -48,25 +80,4 @@ def waitForMessage(sock, header):
 	head = None
 	while head != header:
 		head, data = recvData(sock)
-	return data 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	return dataToString(head, data) 

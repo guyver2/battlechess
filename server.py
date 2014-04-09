@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import socket
-import sys
+import sys, traceback
 import signal
 import threading
 import time
@@ -47,21 +47,20 @@ class GameThread(threading.Thread):
 						i, j, ii, jj = move
 						valid, pos = self.board.move(i,j,ii,jj)
 						#print "got move from", [i,j], "to", [ii,jj], "from white", valid
-						sendData(self.client_1, str('VALD'), valid)
+						sendData(self.client_1, 'VALD', valid)
 					else :
 						print 'error : server was expecting MOVE, not', head
 						raise 
 
 				log.write("%d %d %d %d\n"%(i,j,ii,jj))
 				if self.board.winner : # if we have a winner, send the whole board
-					endBoard = self.board.dump()
+					endBoard = self.board.toString()
 					sendData(self.client_1, 'BORD', endBoard)
 					sendData(self.client_2, 'BORD', endBoard)
-					break
+					break # game is over
 				else :
-					#self.board.toString('w')
-					sendData(self.client_1, 'BORD', self.board.dump('w'))
-					sendData(self.client_2, 'BORD', self.board.dump('b'))
+					sendData(self.client_1, 'BORD', self.board.toString('w'))
+					sendData(self.client_2, 'BORD', self.board.toString('b'))
 
 				valid = False
 				while not valid :
@@ -73,22 +72,23 @@ class GameThread(threading.Thread):
 						i, j, ii, jj = move
 						valid, pos = self.board.move(i,j,ii,jj)
 						#print "got move from", [i,j], "to", [ii,jj], "from black", valid
-						sendData(self.client_2, str('VALD'), valid)
+						sendData(self.client_2, 'VALD', valid)
 					else :
 						print 'error : server was expecting MOVE, not', head
 						raise 	
 
 				log.write("%d %d %d %d\n"%(i,j,ii,jj))
 				if self.board.winner : # if we have awinner, send the whole board
-					endBoard = self.board.dump()
+					endBoard = self.board.toString()
 					sendData(self.client_1, 'BORD', endBoard)
 					sendData(self.client_2, 'BORD', endBoard)
-					break
+					break # game is over
 				else :
-					sendData(self.client_1, 'BORD', self.board.dump('w'))
-					sendData(self.client_2, 'BORD', self.board.dump('b'))
+					sendData(self.client_1, 'BORD', self.board.toString('w'))
+					sendData(self.client_2, 'BORD', self.board.toString('b'))
 		except Exception as e:
 			#print e
+			#traceback.print_exc(file=sys.stdout)
 			pass
 		finally : # Always close the game
 			#print "finishing the game"
