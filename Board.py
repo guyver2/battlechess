@@ -10,15 +10,16 @@ CASTLEQBPOS = [0,2]
 CASTLEKBPOS = [0,6]
 CASTLEQWPOS = [7,2]
 CASTLEKWPOS = [7,6]
-CASTEABLE = ['kb', 'kw', 'rqb', 'rkb', 'rqw', 'rkw']
-
+CASTLEABLE = ['kb', 'kw', 'rqb', 'rkb', 'rqw', 'rkw']
 
 class Board(object):
 	def __init__(self):
 		self.reset()
 		self.taken = []
-		self.castleable = list(CASTEABLE)
+		self.castleable = list(CASTLEABLE)
+		self.enpassant = -1
 		self.winner = None
+		self.enpassant = -1
 
 		# debug purpose
 		#self.board[1][4] = 'kw'
@@ -41,6 +42,7 @@ class Board(object):
 		res.taken = list(self.taken)
 		res.board = [list(l) for l in self.board]
 		res.castleable = list(self.castleable)
+		res.enpassant = self.enpassant
 		res.winner = self.winner
 		return res
 			
@@ -160,9 +162,8 @@ class Board(object):
 	def getReachablePosition(self, i, j):
 		c = self.board[i][j]
 		pos = []
-		rock = ''
 		if c == '':
-			return [], rock
+			return []
 		color = c[1]
 		if c == 'pb':
 			if self.isFree(i+1, j, 'b') == 1:
@@ -174,6 +175,8 @@ class Board(object):
 			if i == 1 and self.isFree(i+2, j) == 1 \
 								and self.isFree(i+1, j) == 1:
 				pos.append([i+2,j])
+			if self.enpassant != -1 and i == 4 and (j == self.enpassant-1 or j == self.enpassant+1):
+				pos.append([i+1, self.enpassant])
 		elif c == 'pw':
 			if self.isFree(i-1, j, 'w') == 1:
 				pos.append([i-1,j])
@@ -184,6 +187,8 @@ class Board(object):
 			if i == 6 and self.isFree(i-2, j) == 1 \
 								and self.isFree(i-1, j) == 1:
 				pos.append([i-2,j])
+			if self.enpassant != -1 and i == 3 and (j == self.enpassant-1 or j == self.enpassant+1):
+				pos.append([i-1, self.enpassant])
 		elif c[0] == 'k':
 			pos.append([i,j+1])
 			pos.append([i,j-1])
@@ -232,7 +237,7 @@ class Board(object):
 		for p in pos:
 			if self.isFree(p[0], p[1], color):
 				res.append(p)
-		return list(res), rock
+		return list(res)
 
 
 	def getPossiblePosition(self, i, j):
@@ -249,6 +254,8 @@ class Board(object):
 				pos.append([i+1,j-1])
 			if i == 1 and self.isFree(i+1, j) == 1:
 				pos.append([i+2,j])
+			if self.enpassant != -1 and i == 4 and (j == self.enpassant-1 or j == self.enpassant+1):
+				pos.append([i+1, self.enpassant])
 		elif c == 'pw':
 			pos.append([i-1,j])
 			if self.isFree(i-1, j+1, 'w') == 2:
@@ -257,6 +264,8 @@ class Board(object):
 				pos.append([i-1,j-1])
 			if i == 6 and self.isFree(i-1, j) == 1:
 				pos.append([i-2,j])
+			if self.enpassant != -1 and i == 3 and (j == self.enpassant-1 or j == self.enpassant+1):
+				pos.append([i-1, self.enpassant])
 		elif c[0] == 'k':
 			pos.append([i,j+1])
 			pos.append([i,j-1])
@@ -338,7 +347,7 @@ class Board(object):
 		if self.board[ii][jj] != '' and self.board[i][j][1] == self.board[ii][jj][1]:
 			# same color
 			return False, []
-		reach, rock = self.getReachablePosition(i,j) # actually possible destination (obstacles, ennemies)
+		reach = self.getReachablePosition(i,j) # actually possible destination (obstacles, ennemies)
 		pos = self.getPossiblePosition(i,j) # anything in the range of the piece
 		if [ii,jj] not in pos:
 			return False, []
@@ -373,7 +382,7 @@ class Board(object):
 		elif whichRock == 'rkw':
 			self.board[7][7] = '' 
 			self.board[7][5] = 'rw' 
-		# if k or r, castle for that piece forbbiden in the future
+		# if k or r, castle for that piece forbidden in the future
 		if self.board[ii][jj][0] == 'k' and self.board[ii][jj] in self.castleable:
 			self.castleable.remove(self.board[ii][jj])	
 		elif self.board[ii][jj][0] == 'r':
@@ -386,6 +395,24 @@ class Board(object):
 			elif [i, j] == RKWPOS and 'rkw' in self.castleable:
 				self.castleable.remove('rkw')
 
+		#check if we killed in passant
+		if jj == self.enpassant and (j == self.enpassant-1 or j == self.enpassant+1):
+			#todo remove this error check
+			if self.board[i][self.enpassant] == '':
+				print "Error! nothing at " + [i,self.enpassant]
+				return False, []
+			self.taken.append(str(self.board[i][self.enpassant]))
+			self.board[i][self.enpassant] = ''
+		#reset enpassant value
+		self.enpassant = -1
+		#en passant pawn quick add
+		if self.board[ii][jj][0] == 'p':
+			if self.board[ii][jj][1] == 'b' and i == 1 and ii == 3:
+				self.enpassant = jj;
+			elif self.board[ii][jj][1] == 'w' and i == 6 and ii == 4:
+				self.enpassant = jj;
+
+		print self.enpassant
 		# check if we have a winner
 		if 'kb' in self.taken :
 			self.winner = 'w'
@@ -435,15 +462,22 @@ class Board(object):
 					boardStr += self.board[i][j]+'_'
 		boardStr = boardStr[:-1] # remove last '_'
 		takenStr = '_'.join(self.taken)
-		castleableStr = '_'.join(self.castleable)
+		castleableStr = '_'.join([e for e in self.castleable if e.endswith(color)])
+		#todo only send enpassant if it's actually possible, otherwise we are leaking information
+		if color == 'b' and visibility[4][self.enpassant] == False:
+			enpassantStr = str(-1) 
+		elif color == 'w' and visibility[3][self.enpassant] == False:
+			enpassantStr = str(-1) 
+		else:
+			enpassantStr = str(self.enpassant)
 		if self.winner : winnerStr = self.winner
 		else : winnerStr = 'n'
-		res = boardStr+'#'+takenStr+'#'+castleableStr+'#'+winnerStr
+		res = boardStr+'#'+takenStr+'#'+castleableStr+'#'+enpassantStr+'#'+winnerStr
 		return res
 
 	# update whole state from a string
 	def updateFromString(self, data):
-		boardStr, takenStr, castleableStr, winnerStr = data.split('#')
+		boardStr, takenStr, castleableStr,enpassantStr,winnerStr = data.split('#')
 		for i, c in enumerate(boardStr.split('_')):
 			self.board[i/8][i%8] = c
 		if takenStr == '':
@@ -454,6 +488,7 @@ class Board(object):
 			self.castleable = []
 		else :
 			self.castleable = castleableStr.split('_')
+		self.enpassant = int(enpassantStr)
 		if winnerStr == 'n':
 			self.winner = None
 		else :
@@ -464,6 +499,7 @@ class Board(object):
 		self.taken = list(board.taken)
 		self.board = [list(l) for l in board.board]
 		self.castleable = list(board.castleable)
+		self.enpassant = board.enpassant
 		self.winner = board.winner
 
 
