@@ -89,7 +89,10 @@ Code :
 	Antoine Letouzey -- antoine.letouzey@gmail.com
 	Pol Monsó-Purtí  -- pol.monso@gmail.com
 
-Licence : WTFPL
+Sprites :
+	Original sprites by Wikipedia user Cburnett, under Creative Commons Licence (CC BY-SA 3.0)
+
+Licence : GPL
 
 
 

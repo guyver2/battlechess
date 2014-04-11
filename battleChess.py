@@ -42,18 +42,18 @@ class BoardPlayer(Board):
 				if c == '':
 					continue
 				else :
-					dx = 2
-					dy = 2
+					dx = 0
+					dy = 0
 					if c[1] == 'b':
-						dx += 84
+						dx += 72
 					if c[0] in ['n', 'r', 'b']:
-						dx += 42
+						dx += 36
 					if c[0] in ['q', 'r']:
-						dy += 42
+						dy += 36
 					if c[0] in ['p', 'b']:
-						dy += 84
+						dy += 72
 					patch_rect = (dx, dy, 36, 36)
-					screen.blit(self.sprite_pieces, (106+j*40, 30+i*40), patch_rect)
+					screen.blit(self.sprite_pieces, (104+j*40, 30+i*40), patch_rect)
 		if turn != None:
 			self.visibility = [[False for i in xrange(8)] for j in xrange(8)]
 			# get white piece
@@ -73,7 +73,7 @@ class BoardPlayer(Board):
 			for i in xrange(8):
 				for j in xrange(8):
 					if not self.visibility[i][j] :
-						screen.blit(fog, (106+j*40, 30+i*40))		
+						screen.blit(fog, (105+j*40, 30+i*40))
 		# draw possible displacement positions	
 		s = pygame.Surface((34, 34))
 		s.set_alpha(128)
@@ -85,25 +85,25 @@ class BoardPlayer(Board):
 		# draw taken pieces
 		# white 
 		for i, p in enumerate([p for p in self.taken if p[1] == 'w']) :
-			dx = 2
-			dy = 2
+			dx = 0
+			dy = 0
 			if p[0] in ['n', 'r', 'b']:
-				dx += 42
+				dx += 36
 			if p[0] in ['q', 'r']:
-				dy += 42
+				dy += 36
 			if p[0] in ['p', 'b']:
-				dy += 84
+				dy += 72
 			patch_rect = (dx, dy, 36, 36)
 			screen.blit(self.sprite_pieces, (6+(i%2)*40, 20+(i/2)*40), patch_rect)
 		for i, p in enumerate([p for p in self.taken if p[1] == 'b']) :
-			dx = 86
-			dy = 2
+			dx = 72
+			dy = 0
 			if p[0] in ['n', 'r', 'b']:
-				dx += 42
+				dx += 36
 			if p[0] in ['q', 'r']:
-				dy += 42
+				dy += 36
 			if p[0] in ['p', 'b']:
-				dy += 84
+				dy += 72
 			patch_rect = (dx, dy, 36, 36)
 			screen.blit(self.sprite_pieces, (426+(i%2)*40, 338-(i/2)*40), patch_rect)
 			
@@ -121,8 +121,8 @@ class BoardPlayer(Board):
 
 def loadData():
 	sprite_board = pygame.image.load('data/board.png').convert(24)
-	sprite_pieces = pygame.image.load('data/pieces.png').convert(24)
-	sprite_pieces.set_colorkey((255,255,255))
+	sprite_pieces = pygame.image.load('data/pieces.png')
+	#sprite_pieces.set_colorkey((255,0,255)) # for non-transparent png, chroma-keying
 	sprite_pieces = sprite_pieces.convert_alpha(sprite_pieces)
 	sniper = pygame.mixer.Sound('data/sniper.wav')
 	return [sprite_board, sprite_pieces, sniper]
