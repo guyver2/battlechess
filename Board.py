@@ -412,7 +412,7 @@ class Board(object):
 			elif self.board[ii][jj][1] == 'w' and i == 6 and ii == 4:
 				self.enpassant = jj;
 
-		print self.enpassant
+		# print self.enpassant
 		# check if we have a winner
 		if 'kb' in self.taken :
 			self.winner = 'w'
@@ -462,7 +462,10 @@ class Board(object):
 					boardStr += self.board[i][j]+'_'
 		boardStr = boardStr[:-1] # remove last '_'
 		takenStr = '_'.join(self.taken)
-		castleableStr = '_'.join([e for e in self.castleable if e.endswith(color)])
+		if color :
+			castleableStr = '_'.join([e for e in self.castleable if e.endswith(color)])
+		else :
+			castleableStr = '_'.join([e for e in self.castleable])
 		#todo only send enpassant if it's actually possible, otherwise we are leaking information
 		if color == 'b' and visibility[4][self.enpassant] == False:
 			enpassantStr = str(-1) 

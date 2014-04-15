@@ -167,7 +167,7 @@ class SockThread(threading.Thread):
 		while self.running :
 			if self.ready :
 				if self.header == 'OVER':
-					return [False, None, None]
+					return [False, 'OVER', None]
 				if self.header == header :
 					head, data = self.getDataAndRelease()
 					return [True, head, data] # object is there, ready to be read
@@ -176,7 +176,7 @@ class SockThread(threading.Thread):
 					self.getDataAndRelease()
 			else : # don't check too much
 				time.sleep(0.01)
-		return False # if thread stoped in the meantime
+		return [False, 'OVER', None] # if thread stoped in the meantime
 
 	# unary copy of the data and release the socket to make it ready to read more data
 	def getDataAndRelease(self):
@@ -272,7 +272,6 @@ def mainGameState(screen, localPlayer, sockThread, sock, board):
 			if sockThread.ready :
 				if sockThread.header == 'OVER':
 					winner = localPlayer
-					print "You WON !"
 					loop = False
 					continue
 				elif sockThread.header != 'BORD':
@@ -304,8 +303,9 @@ def mainGameState(screen, localPlayer, sockThread, sock, board):
 						loop, header, valid = sockThread.waitForMessage('VALD')
 				if valid :
 					loop, header, newBoard = sockThread.waitForMessage('BORD')
-					board.updateFromString(newBoard)
-					turn = not turn
+					if loop:
+						board.updateFromString(newBoard)
+						turn = not turn
 				else :
 					clickCell = board.click(mpos)
 					if clickCell :
