@@ -87,8 +87,8 @@ class GameThread(threading.Thread):
 					sendData(self.client_1, 'BORD', self.board.toString('w'))
 					sendData(self.client_2, 'BORD', self.board.toString('b'))
 		except Exception as e:
-			#print e
-			#traceback.print_exc(file=sys.stdout)
+			print e
+			traceback.print_exc(file=sys.stdout)
 			pass
 		finally : # Always close the game
 			#print "finishing the game"

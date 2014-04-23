@@ -64,6 +64,16 @@ class Board(object):
 		else :
 			return 0
 
+	def takeEnPassant(self, i, j, ii, jj):
+		if self.board[i][j][0] == 'p' and jj == self.enpassant and (j == self.enpassant-1 or j == self.enpassant+1):
+			if(   self.board[i][j][1] == 'w' and i == 3 or self.board[i][j][1] == 'b' and i == 4):
+				#todo remove this error check
+				if self.board[i][self.enpassant] == '':
+					print "Nothing at " + str([i,self.enpassant]) + ". Assuming you killed normally"
+				else:
+					self.taken.append(str(self.board[i][self.enpassant]))
+					self.board[i][self.enpassant] = ''
+
 	def castleInfo(self, piece, i, j, ii, jj):
 		if piece in self.castleable:
 			if piece[1] == 'w':
@@ -363,11 +373,26 @@ class Board(object):
 			#	if (abs(ii-i) > 1 or abs(jj-j) > 1) and (self.visibility[ii][jj] == False or self.visibility[i][j] == False):
 			#		self.sniper.play()
 			self.taken.append(str(self.board[ii][jj]))
+
+		#check if we killed in passant
+		self.takeEnPassant(i,j,ii,jj)	
+		#reset enpassant value
+		self.enpassant = -1
+		#the pawn jumped, set it as 'en passant' pawn
+		if self.board[i][j][0] == 'p':
+			if self.board[i][j][1] == 'b' and i == 1 and ii == 3:
+				self.enpassant = j
+			elif self.board[i][j][1] == 'w' and i == 6 and ii == 4:
+				self.enpassant = j
+
+		# replace destination with origin
 		self.board[ii][jj] = self.board[i][j]
+		self.board[i][j] = ''
+
 		# if a pawn reached the end of the board, it becomse a queen
 		if self.board[ii][jj][0] == 'p' and (ii==0 or ii==7) :
 			self.board[ii][jj] = 'q'+self.board[ii][jj][1]
-		self.board[i][j] = ''
+
     	# if we were performing a castle, move the tower too 
 		whichRock = self.castleInfo(self.board[ii][jj],i,j,ii,jj)  
 		if whichRock == 'rqb':
@@ -395,24 +420,6 @@ class Board(object):
 			elif [i, j] == RKWPOS and 'rkw' in self.castleable:
 				self.castleable.remove('rkw')
 
-		#check if we killed in passant
-		if jj == self.enpassant and (j == self.enpassant-1 or j == self.enpassant+1):
-			#todo remove this error check
-			if self.board[i][self.enpassant] == '':
-				print "Error! nothing at " + [i,self.enpassant]
-				return False, []
-			self.taken.append(str(self.board[i][self.enpassant]))
-			self.board[i][self.enpassant] = ''
-		#reset enpassant value
-		self.enpassant = -1
-		#en passant pawn quick add
-		if self.board[ii][jj][0] == 'p':
-			if self.board[ii][jj][1] == 'b' and i == 1 and ii == 3:
-				self.enpassant = jj;
-			elif self.board[ii][jj][1] == 'w' and i == 6 and ii == 4:
-				self.enpassant = jj;
-
-		# print self.enpassant
 		# check if we have a winner
 		if 'kb' in self.taken :
 			self.winner = 'w'
