@@ -35,8 +35,8 @@ That new rule has some direct consequences on the gameplay.
 ## Installation : 
 
 - What you need :
-	* python 2.7 (or more I guess...)
-	* pygame 1.9.2
+	* [python 2.7](https://www.python.org/downloads/) (or more I guess...)
+	* [pygame 1.9.2](http://www.pygame.org/download.shtml)
 	* the game itself. It can be downloaded via git using the following command:  
 	```git clone http://git.sxbn.org/battleChess.git```
 
