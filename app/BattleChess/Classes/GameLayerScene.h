@@ -29,6 +29,7 @@ public:
         UNDECIDEDGAME,
         OVER,
         DECIDEWINNER,
+        REPLAY,
         RECONNECT
     };
 
@@ -36,9 +37,12 @@ public:
     
     Board _board;
     cocos2d::CCSpriteBatchNode * _gameBatchNode;
-    cocos2d::CCNode * _textInfoNode;
+    cocos2d::CCSpriteBatchNode * _gameBatchNodeBoard;
+    cocos2d::CCNode * _turnInfoNode;
     cocos2d::CCNode * _tmpTextInfoNode;
-
+    cocos2d::CCSprite * _newGameSprite;
+    
+    std::vector<Board> replayBoards;
     
     //cocos2d::CCArray * _players;
     //cocos2d::CCArray * _takenPieces;

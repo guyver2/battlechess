@@ -23,7 +23,11 @@
 
 #include "SocketService.h"
 
+#define USEMUTEX 0
+
+#if(USEMUTEX)
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+#endif
 
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
@@ -48,15 +52,23 @@ SocketService::SocketService(){
     }
     _expectMsg = false;
     _terminate = false;
+    _host = "localhost";
+    _port = 8887;
 }
 
 SocketService::~SocketService(){
     freeaddrinfo(servinfo); // all done with this structure
+#if(USEMUTEX)
+    pthread_mutex_destroy(&mutex);
+#endif
 }
 
 int SocketService::ssconnect(std::string host, int port){
     int rv;
     char s[INET6_ADDRSTRLEN];
+    
+    _host = host;
+    _port = port;
     
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;
@@ -67,7 +79,7 @@ int SocketService::ssconnect(std::string host, int port){
     std::string portStr = ss.str();
     
     if ((rv = getaddrinfo(host.c_str(), portStr.c_str(), &hints, &servinfo)) != 0) {
-        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+        DEBUG2("getaddrinfo: %s\n", gai_strerror(rv));
         return -1;
     }
     
@@ -89,14 +101,14 @@ int SocketService::ssconnect(std::string host, int port){
     }
     
     if (p == NULL) {
-        fprintf(stderr, "client: failed to connect\n");
+         DEBUG2("client: failed to connect\n");
         return -2;
     }
     
     inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr),
               s, sizeof s);
-    printf("client: connecting to %s\n", s);
-    fprintf(stderr,"Connected to %s:%d\n", host.c_str(), port);
+
+    DEBUG2("Connected to %s:%d\n", host.c_str(), port);
 
     return 0;
 }
@@ -262,7 +274,6 @@ void SocketService::sendPacket(const Packet &packet){
 bool SocketService::getPacket(Packet& packet){
     
     //FIXME windows mutex protect this
-    int size = _recvQueue.size();
     if(_recvQueue.empty()){
         return false;
     }
@@ -270,10 +281,14 @@ bool SocketService::getPacket(Packet& packet){
     packet = _recvQueue.front();
     _recvQueue.pop();
 #else
+#if(USEMUTEX)
     pthread_mutex_lock(&mutex);
+#endif
     packet = _recvQueue.front();
     _recvQueue.pop();
+#if(USEMUTEX)
     pthread_mutex_unlock(&mutex);
+#endif
 #endif
      return true;
 }
@@ -325,9 +340,13 @@ void* SocketService::ssRequest(void *data)
                 #ifdef _WINDOWS_
                 instance->_recvQueue.push(packet);
                 #else
-                pthread_mutex_lock(&mutex);
+                    #if(USEMUTEX)
+                    pthread_mutex_lock(&mutex);
+                    #endif
                 instance->_recvQueue.push(packet);
-                pthread_mutex_unlock(&mutex);
+                    #if(USEMUTEX)
+                    pthread_mutex_unlock(&mutex);
+                    #endif
                 #endif
             }else{
                 //error
@@ -340,3 +359,9 @@ void* SocketService::ssRequest(void *data)
     return NULL;
 }
 #endif // _WINDOWS_
+
+void SocketService::fetchMoves(std::string url, std::vector<std::string> moves){
+    
+    
+    
+}

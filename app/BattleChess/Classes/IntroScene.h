@@ -28,6 +28,8 @@ public:
     void tick(float dt);
     
     CC_SYNTHESIZE_READONLY(cocos2d::CCLabelTTF*, _label, Label);
+    CC_SYNTHESIZE_READONLY(cocos2d::CCLabelTTF*, _titleLabel, TitleLabel);
+
 };
 
 class IntroScene : public cocos2d::CCScene

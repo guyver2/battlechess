@@ -68,7 +68,7 @@ class BoardPlayer(Board):
 								if self.isIn(i+di, j+dj) :
 									self.visibility[i+di][j+dj] = True
 			fog = pygame.Surface((38, 38))
-			fog.set_alpha(255)
+			fog.set_alpha(150)
 			fog.fill((0, 0, 0))
 			for i in xrange(8):
 				for j in xrange(8):
@@ -490,7 +490,7 @@ def replay(url, screen, sprite_board, sprite_pieces, sniper):
 
 		screen.fill(black)
 		screen.blit(sprite_board, (0,0))
-		boards[step].draw(screen, None, None)
+		boards[step].draw(screen, None, turn)
 		font = pygame.font.Font(None, 20)
 		if turn :
 			text = font.render("White", 1, (0, 0, 0))

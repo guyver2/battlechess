@@ -27,13 +27,11 @@ GameLayer::GameLayer() : _state(GETNICK), _somethingChanged(true)
 {
 	CCLog("GameLayer Contructor...");
 
-
 }
 
 GameLayer::~GameLayer()
 {
     
-    delete _textInfoNode;
 	// cpp don't need to call super dealloc
 	// virtual destructor will do this
 }
@@ -105,6 +103,7 @@ bool GameLayer::init()
 			"CloseSelected.png",
 			this,
 			menu_selector(GameLayer::menuCloseCallback));
+        
 		CC_BREAK_IF(! pCloseItem);
         
 		// Place the menu item bottom-right conner.
@@ -121,18 +120,37 @@ bool GameLayer::init()
 		// Add the menu to GameLayer layer as a child layer.
 		this->addChild(pMenu, 1);
 
-        _tmpTextInfoNode = new cocos2d::CCNode();
-
-        _textInfoNode = new cocos2d::CCNode();
-        
-        _turnLabel = CCLabelTTF::create("","Artial", 10);
-        _turnLabel->setColor( ccc3(255, 255, 255) );
-        _turnLabel->setPosition( board2screen(-2,-2) );
-        _turnLabel->setAnchorPoint(ccp(0,1));
-        _textInfoNode->addChild(_turnLabel);
-        this->addChild(_textInfoNode);
-        
         createBoard();
+        
+        _tmpTextInfoNode = new cocos2d::CCNode();
+        _label = CCLabelTTF::create("Connecting...","Artial", 16);
+         _label->setColor( ccc3(255, 0, 0) );
+         _label->setPosition( ccp(_screenSize.width/2, _screenSize.height/2) );
+         _tmpTextInfoNode->addChild(_label);
+         this->addChild(_tmpTextInfoNode, Board::kForeground);
+        
+        _turnInfoNode = new cocos2d::CCNode();
+        _turnLabel = CCLabelTTF::create("","Artial", 10);
+        _turnLabel->setColor( ccc3(255, 0, 0) );
+        _turnLabel->setPosition( board2screen(-1,0) );
+        _turnLabel->setAnchorPoint(ccp(0,1));
+        _turnInfoNode->addChild(_turnLabel);
+        this->addChild(_turnInfoNode, Board::kForeground);
+        
+        //todo MAYBE remove all children destroys the sprite //indeed
+        boardPopulate(_board);
+
+        /*
+         CCSprite * sprite = CCSprite::createWithSpriteFrameName("replay.png");
+         sprite->setPosition(ccp(_screenSize.width/2, _screenSize.height/2 - 32));
+         sprite->setAnchorPoint(ccp(1,0));
+         this->addChild(sprite, Board::kForeground);
+         */
+        _newGameSprite = CCSprite::createWithSpriteFrameName("new_game.png");
+        _newGameSprite->setAnchorPoint(ccp(0,0));
+        _newGameSprite->setPosition(ccp(_screenSize.width/2, _screenSize.height/2 - 32));
+        _newGameSprite->setVisible(false);
+        this->addChild(_newGameSprite, Board::kForeground);
         
 		this->setTouchEnabled(true);
 
@@ -172,33 +190,18 @@ void GameLayer::createBoard(){
     
     CCSpriteFrameCache::sharedSpriteFrameCache()->addSpriteFramesWithFile("battlechessSprites.plist");
     _gameBatchNode = CCSpriteBatchNode::create("battlechessSprites.png");
-    this->addChild(_gameBatchNode);
+    this->addChild(_gameBatchNode, Board::kPieces);
 
+    _gameBatchNodeBoard = CCSpriteBatchNode::create("battlechessSprites.png");
+    this->addChild(_gameBatchNodeBoard, Board::kBoard);
+    
     _boardSprite = CCSprite::createWithSpriteFrameName("board.png");
     _squaresize = _boardSprite->boundingBox().size.height/8;
     DEBUG2("board size %f so squaresize %d", _boardSprite->boundingBox().size.height, _squaresize);
-/*
-    sprite->setPosition(ccp(_screenSize.width * 0.5f, _screenSize.height * 0.5f));
-    _gameBatchNode->addChild(sprite, Board::kBoard);
+
+    _boardSprite->setPosition(ccp(_screenSize.width * 0.5f, _screenSize.height * 0.5f));
+    _gameBatchNodeBoard->addChild(_boardSprite, Board::kBoard);
     
-    for(int j=0; j<8; j++){
-        for(int i=0; i<8; i++){
-            float color = 1.0f;
-            if((i+j)%2)
-                color = 0.0f;
-            string piece = _board._board[i][j];
-            if(piece == "")
-                continue;
-            sprite = CCSprite::createWithSpriteFrameName(piece.c_str());
-            sprite->setAnchorPoint(ccp(0,1));
-            //TODO use relative positions and a trimmed board
-            sprite->setPosition(board2screen(i,j));
-            _gameBatchNode->addChild(sprite, Board::kPieces);
-        }
-    }
- */
-    //todo MAYBE remove all children destroys the sprite //indeed
-    boardPopulate(_board);
 
 }
 
@@ -206,10 +209,11 @@ void GameLayer::boardPopulate(const Board& board){
     
     //FIXME maybe we can move sprites instead of destroying and recreating (deal with pawn promotion thought)
     _gameBatchNode->removeAllChildrenWithCleanup(true);
-    
+    /*
     _boardSprite = CCSprite::createWithSpriteFrameName("board.png");
     _boardSprite->setPosition(ccp(_screenSize.width * 0.5f, _screenSize.height * 0.5f));
-    _gameBatchNode->addChild(_boardSprite, Board::kBoard);
+    _gameBatchNode->addChild(_boardSprite, Board::kBoard);ç
+    */
 
     CCSprite * sprite;
     
@@ -233,7 +237,7 @@ void GameLayer::boardPopulate(const Board& board){
 
     for(int j=0; j<8; j++){
         for(int i=0; i<8; i++){
-            if(board.foggy(i,j,_gameInfo.playerColor)){
+            if((_state != REPLAY &&_state != WINGAME && _state != LOSEGAME) && board.foggy(i,j,_gameInfo.playerColor)){
                 sprite = CCSprite::createWithSpriteFrameName("blank.png");
                 sprite->setAnchorPoint(pieceAnchorPoint);
                 sprite->setPosition(board2screen(i,j));
@@ -244,7 +248,7 @@ void GameLayer::boardPopulate(const Board& board){
                 string piece = board._board[i][j];
                 if(piece == "")
                     continue;
-                piece +=  + ".png";
+                piece += ".png";
                 sprite = CCSprite::createWithSpriteFrameName(piece.c_str());
                 sprite->setAnchorPoint(pieceAnchorPoint);
                 sprite->setPosition(board2screen(i,j));
@@ -281,27 +285,21 @@ void GameLayer::boardPopulate(const Board& board){
         }
     }
 
-    _textInfoNode->removeAllChildrenWithCleanup(true);
     //FIXME move the game info to somewhere else
     if(_state == MYTURN) {
         if(_gameInfo.playerColor == 'w')
-            _turnLabel = CCLabelTTF::create(GameInfo::WHITE.c_str(),"Artial", 10);
+            _turnLabel->setString(GameInfo::WHITE.c_str());
         else
-            _turnLabel = CCLabelTTF::create(GameInfo::BLACK.c_str(),"Artial", 10);
-
+            _turnLabel->setString(GameInfo::BLACK.c_str());
     }else if(_state == HISTURN) {
         if(_gameInfo.playerColor == 'w')
-            _turnLabel = CCLabelTTF::create(GameInfo::BLACK.c_str(),"Artial", 10);
+            _turnLabel->setString(GameInfo::BLACK.c_str());
         else
-            _turnLabel = CCLabelTTF::create(GameInfo::WHITE.c_str(),"Artial", 10);
+            _turnLabel->setString(GameInfo::WHITE.c_str());
     }else{
-        _turnLabel = CCLabelTTF::create("","Artial", 10);
+        _turnLabel->setString("");
     }
     
-    _turnLabel->setColor( ccc3(0, 0, 0) );
-    _turnLabel->setPosition( board2screen(-1,0) );
-    _turnLabel->setAnchorPoint(ccp(0,1));
-    _textInfoNode->addChild(_turnLabel);
 }
 
 void GameLayer::menuCloseCallback(CCObject* pSender)
@@ -364,6 +362,14 @@ void GameLayer::ccTouchesEnded(CCSet* touches, CCEvent* event)
                 }
             }
             break;
+        case WINGAME:
+        case LOSEGAME:
+        case UNDECIDEDGAME:
+        case OVER:
+        case DECIDEWINNER:
+            //FIXME maybe we can do something else rather than replacing the scnee with a new one
+            CCDirector::sharedDirector()->replaceScene( GameLayer::scene() );
+            break;
         default:
             //do nothing for now
             break;
@@ -383,18 +389,23 @@ void GameLayer::updateGame(float dt)
     switch(_state){
         case GETNICK:
             //todo fetch username through app use another scene
+            
             changeState( CONNECT );
             break;
         case RECONNECT:
             //TODO connection was lost
             break;
         case CONNECT:
-        	CCLog("about to connect");
-            if(_ssSocket.ssconnect() >= 0){
+        	CCLog("About to connect");
+            if(_ssSocket.ssconnect("sxbn.org",8887) >= 0){
             	CCLog("Connected starting thread...");
                 _ssSocket.start();
                 changeState( GETCOLOR );
             	//CCLog("Going to state GETCOLOR...");
+            }else{
+                std::stringstream ss;
+                ss << "Connection failed. " << _ssSocket._host << ":" << _ssSocket._port;
+                _label->setString(ss.str().c_str());
             }
             break;
         case GETCOLOR:
@@ -429,12 +440,7 @@ void GameLayer::updateGame(float dt)
 
                 //draw the waiting opponent scene
                 DEBUG2("Waiting opponent...");
-                CCSize winSize = CCDirector::sharedDirector()->getWinSize();
-                _label = CCLabelTTF::create("Waiting Opponent...","Artial", 32);
-                _label->setColor( ccc3(255, 0, 0) );
-                _label->setPosition( ccp(winSize.width/2, winSize.height/2) );
-                _tmpTextInfoNode->addChild(_label);
-                this->addChild(_tmpTextInfoNode);
+                _label->setString("Waiting Opponent...");
             	//CCLog("Going to state GETURL...");
                 changeState( GETURL );
             }
@@ -442,7 +448,7 @@ void GameLayer::updateGame(float dt)
         case GETURL:
             if(_ssSocket.getPacket(packet)){
                 //FIXME handle waiting oponent through a scene
-                _tmpTextInfoNode->removeAllChildrenWithCleanup(true);
+                _label->setVisible(false);
                 if(packet.header == "OVER"){
                     changeState( OVER );
                     break;
@@ -460,7 +466,6 @@ void GameLayer::updateGame(float dt)
             break;
         case GETOPPONENT:
             if(_ssSocket.getPacket(packet)){
-                _textInfoNode->removeAllChildrenWithCleanup(true);
                 if(packet.header == "OVER"){
                     changeState( OVER );
                     break;
@@ -574,26 +579,20 @@ void GameLayer::updateGame(float dt)
             }
             break;
         case WINGAME:
-            {
-                WaitingOpponentScene *waitingOpponentScene = WaitingOpponentScene::create();
-                waitingOpponentScene->getLayer()->getLabel()->setString("You Won. Waiting Opponent...");
-                CCDirector::sharedDirector()->replaceScene(waitingOpponentScene);
-                break;
-            }
-        case LOSEGAME:
-            {
-                WaitingOpponentScene *waitingOpponentScene = WaitingOpponentScene::create();
-                waitingOpponentScene->getLayer()->getLabel()->setString("You Lost. Waiting Opponent...");
-                CCDirector::sharedDirector()->replaceScene(waitingOpponentScene);
-                break;
-            }
-        case UNDECIDEDGAME:
-        {
-            WaitingOpponentScene *waitingOpponentScene = WaitingOpponentScene::create();
-            waitingOpponentScene->getLayer()->getLabel()->setString("Undecided game. Waiting Opponent...");
-            CCDirector::sharedDirector()->replaceScene(waitingOpponentScene);
+            _label->setString("You Won.");
+            _label->setVisible(true);
+            _newGameSprite->setVisible(true);
             break;
-        }
+        case LOSEGAME:
+            _label->setString("You Lost.");
+            _label->setVisible(true);
+            _newGameSprite->setVisible(true);
+            break;
+        case UNDECIDEDGAME:
+            _label->setString("Undecided game.");
+            _label->setVisible(true);
+            _newGameSprite->setVisible(true);
+            break;
         case OVER:
         case DECIDEWINNER:
             //already done by himself

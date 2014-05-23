@@ -13,6 +13,7 @@
 #include "cocos2d.h"
 #include "constants.h"
 #include "platform/CCCommon.h"
+#include <algorithm>
 
 typedef std::pair<int, int> Position;
 

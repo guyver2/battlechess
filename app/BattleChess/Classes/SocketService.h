@@ -69,6 +69,9 @@ public:
     bool waitInit(std::string& url, std::string& opponentName);
     bool sendMove(int originI, int originJ, int destI, int destJ);
 
+    //replay
+    void fetchMoves(std::string url, std::vector<std::string> moves);
+    
     //multithreading
     void sendPacket(const Packet& packet);
     bool getPacket(Packet &packet);
@@ -76,8 +79,9 @@ public:
     bool _expectMsg;
     bool _terminate;
     
-    //espera activa //otherwise complicated to end him
-    bool _ready;
+    std::string _host;
+    int _port;
+    
 private:
     int _sockd;
     int _count;

@@ -42,18 +42,18 @@ bool IntroLayer::init()
 	if ( CCLayerColor::initWithColor( ccc4(255,255,255,255) ) )
 	{
 		CCSize winSize = CCDirector::sharedDirector()->getWinSize();
-        /*
-		this->_label = CCLabelTTF::create("","Artial", 32);
-		_label->retain();
-		_label->setColor( ccc3(0, 0, 0) );
-		_label->setPosition( ccp(winSize.width/2, winSize.height/2) );
-		this->addChild(_label);
-        */
         
         //CCScale9Sprite * fieldSprite = CCScale9Sprite::create("field.png");
         CCSprite *fieldSprite = CCSprite::create("field.png");
         fieldSprite->setPosition(ccp(winSize.width/2, winSize.height/2));
 		this->addChild(fieldSprite);
+        
+        this->_titleLabel = CCLabelTTF::create("Username: ","Artial", 15);
+		_titleLabel->setColor( ccc3(0, 0, 0) );
+		_titleLabel->setPosition( ccp(winSize.width/2, winSize.height/2 + fieldSprite->boundingBox().size.height) );
+		this->addChild(_titleLabel);
+
+        
         /* I couldn't get this to work
         m_pEditName = CCEditBox::create(fieldSprite->boundingBox().size, fieldSprite);
         
@@ -121,9 +121,5 @@ void IntroLayer::IntroDone()
 
 IntroLayer::~IntroLayer()
 {
-	if (_label)
-	{
-		_label->release();
-		_label = NULL;
-	}
+    this->removeAllChildrenWithCleanup(true);
 }
