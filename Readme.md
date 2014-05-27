@@ -77,6 +77,14 @@ That new rule has some direct consequences on the gameplay.
 	SPACE will reset to initial state.  
 
 
+## Android & iOS Apps :
+
+
+- Android .apk file can be downloaded from this link : [http://git.sxbn.org/battleChess/BattleChess-debug.apk](http://git.sxbn.org/battleChess/BattleChess-debug.apk)
+
+- iOS app is ready and working, but thanks to Apple's App Store terms we cannot release it without paying...
+
+
 
 ## Credits & Licence :
 
@@ -91,9 +99,15 @@ That new rule has some direct consequences on the gameplay.
 - Licence : GPL
 
 ## Screenshots :
-![img1](http://git.sxbn.org/battleChess/1.jpeg)  
-![img2](http://git.sxbn.org/battleChess/2.jpeg)  
-![img3](http://git.sxbn.org/battleChess/3.jpeg)  
-![img4](http://git.sxbn.org/battleChess/4.jpeg)  
-![img5](http://git.sxbn.org/battleChess/5.jpeg)  
+![img1](http://git.sxbn.org/battleChess/1.jpg)  
+![img2](http://git.sxbn.org/battleChess/2.jpg)  
+![img3](http://git.sxbn.org/battleChess/3.jpg)  
+![img4](http://git.sxbn.org/battleChess/4.jpg)  
+![img5](http://git.sxbn.org/battleChess/5.jpg)  
+
+## Screenshots Android & iOS App :
+![img1](http://git.sxbn.org/battleChess/m1.png)  
+![img2](http://git.sxbn.org/battleChess/m2.png)  
+![img3](http://git.sxbn.org/battleChess/m3.png)  
+![img4](http://git.sxbn.org/battleChess/m4.png)  
 
