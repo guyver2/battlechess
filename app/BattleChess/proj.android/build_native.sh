@@ -31,6 +31,7 @@ done
 # read local.properties
 
 _LOCALPROPERTIES_FILE=$(dirname "$0")"/local.properties"
+echo "local properties $_LOCALPROPERTIES_FILE"
 if [ -f "$_LOCALPROPERTIES_FILE" ]
 then
     [ -r "$_LOCALPROPERTIES_FILE" ] || die "Fatal Error: $_LOCALPROPERTIES_FILE exists but is unreadable"
@@ -51,10 +52,11 @@ fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # ... use paths relative to current directory
-COCOS2DX_ROOT="$DIR/../../../.."
+COCOS2DX_ROOT="$DIR/../lib/"
 APP_ROOT="$DIR/.."
 APP_ANDROID_ROOT="$DIR"
 
+echo "CURRENT_DIR=$DIR"
 echo "NDK_ROOT = $NDK_ROOT"
 echo "COCOS2DX_ROOT = $COCOS2DX_ROOT"
 echo "APP_ROOT = $APP_ROOT"
@@ -103,3 +105,4 @@ else
     "$NDK_ROOT"/ndk-build -C "$APP_ANDROID_ROOT" $* \
         "NDK_MODULE_PATH=${COCOS2DX_ROOT}:${COCOS2DX_ROOT}/cocos2dx/platform/third_party/android/prebuilt"
 fi
+echo "build native script finished. Run ant debug."

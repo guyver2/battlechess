@@ -10,7 +10,7 @@
 #include "GameLayerScene.h"
 
 using namespace cocos2d;
-//using namespace cocos2d::extension;
+using namespace cocos2d::extension;
 
 bool IntroScene::init()
 {
@@ -19,8 +19,7 @@ bool IntroScene::init()
 		this->_layer = IntroLayer::create();
 		this->_layer->retain();
 		this->addChild(_layer);
-		
-		return true;
+        return true;
 	}
 	else
 	{
@@ -39,37 +38,46 @@ IntroScene::~IntroScene()
 
 bool IntroLayer::init()
 {
-	if ( CCLayerColor::initWithColor( ccc4(255,255,255,255) ) )
+	if ( CCLayerColor::initWithColor( ccc4(255,204,153,255) ) )
 	{
 		CCSize winSize = CCDirector::sharedDirector()->getWinSize();
         
-        //CCScale9Sprite * fieldSprite = CCScale9Sprite::create("field.png");
-        CCSprite *fieldSprite = CCSprite::create("field.png");
+        CCScale9Sprite * fieldSprite = CCScale9Sprite::create("field.png");
+        //CCScale9Sprite * fieldSprite = CCScale9Sprite::create("blank.png", CCRectMake(0, 0, 32, 27));
+        fieldSprite->setColor(ccc3(255,204,153));
+        //CCSprite *fieldSprite = CCSprite::create("field.png");
+        fieldSprite->setScale(0.7);
         fieldSprite->setPosition(ccp(winSize.width/2, winSize.height/2));
-		this->addChild(fieldSprite);
+		//this->addChild(fieldSprite);
+        
+       
+        cocos2d::CCLabelTTF* gameTitleLabel = CCLabelTTF::create("Welcome to BattleChess ","Artial", 15);
+		gameTitleLabel->setColor( ccc3(102, 51, 51) );
+		gameTitleLabel->setPosition( ccp(winSize.width/2, winSize.height/2 + fieldSprite->boundingBox().size.height) );
+		this->addChild(gameTitleLabel);
         
         this->_titleLabel = CCLabelTTF::create("Username: ","Artial", 15);
 		_titleLabel->setColor( ccc3(0, 0, 0) );
-		_titleLabel->setPosition( ccp(winSize.width/2, winSize.height/2 + fieldSprite->boundingBox().size.height) );
+		_titleLabel->setPosition( ccp(winSize.width/2 - fieldSprite->boundingBox().size.height/2, winSize.height/2 + fieldSprite->boundingBox().size.height/2 + 10) );
 		this->addChild(_titleLabel);
-
         
-        /* I couldn't get this to work
-        m_pEditName = CCEditBox::create(fieldSprite->boundingBox().size, fieldSprite);
+        std::string name = GameInfo::getUsername();
         
-        m_pEditName->setPosition(ccp(winSize.width/2, winSize.height/2));
+        _pEditName = CCEditBox::create(fieldSprite->boundingBox().size, fieldSprite);
+        _pEditName->setPosition(ccp(winSize.width/2, winSize.height/2));
+        _pEditName->setFontColor(ccRED);
+        _pEditName->setPlaceHolder(name.c_str());
+        _pEditName->setMaxLength(8);
+        _pEditName->setReturnType(kKeyboardReturnTypeDone);
+        _pEditName->setDelegate(this);
+        this->addChild(_pEditName);
         
-        m_pEditName->setFontColor(ccRED);
-        
-        m_pEditName->setPlaceHolder("Name:");
-        
-        m_pEditName->setMaxLength(8);
-        
-        m_pEditName->setReturnType(kKeyboardReturnTypeDone);
-        
-        //m_pEditName->setDelegate(this);
-        
-        this->addChild(m_pEditName);
+        /*
+        _swipe = CCSwipeGestureRecognizer::create();
+        _swipe->setTarget(this, callfuncO_selector(IntroLayer::didSwipe));
+        _swipe->setDirection(kSwipeGestureRecognizerDirectionRight | kSwipeGestureRecognizerDirectionLeft);
+        _swipe->setCancelsTouchesInView(true);
+        this->addChild(_swipe);
         */
         this->setTouchEnabled(true);
         
@@ -83,6 +91,38 @@ bool IntroLayer::init()
 	}
 }
 
+/**
+ * This method is called when the return button was pressed or the outside area of keyboard was touched.
+ * @param editBox The edit box object that generated the event.
+ */
+void IntroLayer::editBoxReturn(cocos2d::extension::CCEditBox* editBox) {
+    
+    if(_pEditName->getText() != NULL){
+        fprintf(stderr,"username: %s", _pEditName->getText());
+        cocos2d::CCUserDefault::sharedUserDefault()->setStringForKey("username", _pEditName->getText());
+    
+        CCScene * GameLayerScene = GameLayer::scene();
+        CCLog("replacing scene");
+        CCDirector::sharedDirector()->replaceScene( GameLayerScene );
+    }
+
+    
+};
+
+void IntroLayer::didSwipe(cocos2d::CCObject *swipeObj){
+    CCLog("swipe detected");
+    CCSwipe * swipe = (CCSwipe*)swipeObj;
+    CCPoint p = swipe->location;
+    
+    CCLOG("swiped x pos: %f, y pos: %f", p.x, p.y);
+    if(swipe->direction == kSwipeGestureRecognizerDirectionLeft){
+        CCLOG("swiped left");
+    } else {
+        CCLOG("swiped right");
+    }
+    
+}
+
 
 void IntroLayer::ccTouchesEnded(CCSet* touches, CCEvent* event)
 {
@@ -93,23 +133,24 @@ void IntroLayer::ccTouchesEnded(CCSet* touches, CCEvent* event)
     
 	CCLog("touched  x:%f, y:%f", location.x, location.y);
 
+    //CCScene * pScene = new TextInputTestScene();
+    
+    
 	CCScene * GameLayerScene = GameLayer::scene();
 
 	CCLog("replacing scene");
 
     CCDirector::sharedDirector()->replaceScene( GameLayerScene );
-
     
  
 }
 
 void IntroLayer::tick(float dt){
     
-    /*
-    if(m_pEditName->getText() != NULL){
-        fprintf(stderr,"text: %s", m_pEditName->getText());
-    }
-     */
+    
+    /*if(_pEditName->getText() != NULL){
+        fprintf(stderr,"text: %s", _pEditName->getText());
+    }*/
     
     
 }

@@ -7,21 +7,20 @@
 //
 
 #include "Board.h"
-#include "StringParser.h"
 #include "GameInfo.h"
 
 using namespace cocos2d;
 using namespace std;
 
 Board::Board(){
-
     reset();
-    
 }
 
 void Board::reset(){
     
     _winner = false;
+    
+    _taken.clear();
     
     _board[0][0]= "rb";
     _board[0][1]= "nb";
@@ -36,6 +35,12 @@ void Board::reset(){
         _board[1][i]= "pb";
         _board[6][i]= "pw";
     }
+    for(int i=2; i<=5; i++){
+        for(int j=0; j<8; j++)
+            _board[i][j] = "";
+    }
+    
+    
     _board[7][0]= "rw";
     _board[7][1]= "nw";
     _board[7][2]= "bw";
@@ -44,6 +49,7 @@ void Board::reset(){
     _board[7][5]= "bw";
     _board[7][6]= "nw";
     _board[7][7]= "rw";
+    
 
 }
 
@@ -202,6 +208,74 @@ void Board::setSelectedDest(int i, int j){
     _move._validDest = true;
 
 }
+
+std::string Board::toString(){
+    stringstream ss;
+    
+    for(int i=0; i<8; i++){
+        for(int j=0; j<8; j++){
+            if(i!=0 || j!=0)
+                ss << "_";
+            ss << _board[i][j];
+        }
+    }
+    ss << "#";
+    
+    for(int i=0; i<_taken.size();i++){
+        ss << _taken[i];
+        //quick fix to remove the last _
+        if(i==_taken.size()-1)
+            break;
+        ss << "_";
+    }
+    
+    //std::string::erase()?
+    
+    ss << "###n"; //ignore casteable, enpassant and winner for now
+    std::string boardStr = ss.str();
+    return boardStr;
+    //res = boardStr+'#'+takenStr+'#'+castleableStr+'#'+enpassantStr+'#'+winnerStr
+
+    /*
+     # dump as a string to ease portability with other apps
+	def toString(self, color=None):
+		visibility = [[True for i in xrange(8)] for j in xrange(8)]
+		if color : # hide if necessary
+			visibility = [[False for i in xrange(8)] for j in xrange(8)]
+			for i in xrange(8):
+				for j in xrange(8) :
+					if self.board[i][j].endswith(color) :
+						for di in xrange(-1,2):
+							for dj in xrange(-1,2):
+								if self.isIn(i+di, j+dj) :
+									visibility[i+di][j+dj] = True
+		boardStr = ''
+		for i in xrange(8):
+			for j in xrange(8) :
+				if not visibility[i][j] :
+					boardStr += '_' # 3 spaces
+				else :
+					boardStr += self.board[i][j]+'_'
+		boardStr = boardStr[:-1] # remove last '_'
+		takenStr = '_'.join(self.taken)
+		if color :
+			castleableStr = '_'.join([e for e in self.castleable if e.endswith(color)])
+		else :
+			castleableStr = '_'.join([e for e in self.castleable])
+		#todo only send enpassant if it's actually possible, otherwise we are leaking information
+		if color == 'b' and visibility[4][self.enpassant] == False:
+			enpassantStr = str(-1) 
+		elif color == 'w' and visibility[3][self.enpassant] == False:
+			enpassantStr = str(-1) 
+		else:
+			enpassantStr = str(self.enpassant)
+		if self.winner : winnerStr = self.winner
+		else : winnerStr = 'n'
+		res = boardStr+'#'+takenStr+'#'+castleableStr+'#'+enpassantStr+'#'+winnerStr
+		return res
+     */
+}
+
 /*
  format [board state]#[taken pieces]#[castleable pieces]#[winner]
  full message example (initial state as seen by white player) :
@@ -217,6 +291,14 @@ void Board::setSelectedDest(int i, int j){
 */
 void Board::fromString(std::string board){
   
+    //store board for replay
+    _collectedBoardStrings.push_back(board);
+    //
+    fromStringWithoutSave(board);
+}
+
+void Board::fromStringWithoutSave(std::string board){
+    
     std::vector<std::string> boardInfoVect = StringParser::split(board, '#');
     //we have 4 fields, board, taken pieces, casteable pieces and winner
     assert(boardInfoVect.size() == 5);
@@ -224,6 +306,7 @@ void Board::fromString(std::string board){
     boardInfoVect[0] = boardInfoVect[0] + "_";
     std::vector<std::string> boardVect = StringParser::split(boardInfoVect[0], '_');
     _taken = StringParser::split(boardInfoVect[1], '_');
+    std::sort(_taken.begin(),_taken.end());
     _casteable = StringParser::split(boardInfoVect[2], '_');
     std::istringstream ss(boardInfoVect[3]);
     ss >> _enpassant;
@@ -236,5 +319,136 @@ void Board::fromString(std::string board){
         for(int j=0; j<8; j++){
             _board[i][j] = boardVect[i*8 + j];
         }
+    }
+}
+
+
+std::vector< Board > Board::boardsFromStrings(){
+ 
+    std::vector< Board > replayBoards;
+    Board board;
+    for(int i=0; i < _collectedBoardStrings.size(); i++){
+        board.fromString(_collectedBoardStrings[i]);
+        replayBoards.push_back(board);
+    }
+    
+    return replayBoards;
+}
+
+std::vector< std::string > Board::boardsStringsFromMoves(std::string savedGameContent){
+
+    std::vector< std::string > boardsStrings;
+    std::istringstream iss(savedGameContent);
+    std::string line;
+    
+    reset();
+    std::string boardstr = this->toString();
+    boardsStrings.push_back(boardstr);
+
+    //remove header //TODO reassign it to gameInfo
+    std::getline(iss,line);
+    if(line.find("Vs.") == std::string::npos){
+        DEBUG2("Error reading url, header invalid (does not contain 'Vs.': %s. Aborting replay.", line.c_str());
+        return boardsStrings;
+    }
+    while (std::getline(iss, line))
+    {
+        //split
+        istringstream iss(line);
+        Move move;
+        //TODO check that iss is valid
+        iss >> move._originI;
+        iss >> move._originJ;
+        iss >> move._destI;
+        iss >> move._destJ;
+        this->move(move);
+        boardsStrings.push_back(this->toString());
+    }
+    return boardsStrings;
+}
+
+//not used //FIXME why build other Boards provokes the node destruction?
+std::vector< Board > Board::boardsFromMoves(std::string savedGameContent){
+
+    std::vector< Board > boards;
+    std::istringstream iss(savedGameContent);
+    std::string line;
+    Board boardAux;
+    
+    //remove header //TODO reassign it to gameInfo
+    std::getline(iss,line);
+    
+    while (std::getline(iss, line))
+    {
+        //split
+        istringstream iss(line);
+        Move move;
+        //TODO check that iss is valid
+        iss >> move._originI;
+        iss >> move._originJ;
+        iss >> move._destI;
+        iss >> move._destJ;
+        boardAux.move(move);
+        //todo this just sets the reference, we need to copy
+        boards.push_back(boardAux);
+    }
+    return boards;
+}
+
+std::string Board::castleInfo(int i, int j, int ii, int jj){
+    if(_board[i][j][0] == 'k') {
+            if(jj - j == 2){
+                if(_board[i][j][1] == 'w')
+                    return "rkw";
+                else
+                    return "rkb";
+            }else if( j - jj == 2) {
+                if(_board[i][j][1] == 'w')
+                    return "rqw";
+                else
+                    return "rqb";
+            }
+    }
+    return "";
+}
+
+void Board::move(const Move& move){
+    
+    int ii = move._destI;
+    int jj = move._destJ;
+    int i = move._originI;
+    int j = move._originJ;
+    //FIXME do I have to implement this too? Or the stored move is the actual valid move?
+    //res = self.getClosest(i,j,ii,jj,reach)
+    //FIXME some error testing would be nice to prevent EXC_BAD_ACCESS
+    if(_board[ii][jj] != "")
+        _taken.push_back(_board[ii][jj]);
+    
+    //if pawn, moved diagonally but nothing killed it means we had killed in passant at (i,jj) during game
+    if(_board[i][j][0] == 'p' && j != jj && _board[ii][jj] == "")
+        _board[i][jj] = "";
+     
+    //# replace destination with origin
+    _board[ii][jj] = _board[i][j];
+    _board[i][j] = "";
+     
+     //# if a pawn reached the end of the board, it becomse a queen
+     if(_board[ii][jj][0] == 'p' && (ii==0 || ii==7))
+         _board[ii][jj] = 'q'+ _board[ii][jj][1];
+     
+     //# if we were performing a castle, move the tower too
+    std::string whichRock = castleInfo(i,j,ii,jj);
+    if(whichRock == "rqb"){
+      _board[0][0] = "";
+     _board[0][3] = "rb";
+    } else if(whichRock == "rkb"){
+     _board[0][7] = "";
+     _board[0][5] = "rb";
+    } else if(whichRock == "rqw") {
+     _board[7][0] = "";
+     _board[7][3] = "rw";
+    } else if(whichRock == "rkw") {
+     _board[7][7] = "";
+     _board[7][5] = "rw";
     }
 }

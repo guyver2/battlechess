@@ -1,12 +1,12 @@
 #include "GameLayerScene.h"
-#include "GameOverScene.h"
+#include "IntroScene.h"
 #include "SimpleAudioEngine.h"
-#include "WaitingOpponentScene.h"
 
 using namespace cocos2d;
 using namespace std;
 
-const char *state_str[]={ "CONNECT",
+const char *state_str[]={
+    "CONNECT",
     "GETNICK",
     "GETCOLOR",
     "SENDNICK",
@@ -21,11 +21,13 @@ const char *state_str[]={ "CONNECT",
     "UNDECIDEDGAME",
     "OVER",
     "DECIDEWINNER",
+    "REPLAY",
     "RECONNECT" };
 
 GameLayer::GameLayer() : _state(GETNICK), _somethingChanged(true)
 {
 	CCLog("GameLayer Contructor...");
+    _replayBoardCount = 0;
 
 }
 
@@ -86,7 +88,7 @@ bool GameLayer::init()
 		// super init first
 		//////////////////////////////////////////////////////////////////////////
 
-		CC_BREAK_IF(! CCLayerColor::initWithColor( ccc4(255,255,255,255) ) );
+		CC_BREAK_IF(! CCLayerColor::initWithColor( ccc4(204,204,204,255) ) );
 
 		//////////////////////////////////////////////////////////////////////////
 		// add your codes below...
@@ -96,24 +98,67 @@ bool GameLayer::init()
         _screenSize = CCDirector::sharedDirector()->getVisibleSize();
         
 		// 1. Add a menu item with "X" image, which is clicked to quit the program.
-
+        cocos2d::CCArray* pMenuItems = cocos2d::CCArray::create();
+        
 		// Create a "close" menu item with close icon, it's an auto release object.
 		CCMenuItemImage *pCloseItem = CCMenuItemImage::create(
 			"CloseNormal.png",
 			"CloseSelected.png",
 			this,
 			menu_selector(GameLayer::menuCloseCallback));
+        CC_BREAK_IF(! pCloseItem);
+        pMenuItems->addObject(pCloseItem);
+
+        /*
+        CCMenuItemImage *pSoundItem = CCMenuItemImage::create(
+            "SoundOn.png",
+            "SoundOff.png",
+            this,
+            menu_selector(GameLayer::menuSoundCallback));
+        */
         
-		CC_BREAK_IF(! pCloseItem);
+        CCMenuItemSprite* p1 = CCMenuItemSprite::create(CCSprite::create("SoundOn.png"), CCSprite::create("SoundOff.png"));
+        CCMenuItemSprite* p2 = CCMenuItemSprite::create(CCSprite::create("SoundOff.png"), CCSprite::create("SoundOn.png"));
+        
+        _pSoundItem = CCMenuItemToggle::createWithTarget(this, menu_selector(GameLayer::menuSoundCallback), p1, p2,NULL);
+        CC_BREAK_IF(! _pSoundItem);
+        //TODO get sound from default user
+        _pSoundItem->setSelectedIndex(0);
+        pMenuItems->addObject(_pSoundItem);
+        
+        _pSettingsItem = CCMenuItemImage::create(
+            "SettingsOn.png",
+            "SettingsOff.png",
+            this,
+            menu_selector(GameLayer::menuSettingsCallback));
+        CC_BREAK_IF(! _pSettingsItem);
+        pMenuItems->addObject(_pSettingsItem);
+                              
+        _pHomeItem = CCMenuItemImage::create(
+            "HomeOn.png",
+            "HomeOff.png",
+            this,
+            menu_selector(GameLayer::menuHomeCallback));
+		CC_BREAK_IF(! _pHomeItem);
+        pMenuItems->addObject(_pHomeItem);
+        
+        CCMenu* pMenu = CCMenu::createWithArray(pMenuItems);
         
 		// Place the menu item bottom-right conner.
         CCPoint origin = CCDirector::sharedDirector()->getVisibleOrigin();
         
-		pCloseItem->setPosition(ccp(origin.x + _screenSize.width - pCloseItem->getContentSize().width/2,
-                                    origin.y + pCloseItem->getContentSize().height/2));
+        CCPoint lastItemPosition = ccp(origin.x + _screenSize.width - pCloseItem->getContentSize().width/2,
+                                       origin.y + pCloseItem->getContentSize().height/2);
+        //TODO 'for' this
+		pCloseItem->setPosition(lastItemPosition);
+        lastItemPosition = lastItemPosition - ccp(_pSoundItem->getContentSize().width,0);
+        _pSoundItem->setPosition(lastItemPosition);
+        lastItemPosition = lastItemPosition - ccp(_pSettingsItem->getContentSize().width,0);
+        _pSettingsItem->setPosition(lastItemPosition);
+        lastItemPosition = lastItemPosition - ccp(_pHomeItem->getContentSize().width,0);
+		_pHomeItem->setPosition(lastItemPosition);
 
 		// Create a menu with the "close" menu item, it's an auto release object.
-		CCMenu* pMenu = CCMenu::create(pCloseItem, NULL);
 		pMenu->setPosition(CCPointZero);
 		CC_BREAK_IF(! pMenu);
 
@@ -128,30 +173,66 @@ bool GameLayer::init()
          _label->setPosition( ccp(_screenSize.width/2, _screenSize.height/2) );
          _tmpTextInfoNode->addChild(_label);
          this->addChild(_tmpTextInfoNode, Board::kForeground);
-        
-        _turnInfoNode = new cocos2d::CCNode();
-        _turnLabel = CCLabelTTF::create("","Artial", 10);
-        _turnLabel->setColor( ccc3(255, 0, 0) );
-        _turnLabel->setPosition( board2screen(-1,0) );
-        _turnLabel->setAnchorPoint(ccp(0,1));
-        _turnInfoNode->addChild(_turnLabel);
-        this->addChild(_turnInfoNode, Board::kForeground);
-        
+
+        _infoNode = new cocos2d::CCNode();
+        _subtitleLabel = CCLabelTTF::create("","Artial", 12);
+        _subtitleLabel->setColor( ccc3(255, 0, 0) );
+        CCPoint subtitlePoint = board2screen(-1,0);
+        subtitlePoint.y -= 5;
+        _subtitleLabel->setPosition( subtitlePoint );
+        _subtitleLabel->setAnchorPoint(ccp(0,1));
+        _infoNode->addChild(_subtitleLabel);
+
+        std::string title = _gameInfo.playerName + " Game";
+        _titleLabel = CCLabelTTF::create(title.c_str(), "Artial", 24);
+        _titleLabel->setColor( ccc3(0, 0, 0) );
+        CCPoint titlePoint = board2screen(-1,3);
+        titlePoint.y += 15;
+        //titlePoint.y = _screenSize.height/2;
+        _titleLabel->setPosition( titlePoint );
+        _titleLabel->setAnchorPoint(ccp(0,0.5f));
+        _infoNode->addChild(_titleLabel);
+
+        this->addChild(_infoNode, Board::kForeground);
+        DEBUG2("TEST");
+
+        //_backgroundGameSprite = CCSprite::createWithSpriteFrameName("background.png");
+        _backgroundGameSprite = CCSprite::create("background.png");
+        if(_backgroundGameSprite) {
+
+            _backgroundGameSprite->setScale(max(_screenSize.width/_backgroundGameSprite->boundingBox().size.width,_screenSize.height/_backgroundGameSprite->boundingBox().size.height));
+
+            _backgroundGameSprite->setOpacity(100);
+            _backgroundGameSprite->setPosition(ccp(_screenSize.width/2, _screenSize.height/2));
+            _backgroundGameSprite->setVisible(true);
+
+            this->addChild(_backgroundGameSprite, Board::kBackground);
+        } else {
+            DEBUG2("Background image could not be loaded. Ignoring it.");
+        }
+
         //todo MAYBE remove all children destroys the sprite //indeed
         boardPopulate(_board);
 
-        /*
-         CCSprite * sprite = CCSprite::createWithSpriteFrameName("replay.png");
-         sprite->setPosition(ccp(_screenSize.width/2, _screenSize.height/2 - 32));
-         sprite->setAnchorPoint(ccp(1,0));
-         this->addChild(sprite, Board::kForeground);
-         */
+        _replayGameSprite = CCSprite::createWithSpriteFrameName("replay.png");
+        _replayGameSprite->setAnchorPoint(ccp(1,0));
+        _replayGameSprite->setPosition(ccp(_screenSize.width/2, _screenSize.height/2 - 32));
+        _replayGameSprite->setVisible(false);
+        this->addChild(_replayGameSprite, Board::kForeground);
+        
         _newGameSprite = CCSprite::createWithSpriteFrameName("new_game.png");
         _newGameSprite->setAnchorPoint(ccp(0,0));
         _newGameSprite->setPosition(ccp(_screenSize.width/2, _screenSize.height/2 - 32));
         _newGameSprite->setVisible(false);
         this->addChild(_newGameSprite, Board::kForeground);
         
+        //TODO implement sender if sprite cliecked, go to new game or replay
+        _swipe = CCSwipeGestureRecognizer::create();
+        _swipe->setTarget(this, callfuncO_selector(GameLayer::didSwipe));
+        _swipe->setDirection(kSwipeGestureRecognizerDirectionRight | kSwipeGestureRecognizerDirectionLeft);
+        _swipe->setCancelsTouchesInView(true);
+        this->addChild(_swipe);
+
 		this->setTouchEnabled(true);
 
 		// use updateGame instead of update, otherwise it will conflit with SelectorProtocol::update
@@ -162,7 +243,8 @@ bool GameLayer::init()
 		//CocosDenshion::SimpleAudioEngine::sharedEngine()->playBackgroundMusic("background-music-aac.wav", true);
 
 		bRet = true;
-        
+        DEBUG2("TESTEND");
+
 	} while (0);
 
 	return bRet;
@@ -205,18 +287,25 @@ void GameLayer::createBoard(){
 
 }
 
+void GameLayer::nextBoard(){
+    assert(_board._collectedBoardStrings.size() > 0);
+    _replayBoardCount = (_replayBoardCount+1)%_board._collectedBoardStrings.size();
+    _board.fromStringWithoutSave(_board._collectedBoardStrings[_replayBoardCount]);
+}
+
+void GameLayer::previousBoard(){
+    assert(_board._collectedBoardStrings.size() > 0);
+    _replayBoardCount = (_replayBoardCount-1+_board._collectedBoardStrings.size())%_board._collectedBoardStrings.size();
+    _board.fromStringWithoutSave(_board._collectedBoardStrings[_replayBoardCount]);
+}
+
+
 void GameLayer::boardPopulate(const Board& board){
     
     //FIXME maybe we can move sprites instead of destroying and recreating (deal with pawn promotion thought)
     _gameBatchNode->removeAllChildrenWithCleanup(true);
-    /*
-    _boardSprite = CCSprite::createWithSpriteFrameName("board.png");
-    _boardSprite->setPosition(ccp(_screenSize.width * 0.5f, _screenSize.height * 0.5f));
-    _gameBatchNode->addChild(_boardSprite, Board::kBoard);ç
-    */
-
+  
     CCSprite * sprite;
-    
     CCPoint pieceAnchorPoint = ccp(0,1);
 
     int takenW = 0;
@@ -225,11 +314,23 @@ void GameLayer::boardPopulate(const Board& board){
         std::string piece = _board._taken[i] + ".png";
         sprite = CCSprite::createWithSpriteFrameName(piece.c_str());
         sprite->setAnchorPoint(pieceAnchorPoint);
+        float scale = 0.5f;
+        sprite->setScale(scale);
         if(piece.c_str()[1] == 'w'){
-            sprite->setPosition(board2screen(takenW/2, -2 + takenW%2));
+            //horizontal
+            //sprite->setPosition(board2screen(takenW/2, -2 + takenW%2));
+            CCPoint screenPoint = board2screen(0,0);
+            screenPoint.y += _squaresize/2 + 10;
+            screenPoint.x += takenW*_squaresize/2;
+            sprite->setPosition(screenPoint);
             takenW++;
         }else{
-            sprite->setPosition(board2screen(7 - takenB/2, 8 + takenB%2));
+            //horizontal
+            //sprite->setPosition(board2screen(7 - takenB/2, 8 + takenB%2));
+            CCPoint screenPoint = board2screen(8,0);
+            screenPoint.y += -_squaresize/2 + 10;
+            screenPoint.x += takenB*_squaresize/2;
+            sprite->setPosition(screenPoint);
             takenB++;
         }
         _gameBatchNode->addChild(sprite, Board::kPieces);
@@ -237,28 +338,35 @@ void GameLayer::boardPopulate(const Board& board){
 
     for(int j=0; j<8; j++){
         for(int i=0; i<8; i++){
-            if((_state != REPLAY &&_state != WINGAME && _state != LOSEGAME) && board.foggy(i,j,_gameInfo.playerColor)){
-                sprite = CCSprite::createWithSpriteFrameName("blank.png");
-                sprite->setAnchorPoint(pieceAnchorPoint);
-                sprite->setPosition(board2screen(i,j));
-                sprite->setOpacity(200);
-                sprite->setColor(ccc3(0,0,0));
-                _gameBatchNode->addChild(sprite, Board::kBoard);
-            }else{
-                string piece = board._board[i][j];
-                if(piece == "")
-                    continue;
-                piece += ".png";
-                sprite = CCSprite::createWithSpriteFrameName(piece.c_str());
-                sprite->setAnchorPoint(pieceAnchorPoint);
-                sprite->setPosition(board2screen(i,j));
-                if(_board._move._validOrigin && _board._move._originI == i && _board._move._originJ == j){
-                    sprite->setOpacity(100);
-                    sprite->setColor(ccc3(255,0,0));
-                }
-                _gameBatchNode->addChild(sprite, Board::kPieces);
+            if(_state != WINGAME && _state != LOSEGAME){
+                char color;
+                if(_state == REPLAY)
+                    color = (_replayBoardCount%2 == 0 ? 'w' : 'b' );
+                else
+                    color = _gameInfo.playerColor;
                 
+                if(board.foggy(i,j,color)){
+                    sprite = CCSprite::createWithSpriteFrameName("blank.png");
+                    sprite->setAnchorPoint(pieceAnchorPoint);
+                    sprite->setPosition(board2screen(i,j));
+                    sprite->setOpacity(100);
+                    sprite->setColor(ccc3(0,0,0));
+                    _gameBatchNode->addChild(sprite, Board::kBoard);
+                }
             }
+            string piece = board._board[i][j];
+            if(piece == "")
+                continue;
+            piece += ".png";
+            sprite = CCSprite::createWithSpriteFrameName(piece.c_str());
+            sprite->setAnchorPoint(pieceAnchorPoint);
+            sprite->setPosition(board2screen(i,j));
+            if(_board._move._validOrigin && _board._move._originI == i && _board._move._originJ == j){
+                sprite->setOpacity(100);
+                sprite->setColor(ccc3(255,0,0));
+            }
+            _gameBatchNode->addChild(sprite, Board::kPieces);
+            
         }
     }
     
@@ -288,16 +396,16 @@ void GameLayer::boardPopulate(const Board& board){
     //FIXME move the game info to somewhere else
     if(_state == MYTURN) {
         if(_gameInfo.playerColor == 'w')
-            _turnLabel->setString(GameInfo::WHITE.c_str());
+            _subtitleLabel->setString(GameInfo::WHITE.c_str());
         else
-            _turnLabel->setString(GameInfo::BLACK.c_str());
+            _subtitleLabel->setString(GameInfo::BLACK.c_str());
     }else if(_state == HISTURN) {
         if(_gameInfo.playerColor == 'w')
-            _turnLabel->setString(GameInfo::BLACK.c_str());
+            _subtitleLabel->setString(GameInfo::BLACK.c_str());
         else
-            _turnLabel->setString(GameInfo::WHITE.c_str());
+            _subtitleLabel->setString(GameInfo::WHITE.c_str());
     }else{
-        _turnLabel->setString("");
+        //_subtitleLabel->setString("");
     }
     
 }
@@ -310,6 +418,49 @@ void GameLayer::menuCloseCallback(CCObject* pSender)
 #else
     CCDirector::sharedDirector()->end();
 #endif
+}
+void GameLayer::menuSoundCallback(CCObject* pSender)
+{
+    //TODO use setEffectVolume(0) and setBackgroundMusicVolume(0)
+    
+    bool sound = cocos2d::CCUserDefault::sharedUserDefault()->getBoolForKey("sound", false);
+    cocos2d::CCUserDefault::sharedUserDefault()->setBoolForKey("sound", !sound);
+    if(sound)
+        _pSoundItem->setSelectedIndex(0);
+    else
+        _pSoundItem->setSelectedIndex(1);
+
+
+}
+void GameLayer::menuSettingsCallback(CCObject* pSender)
+{
+    changeState(OVER);
+    IntroScene * IntroScene = IntroScene::create();
+    CCDirector::sharedDirector()->replaceScene( IntroScene );
+
+}
+void GameLayer::menuHomeCallback(CCObject* pSender)
+{
+    changeState(OVER);
+    CCScene * gameScene = GameLayer::scene();
+    CCDirector::sharedDirector()->replaceScene( gameScene );
+
+}
+
+void GameLayer::didSwipe(cocos2d::CCObject *swipeObj){
+    CCSwipe * swipe = (CCSwipe*)swipeObj;
+    CCPoint p = swipe->location;
+    
+    if(_state == REPLAY) {
+        _somethingChanged = true;
+        if(swipe->direction == kSwipeGestureRecognizerDirectionLeft){
+            CCLOG("swiped left");
+            nextBoard();
+        } else {
+            CCLOG("swiped right");
+            previousBoard();
+        }
+    }
 }
 
 
@@ -326,7 +477,7 @@ void GameLayer::ccTouchesEnded(CCSet* touches, CCEvent* event)
 	CCPoint location = touch->getLocation();
     
 	CCLog("touched  x:%f, y:%f", location.x, location.y);
-    
+
     _somethingChanged = true;
     
     switch(_state){
@@ -367,8 +518,37 @@ void GameLayer::ccTouchesEnded(CCSet* touches, CCEvent* event)
         case UNDECIDEDGAME:
         case OVER:
         case DECIDEWINNER:
+            if (_newGameSprite->boundingBox().containsPoint(location))
             //FIXME maybe we can do something else rather than replacing the scnee with a new one
-            CCDirector::sharedDirector()->replaceScene( GameLayer::scene() );
+                CCDirector::sharedDirector()->replaceScene( GameLayer::scene() );
+            else if(_replayGameSprite->boundingBox().containsPoint(location)){
+                 std::string content;
+                _ssSocket.openUrl(_gameInfo.gameUrl, content);
+                if(content == "") {
+                    DEBUG2("Connection failed. Defaulting to same scene.");
+                    _label->setString("Replay connection failed.");
+                    _label->setVisible(true);
+                    break;
+                }
+                //retrieve all board strings //FIXME creating Boards causes error on destructor
+                _board._collectedBoardStrings = _board.boardsStringsFromMoves(content);
+                //go to last board
+                _replayBoardCount = _board._collectedBoardStrings.size()-1;
+                
+                //_replayBoards = _board.boardsFromStrings();
+                _newGameSprite->setVisible(false);
+                _replayGameSprite->setVisible(false);
+                _label->setVisible(false);
+                _subtitleLabel->setString("Swipe left/right for replay");
+                _subtitleLabel->setVisible(true);
+                changeState(REPLAY);
+            } else {
+                DEBUG2("Clicked somewhere else. Defaulting to new game.");
+                CCDirector::sharedDirector()->replaceScene( GameLayer::scene() );
+            }
+            break;
+        case REPLAY:
+            
             break;
         default:
             //do nothing for now
@@ -397,7 +577,11 @@ void GameLayer::updateGame(float dt)
             break;
         case CONNECT:
         	CCLog("About to connect");
+#if USELOCALHOST
+            if(_ssSocket.ssconnect("localhost",8887) >= 0){
+#else
             if(_ssSocket.ssconnect("sxbn.org",8887) >= 0){
+#endif
             	CCLog("Connected starting thread...");
                 _ssSocket.start();
                 changeState( GETCOLOR );
@@ -423,18 +607,13 @@ void GameLayer::updateGame(float dt)
                     break;
                 }
                 fprintf(stderr,"I'll be player %s\n", packet.body.c_str());
-                if(packet.body == GameInfo::WHITE)
-                    _gameInfo.playerColor = 'w';
-                else
-                    _gameInfo.playerColor = 'b';
-
+                _gameInfo.setPlayerColor(packet.body);
                 //CCLog("Going to state SENDNICK...");
                 changeState( SENDNICK );
             }
             break;
         case SENDNICK:
             {
-                _gameInfo.playerName = "test";
                 packet = Packet(std::string("NICK"),_gameInfo.playerName);
                 _ssSocket.sendPacket(packet);
 
@@ -477,7 +656,8 @@ void GameLayer::updateGame(float dt)
                     break;
                 }
                 _gameInfo.opponentName = packet.body;
-                //CCLog("Going to state MYTURN/HISTURN...");
+                
+                _titleLabel->setString((_gameInfo.playerName + " vs. " + _gameInfo.opponentName).c_str());
                 if(_gameInfo.playerColor == 'w')
                     changeState( MYTURN );
                 else
@@ -559,7 +739,8 @@ void GameLayer::updateGame(float dt)
             //retrieve board
             if(_ssSocket.getPacket(packet)){
 
-                CocosDenshion::SimpleAudioEngine::sharedEngine()->playEffect("pew-pew-lei.wav");
+                if(cocos2d::CCUserDefault::sharedUserDefault()->getBoolForKey("sound", true))
+                    CocosDenshion::SimpleAudioEngine::sharedEngine()->playEffect("pew-pew-lei.wav");
                 if(packet.header == "OVER"){
                     changeState( OVER );
                     break;
@@ -582,16 +763,19 @@ void GameLayer::updateGame(float dt)
             _label->setString("You Won.");
             _label->setVisible(true);
             _newGameSprite->setVisible(true);
+            _replayGameSprite->setVisible(true);            
             break;
         case LOSEGAME:
             _label->setString("You Lost.");
             _label->setVisible(true);
             _newGameSprite->setVisible(true);
+            _replayGameSprite->setVisible(true);
             break;
         case UNDECIDEDGAME:
             _label->setString("Undecided game.");
             _label->setVisible(true);
             _newGameSprite->setVisible(true);
+            _replayGameSprite->setVisible(true);
             break;
         case OVER:
         case DECIDEWINNER:
@@ -604,6 +788,9 @@ void GameLayer::updateGame(float dt)
                 changeState( LOSEGAME );
             else
                 changeState( UNDECIDEDGAME );
+            break;
+        case REPLAY:
+            //DEBUG2("Replay state\n");
             break;
         default:
             assert(!"Unrecognized state!\n");

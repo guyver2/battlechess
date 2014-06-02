@@ -120,12 +120,12 @@
 		<link>
 			<name>Classes</name>
 			<type>2</type>
-			<location>/Users/monso/code/android/cocos2d-x-2.2.3/samples/Cpp/BattleChess/Classes</location>
+			<location>/Users/monso/code/battlechess/battlechess/app/BattleChess/Classes</location>
 		</link>
 		<link>
 			<name>cocos2dx</name>
 			<type>2</type>
-			<location>/Users/monso/code/android/cocos2d-x-2.2.3/cocos2dx</location>
+			<location>/Users/monso/code/battlechess/battlechess/app/BattleChess/lib/cocos2dx</location>
 		</link>
 		<link>
 			<name>cocosdenshion</name>

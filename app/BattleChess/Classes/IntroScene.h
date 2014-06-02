@@ -12,12 +12,12 @@
 #include <iostream>
 #include "cocos2d.h"
 #include "SocketService.h"
-//#include "../extensions/cocos-ext.h"
+#include "CCSwipeGestureRecognizer.h"
+#include "cocos-ext.h"
 
-class IntroLayer : public cocos2d::CCLayerColor
+class IntroLayer : public cocos2d::CCLayerColor, public cocos2d::extension::CCEditBoxDelegate
 {
 public:
-    //cocos2d::extension::CCEditBox * m_pEditName;
     IntroLayer():_label(NULL) {};
     virtual ~IntroLayer();
     bool init();
@@ -26,6 +26,14 @@ public:
     void IntroDone();
     void ccTouchesEnded(cocos2d::CCSet* touches, cocos2d::CCEvent* event);
     void tick(float dt);
+    
+    CCSwipeGestureRecognizer * _swipe;
+    void didSwipe(cocos2d::CCObject *swipeObj);
+    
+    cocos2d::extension::CCEditBox * _pEditName;
+    void editboxEventHandler();
+    
+    void editBoxReturn(cocos2d::extension::CCEditBox* editBox);
     
     CC_SYNTHESIZE_READONLY(cocos2d::CCLabelTTF*, _label, Label);
     CC_SYNTHESIZE_READONLY(cocos2d::CCLabelTTF*, _titleLabel, TitleLabel);
@@ -44,6 +52,7 @@ public:
     CREATE_FUNC(IntroScene);
     
     CC_SYNTHESIZE_READONLY(IntroLayer*, _layer, Layer);
+    
 private:
     SocketService * ssSocket;
 };

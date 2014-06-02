@@ -14,7 +14,7 @@
 
         <activity android:name=".BattleChess"
                   android:label="@string/app_name"
-                  android:screenOrientation="landscape"
+                  android:screenOrientation="portrait"
                   android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
                   android:configChanges="orientation">
             <intent-filter>

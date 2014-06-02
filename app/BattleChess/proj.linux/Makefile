@@ -21,7 +21,7 @@ SOURCES = main.cpp \
         ../Classes/GameInfo.h    \
         ../Classes/Packet.h
 
-COCOS_ROOT = ../../../..
+COCOS_ROOT = ../lib
 include $(COCOS_ROOT)/cocos2dx/proj.linux/cocos2dx.mk
 
 SHAREDLIBS += -lcocos2d -lcocosdenshion

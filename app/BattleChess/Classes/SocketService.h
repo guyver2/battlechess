@@ -28,6 +28,9 @@
 #include <sys/wait.h>
 #include <signal.h>
 
+//#include "CCHttpRequest.h"
+//#include "CCNetwork.h"
+
 #ifdef _WINDOWS_
 #else
 //TODO find out how to protect queues...
@@ -70,6 +73,7 @@ public:
     bool sendMove(int originI, int originJ, int destI, int destJ);
 
     //replay
+    void openUrl(const std::string& url, std::string& content);
     void fetchMoves(std::string url, std::vector<std::string> moves);
     
     //multithreading

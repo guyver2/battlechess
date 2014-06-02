@@ -4,3 +4,7 @@
 *.pyc
 BattleChess.sublime-*
 games
+obj
+build
+assets
+bin

@@ -17,15 +17,13 @@ public:
     std::string opponentName;
     std::string gameUrl;
     char playerColor;
+    char opponentColor;
     static const std::string WHITE;
     static const std::string BLACK;
-    GameInfo(){
-        playerName = "defaultName";
-        opponentName = "defaultOpponentName";
-        gameUrl = "http://sxbn.org";
-        playerColor = 'n';
-    };
+    GameInfo();
     GameInfo(std::string playerName, std::string opponentName, std::string gameUrl, std::string color);
+    void setPlayerColor(std::string myColor);
+    static std::string getUsername();
 };
 
 #endif /* defined(__SimpleGame__GameInfo__) */

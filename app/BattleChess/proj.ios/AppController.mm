@@ -53,7 +53,9 @@ static AppDelegate s_sharedApplication;
     
     // Use RootViewController manage EAGLView 
     viewController = [[RootViewController alloc] initWithNibName:nil bundle:nil];
-    viewController.wantsFullScreenLayout = YES;
+    //default
+    //viewController.wantsFullScreenLayout = YES;
+    viewController.wantsFullScreenLayout = NO;
     viewController.view = __glView;
 
     // Set RootViewController to window
@@ -70,7 +72,9 @@ static AppDelegate s_sharedApplication;
     
     [window makeKeyAndVisible];
 
-    [[UIApplication sharedApplication] setStatusBarHidden: YES];
+    //default
+    //[[UIApplication sharedApplication] setStatusBarHidden: YES];
+    [[UIApplication sharedApplication] setStatusBarHidden: NO];
     
     cocos2d::CCApplication::sharedApplication()->run();
     return YES;

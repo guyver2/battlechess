@@ -5,8 +5,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DLINUX -MMD -fPIC ")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -fPIC -O3 ")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -fPIC -g3 -O1")
 
-set(COCOS_ROOT ../../../.. CACHE STRING "Cocos root dir /cocos2dx/..")
-set(COCOS_LIB_ROOT ../../../../.. CACHE STRING "Cocos root dir /cocos2dx/..")
+set(COCOS_ROOT ../lib/ CACHE STRING "Cocos root dir /cocos2dx/..")
+set(COCOS_LIB_ROOT ../lib/ CACHE STRING "Cocos root dir /cocos2dx/..")
 #todo link to release/debug library depending on cmake build
 include_directories(.. ../Classes ${COCOS_ROOT}/cocos2dx/proj.linux/)
 

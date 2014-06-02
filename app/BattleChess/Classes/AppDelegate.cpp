@@ -4,7 +4,6 @@
 
 USING_NS_CC;
 
-
 AppDelegate::AppDelegate() {
 
 }
@@ -20,40 +19,53 @@ bool AppDelegate::applicationDidFinishLaunching() {
     pDirector->setOpenGLView(CCEGLView::sharedOpenGLView());
     
     CCSize screenSize = CCEGLView::sharedOpenGLView()->getFrameSize();
-    CCSize designSize = CCSizeMake(480, 320);
+
+    //default
+    //CCSize designSize = CCSizeMake(480, 320);
+    CCSize designSize = CCSizeMake(450, 680);
+    
     std::vector<std::string> searchPaths;
     
-    if (screenSize.height > 320)
+    //TODO create the different image resolutions
+    if (screenSize.height > designSize.height)
     {
+    	CCLOG("using high res sd");
         searchPaths.push_back("hd");
         searchPaths.push_back("sd");
-        pDirector->setContentScaleFactor(640.0f/designSize.height);
+        pDirector->setContentScaleFactor(designSize.height/640.0f);
+
     }
     else
     {
+    	CCLOG("using low res sd");
         searchPaths.push_back("sd");
-        pDirector->setContentScaleFactor(320.0f/designSize.height);
+        pDirector->setContentScaleFactor(designSize.height/640.0f);
     }
     
+    CCLOG("screen size %f x %f", screenSize.width, screenSize.height);
+
     CCFileUtils::sharedFileUtils()->setSearchPaths(searchPaths);
     
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT) || (CC_TARGET_PLATFORM == CC_PLATFORM_WP8)
     CCEGLView::sharedOpenGLView()->setDesignResolutionSize(designSize.width, designSize.height, kResolutionShowAll);
 #else
-	CCEGLView::sharedOpenGLView()->setDesignResolutionSize(designSize.width, designSize.height, kResolutionNoBorder);
+	CCEGLView::sharedOpenGLView()->setDesignResolutionSize(designSize.width, designSize.height, kResolutionShowAll);
 #endif
 
     // turn on display FPS
     pDirector->setDisplayStats(false);
 
     // set FPS. the default value is 1.0/60 if you don't call this
-    pDirector->setAnimationInterval(1.0 / 10);
+    pDirector->setAnimationInterval(1.0 / 40);
 
-    // create a scene. it's an autorelease object
-    //CCScene *pScene = GameLayer::scene();
-    //IntroScene *introScene =
-    CCScene *pScene = IntroScene::create();
-
+    CCScene *pScene;
+    
+    if(cocos2d::CCUserDefault::sharedUserDefault()->getStringForKey("username") == "") {
+        // create a scene. it's an autorelease object
+        pScene = IntroScene::create();
+    } else {
+        pScene = GameLayer::scene();
+    }
     // run
     pDirector->runWithScene(pScene);
 

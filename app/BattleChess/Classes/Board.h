@@ -17,6 +17,24 @@
 
 typedef std::pair<int, int> Position;
 
+class StringParser {
+public:
+    static std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
+        std::stringstream ss(s);
+        std::string item;
+        while (std::getline(ss, item, delim)) {
+            elems.push_back(item);
+        }
+        return elems;
+    }
+    
+    static std::vector<std::string> split(const std::string &s, char delim) {
+        std::vector<std::string> elems;
+        split(s, delim, elems);
+        return elems;
+    }
+};
+
 class Move{
 public:
     int _originI;
@@ -75,11 +93,22 @@ public:
     std::string getSelectedDestination(){
         return _board[_move._destI][_move._destJ];
     }
+    std::string toString();
+    void fromStringWithoutSave(std::string boardStr);
     void fromString(std::string boardStr);
   
     bool isFree(int i, int j) const;
     PColor isColor(int i, int j);
+    
+    std::vector<std::string> _collectedBoardStrings;
+    std::vector< Board > boardsFromStrings();
+
+    //not used
+    std::vector< std::string > boardsStringsFromMoves(std::string savedGameContent);
+    static std::vector< Board > boardsFromMoves(std::string savedGameContent);
+    void move(const Move& move);
 private:
+    std::string castleInfo(int i, int j, int ii,int jj);
     void updatePossiblePositions();
     bool contains(std::vector<std::string> v, std::string x ){
         return std::find(v.begin(), v.end(), x) != v.end();

@@ -7,7 +7,9 @@
 #include "Board.h"
 #include "SocketService.h"
 #include "GameInfo.h"
+#include "CCSwipeGestureRecognizer.h"
 
+#define USELOCALHOST 0
 
 class GameLayer : public cocos2d::CCLayerColor
 {
@@ -38,11 +40,15 @@ public:
     Board _board;
     cocos2d::CCSpriteBatchNode * _gameBatchNode;
     cocos2d::CCSpriteBatchNode * _gameBatchNodeBoard;
-    cocos2d::CCNode * _turnInfoNode;
+    cocos2d::CCNode * _infoNode;
     cocos2d::CCNode * _tmpTextInfoNode;
     cocos2d::CCSprite * _newGameSprite;
+    cocos2d::CCSprite * _replayGameSprite;
+    cocos2d::CCSprite * _backgroundGameSprite;
     
-    std::vector<Board> replayBoards;
+    cocos2d::CCMenuItemToggle * _pSoundItem;
+    cocos2d::CCMenuItemImage * _pSettingsItem;
+    cocos2d::CCMenuItemImage * _pHomeItem;
     
     //cocos2d::CCArray * _players;
     //cocos2d::CCArray * _takenPieces;
@@ -58,7 +64,7 @@ public:
     
     CC_SYNTHESIZE_READONLY(cocos2d::CCLabelTTF*, _infoLabel, InfoLabel);
     CC_SYNTHESIZE_READONLY(cocos2d::CCLabelTTF*, _titleLabel, TitleLabel);
-    CC_SYNTHESIZE_READONLY(cocos2d::CCLabelTTF*, _turnLabel, TurnLabel);
+    CC_SYNTHESIZE_READONLY(cocos2d::CCLabelTTF*, _subtitleLabel, TurnLabel);
     CC_SYNTHESIZE_READONLY(cocos2d::CCLabelTTF*, _label, Label);
     
     GameLayer();
@@ -77,6 +83,9 @@ public:
 
     // a selector callback
     virtual void menuCloseCallback(cocos2d::CCObject* pSender);
+    virtual void menuSoundCallback(cocos2d::CCObject* pSender);
+    virtual void menuSettingsCallback(cocos2d::CCObject* pSender);
+    virtual void menuHomeCallback(cocos2d::CCObject* pSender);
 
     // implement the "static node()" method manually
     static GameLayer* create();
@@ -85,11 +94,16 @@ public:
     void updateGame(float dt);
 
     void registerWithTouchDispatcher();
+    CCSwipeGestureRecognizer * _swipe;
+    void didSwipe(cocos2d::CCObject *swipeObj);
     void ccTouchesEnded(cocos2d::CCSet* touches, cocos2d::CCEvent* event);
     void ccTouchesMoved(cocos2d::CCSet* touches, cocos2d::CCEvent* event);
 
+    void nextBoard();
+    void previousBoard();
     
 protected:
+    int _replayBoardCount;
     int _squaresize;
 
 };

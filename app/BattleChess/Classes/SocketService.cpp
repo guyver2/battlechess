@@ -21,13 +21,33 @@
 #include <pthread.h>
 #endif
 
+#include "curl/curl.h"
 #include "SocketService.h"
+//#include "CCHttpRequest.h"
+//#include "CCNetwork.h"
 
 #define USEMUTEX 0
 
 #if(USEMUTEX)
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 #endif
+
+//using namespace cocos2d::extension;
+
+//FIXME find a better way to use curl
+std::string data; //will hold the url's contents
+
+size_t writeCallback(char* buf, size_t size, size_t nmemb, void* up)
+{ //callback must have this declaration
+    //buf is a pointer to the data that curl has for us
+    //size*nmemb is the size of the buffer
+    
+    for (int c = 0; c<size*nmemb; c++)
+    {
+        data.push_back(buf[c]);
+    }
+    return size*nmemb; //tell curl how many bytes we handled
+}
 
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
@@ -359,6 +379,54 @@ void* SocketService::ssRequest(void *data)
     return NULL;
 }
 #endif // _WINDOWS_
+
+void SocketService::openUrl(const std::string& url, std::string& content){
+   
+    //FIXME get the bloody extensions working
+    /*
+    CCHttpRequest* request = new CCHttpRequest();
+    request->setUrl("http://just-make-this-request-failed.com");
+    request->setRequestType(CCHttpRequest::kHttpGet);
+    request->setResponseCallback(this, httpresponse_selector(HttpClientTest::onHttpRequestCompleted));
+    request->setTag("GET test1");
+    CCHttpClient::getInstance()->send(request)
+    //CCNetwork::httpRequest(this, "http://www.cocos2d-x.org/projects.json", cocos2d::extension::CCHttpRequestMethodGET);
+    */
+    
+    CURL *curl;
+    CURLcode res;
+    char buffer[10];
+    
+    curl = curl_easy_init();
+    if (curl)
+    {
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &writeCallback);
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1); // tell us what is happening
+        
+        // tell libcurl where to write the image (to a dynamic memory buffer)
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) &buffer);
+        res = curl_easy_perform(curl);
+        DEBUG2("content: %s", data.c_str());
+        curl_easy_cleanup(curl);
+        std::size_t found = data.find("404 Not Found");
+        if (res == 0 && (found == std::string::npos || data.find("ERR_CONNECT_FAIL") == std::string::npos))
+        {
+            content = data;
+        }
+        else
+        {
+            sprintf(buffer,"code: %i",res);
+            cocos2d::CCLog("Error retrieving url %s: Error code %s", url.c_str(), buffer);
+            content = "";
+        }
+    }
+    else
+    {
+        cocos2d::CCLog("no curl");
+    }
+    
+}
 
 void SocketService::fetchMoves(std::string url, std::vector<std::string> moves){
     
