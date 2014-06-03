@@ -168,7 +168,7 @@ bool GameLayer::init()
         createBoard();
         
         _tmpTextInfoNode = new cocos2d::CCNode();
-        _label = CCLabelTTF::create("Connecting...","Artial", 16);
+        _label = CCLabelTTF::create("Connecting...","Artial", 32);
          _label->setColor( ccc3(255, 0, 0) );
          _label->setPosition( ccp(_screenSize.width/2, _screenSize.height/2) );
          _tmpTextInfoNode->addChild(_label);
@@ -216,13 +216,13 @@ bool GameLayer::init()
 
         _replayGameSprite = CCSprite::createWithSpriteFrameName("replay.png");
         _replayGameSprite->setAnchorPoint(ccp(1,0));
-        _replayGameSprite->setPosition(ccp(_screenSize.width/2, _screenSize.height/2 - 32));
+        _replayGameSprite->setPosition(ccp(_screenSize.width/2, _screenSize.height/2 - 64));
         _replayGameSprite->setVisible(false);
         this->addChild(_replayGameSprite, Board::kForeground);
         
         _newGameSprite = CCSprite::createWithSpriteFrameName("new_game.png");
         _newGameSprite->setAnchorPoint(ccp(0,0));
-        _newGameSprite->setPosition(ccp(_screenSize.width/2, _screenSize.height/2 - 32));
+        _newGameSprite->setPosition(ccp(_screenSize.width/2, _screenSize.height/2 - 64));
         _newGameSprite->setVisible(false);
         this->addChild(_newGameSprite, Board::kForeground);
         
@@ -760,13 +760,13 @@ void GameLayer::updateGame(float dt)
             }
             break;
         case WINGAME:
-            _label->setString("You Won.");
+            _label->setString("You killed the King! You Won.");
             _label->setVisible(true);
             _newGameSprite->setVisible(true);
             _replayGameSprite->setVisible(true);            
             break;
         case LOSEGAME:
-            _label->setString("You Lost.");
+            _label->setString("Your King died. You Lost.");
             _label->setVisible(true);
             _newGameSprite->setVisible(true);
             _replayGameSprite->setVisible(true);
