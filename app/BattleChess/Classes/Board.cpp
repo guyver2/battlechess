@@ -517,4 +517,4 @@ void Board::move(const Move& move){
      //# if a pawn reached the end of the board, it becomse a queen
      if(_board[ii][jj][0] == 'p' && (ii==0 || ii==7))
          _board[ii][jj] = 'q'+ _board[ii][jj][1];
-     }
+}

@@ -9,6 +9,7 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
+<<<<<<< HEAD
             filePath = "../Classes/AppDelegate.cpp"
             timestampString = "423570497.260683"
             startingColumnNumber = "9223372036854775807"
@@ -176,22 +177,15 @@
             startingLineNumber = "750"
             endingLineNumber = "750"
             landmarkName = "CCDirector::purgeDirector()"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "../lib/cocos2dx/CCDirector.cpp"
-            timestampString = "423570673.150842"
+=======
+            filePath = "../Classes/SocketService.cpp"
+            timestampString = "423416622.453756"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "698"
-            endingLineNumber = "698"
-            landmarkName = "CCDirector::purgeDirector()"
+            startingLineNumber = "412"
+            endingLineNumber = "412"
+            landmarkName = "SocketService::openUrl(const std::string&amp; url, std::string&amp; content)"
+>>>>>>> 7643ce9... swipe gesture, extensions link in both android and ios, better messages, userdefaultdata, automatic skip of intro, first attempt to use relative resolution
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -201,6 +195,33 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
+<<<<<<< HEAD
+            filePath = "../lib/cocos2dx/CCDirector.cpp"
+            timestampString = "423570673.150842"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "698"
+            endingLineNumber = "698"
+            landmarkName = "CCDirector::purgeDirector()"
+=======
+            filePath = "../Classes/SocketService.cpp"
+            timestampString = "423419290.636044"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "419"
+            endingLineNumber = "419"
+            landmarkName = "SocketService::openUrl(const std::string&amp; url, std::string&amp; content)"
+>>>>>>> 7643ce9... swipe gesture, extensions link in both android and ios, better messages, userdefaultdata, automatic skip of intro, first attempt to use relative resolution
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+<<<<<<< HEAD
             filePath = "../Classes/IntroScene.cpp"
             timestampString = "423586445.336922"
             startingColumnNumber = "9223372036854775807"
@@ -208,6 +229,15 @@
             startingLineNumber = "184"
             endingLineNumber = "184"
             landmarkName = "IntroLayer::~IntroLayer()"
+=======
+            filePath = "../Classes/AppDelegate.cpp"
+            timestampString = "423510097.677964"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "30"
+            endingLineNumber = "30"
+            landmarkName = "AppDelegate::applicationDidFinishLaunching()"
+>>>>>>> 7643ce9... swipe gesture, extensions link in both android and ios, better messages, userdefaultdata, automatic skip of intro, first attempt to use relative resolution
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -218,6 +248,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../Classes/GameLayerScene.cpp"
+<<<<<<< HEAD
             timestampString = "424090579.823456"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
@@ -234,6 +265,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../Classes/GameLayerScene.cpp"
+<<<<<<< HEAD
             timestampString = "424100810.952138"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
@@ -256,6 +288,17 @@
             startingLineNumber = "379"
             endingLineNumber = "379"
             landmarkName = "Board::boardsStringsFromMoves(std::string savedGameContent)"
+=======
+            timestampString = "423438979.323071"
+=======
+            timestampString = "423517858.466604"
+>>>>>>> e82ed02... introscreen working, submenus working, replay working, background image, job's done
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "322"
+            endingLineNumber = "322"
+            landmarkName = "GameLayer::boardPopulate(const Board&amp; board)"
+>>>>>>> 7643ce9... swipe gesture, extensions link in both android and ios, better messages, userdefaultdata, automatic skip of intro, first attempt to use relative resolution
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -265,6 +308,7 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
+<<<<<<< HEAD
             filePath = "../Classes/Board.cpp"
             timestampString = "424110276.65254"
             startingColumnNumber = "9223372036854775807"
@@ -272,6 +316,15 @@
             startingLineNumber = "352"
             endingLineNumber = "352"
             landmarkName = "Board::boardsStringsFromMoves(std::string savedGameContent)"
+=======
+            filePath = "../Classes/GameLayerScene.cpp"
+            timestampString = "423517858.466604"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "331"
+            endingLineNumber = "331"
+            landmarkName = "GameLayer::boardPopulate(const Board&amp; board)"
+>>>>>>> 7643ce9... swipe gesture, extensions link in both android and ios, better messages, userdefaultdata, automatic skip of intro, first attempt to use relative resolution
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -281,6 +334,7 @@
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
+<<<<<<< HEAD
             filePath = "../Classes/Board.cpp"
             timestampString = "424110276.65254"
             startingColumnNumber = "9223372036854775807"
@@ -508,6 +562,64 @@
             startingLineNumber = "466"
             endingLineNumber = "466"
             landmarkName = "Board::getClosest(Move move, const std::vector&lt; Position &gt;&amp; reach)"
+            landmarkType = "5">
+=======
+            filePath = "../Classes/GameLayerScene.cpp"
+            timestampString = "423517858.466604"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "314"
+            endingLineNumber = "314"
+            landmarkName = "GameLayer::boardPopulate(const Board&amp; board)"
+            landmarkType = "5">
+>>>>>>> 7643ce9... swipe gesture, extensions link in both android and ios, better messages, userdefaultdata, automatic skip of intro, first attempt to use relative resolution
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../Classes/GameLayerScene.cpp"
+            timestampString = "423517858.466604"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "454"
+            endingLineNumber = "454"
+            landmarkName = "GameLayer::didSwipe(cocos2d::CCObject *swipeObj)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../Classes/GameLayerScene.cpp"
+            timestampString = "423517858.466604"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "349"
+            endingLineNumber = "349"
+            landmarkName = "GameLayer::boardPopulate(const Board&amp; board)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../Classes/GameLayerScene.cpp"
+            timestampString = "423517858.466604"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "534"
+            endingLineNumber = "534"
+            landmarkName = "GameLayer::ccTouchesEnded(CCSet* touches, CCEvent* event)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>

@@ -45,7 +45,7 @@ class GameThread(threading.Thread):
 						raise # jump to finaly
 					elif head == 'MOVE':
 						i, j, ii, jj = move
-						valid, pos = self.board.move(i,j,ii,jj)
+						valid, pos = self.board.move(i,j,ii,jj, 'w')
 						#print "got move from", [i,j], "to", [ii,jj], "from white", valid
 						sendData(self.client_1, 'VALD', valid)
 					else :
@@ -70,7 +70,7 @@ class GameThread(threading.Thread):
 						raise # jump to finaly
 					elif head == 'MOVE':
 						i, j, ii, jj = move
-						valid, pos = self.board.move(i,j,ii,jj)
+						valid, pos = self.board.move(i,j,ii,jj, 'b')
 						#print "got move from", [i,j], "to", [ii,jj], "from black", valid
 						sendData(self.client_2, 'VALD', valid)
 					else :

@@ -99,10 +99,9 @@ public:
     bool isFree(int i, int j) const;
     PColor isColor(int i, int j);
     
-    void getPossiblePositions(const std::string piece, int i, int j, std::vector< Position >& possiblePositions);
     std::vector<std::string> _collectedBoardStrings;
     std::vector< Board > boardsFromStrings();
-    
+
     //not used
     std::vector< std::string > boardsStringsFromMoves(std::string savedGameContent);
     static std::vector< Board > boardsFromMoves(std::string savedGameContent);

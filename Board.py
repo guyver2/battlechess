@@ -353,7 +353,13 @@ class Board(object):
 				return [i+a*di, j+a*dj]
 		return None
 
-	def move(self, i, j, ii, jj):
+	def move(self, i, j, ii, jj, color=None):
+		# are given position inside the board ?
+		if not self.isIn(i,j) or not self.isIn(ii,jj):
+			return False, []
+		# the player is trying to move a piece from the other player
+		if color and self.board[i][j][1] != color:
+			return False, []
 		if self.board[ii][jj] != '' and self.board[i][j][1] == self.board[ii][jj][1]:
 			# same color
 			return False, []

@@ -1,4 +1,11 @@
+<<<<<<< HEAD
+<<<<<<< HEAD
 gen
+=======
+>>>>>>> 726c8d3... removal of assets (generated)
+=======
+gen
+>>>>>>> 648249e... update gitignore
 assets
 bin
 obj

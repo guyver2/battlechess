@@ -430,6 +430,10 @@ void SocketService::openUrl(const std::string& url, std::string& content){
     
 }
 
+void SocketService::fetchMoves(std::string url, std::vector<std::string> moves){
+
+}
+
 void SocketService::ssshutdown(){
     _terminate = true;
     shutdown(_sockd, SHUT_RDWR);

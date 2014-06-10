@@ -46,17 +46,16 @@ bool IntroLayer::init()
         
         CCScale9Sprite * fieldSprite = CCScale9Sprite::create("field.png");
         //CCScale9Sprite * fieldSprite = CCScale9Sprite::create("blank.png", CCRectMake(0, 0, 32, 27));
-        fieldSprite->setColor(ccc3(255,204,153));
+        fieldSprite->setColor(ccc3(200,200,200));
+        //fieldSprite->setColor(ccc3(255,204,153));
         //CCSprite *fieldSprite = CCSprite::create("field.png");
         fieldSprite->setScale(0.7);
         fieldSprite->setPosition(ccp(winSize.width/2, winSize.height/2));
 		//this->addChild(fieldSprite);
         
-       
-        cocos2d::CCLabelTTF* gameTitleLabel = CCLabelTTF::create("Welcome to BattleChess ","Artial", 15);
-		gameTitleLabel->setColor( ccc3(102, 51, 51) );
-		gameTitleLabel->setPosition( ccp(winSize.width/2, winSize.height/2 + fieldSprite->boundingBox().size.height) );
-		this->addChild(gameTitleLabel);
+        //CCSprite *fieldSprite = CCSprite::create("field.png");
+        fieldSprite->setPosition(ccp(winSize.width/2, winSize.height/2));
+		//this->addChild(fieldSprite);
         
         this->_titleLabel = CCLabelTTF::create("Username: ","Artial", 15);
 		_titleLabel->setColor( ccc3(0, 0, 0) );
@@ -146,7 +145,6 @@ void IntroLayer::didSwipe(cocos2d::CCObject *swipeObj){
     }
     
 }
-
 
 void IntroLayer::ccTouchesEnded(CCSet* touches, CCEvent* event)
 {
