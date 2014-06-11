@@ -50,7 +50,6 @@ void Board::reset(){
     _board[7][6]= "nw";
     _board[7][7]= "rw";
     
-
 }
 
 bool Board::isIn(int row, int col){
@@ -214,6 +213,14 @@ void Board::setSelectedDest(int i, int j){
 
 }
 
+void Board::print(){
+    for(int i=0; i<8; i++){
+        for(int j=0; j<8; j++)
+            CCLog(" %s ",_board[i][j].c_str());
+        CCLog("\n");
+    }
+}
+
 std::string Board::toString(){
     stringstream ss;
     
@@ -373,7 +380,8 @@ std::vector< std::string > Board::boardsStringsFromMoves(std::string savedGameCo
         this->move(move);
 
         std::string auxstr = this->toString();
-        DEBUG2("b: %s", auxstr.c_str());
+        //DEBUG2("b: %s", auxstr.c_str());
+        this->print();
 
         boardsStrings.push_back(this->toString());
     }
@@ -514,7 +522,7 @@ void Board::move(const Move& move){
     _board[ii][jj] = _board[i][j];
     _board[i][j] = "";
      
-     //# if a pawn reached the end of the board, it becomse a queen
+     //# if a pawn reached the end of the board, it becomes a queen
      if(_board[ii][jj][0] == 'p' && (ii==0 || ii==7))
          _board[ii][jj] = 'q'+ _board[ii][jj][1];
 }

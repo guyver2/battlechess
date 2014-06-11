@@ -93,6 +93,7 @@ public:
         return _board[_move._destI][_move._destJ];
     }
     std::string toString();
+    void print();
     void fromStringWithoutSave(std::string boardStr);
     void fromString(std::string boardStr);
   

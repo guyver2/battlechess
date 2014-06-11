@@ -27,7 +27,7 @@ while(deadKing(nextboard) == 0)
     nextMove = themoves(selBoard,:);
 
     game = cat(3,game,nextboard);
-    gameMoves = cat(2,gameMoves,nextMove);
+    gameMoves = cat(1,gameMoves,nextMove);
     if color == 1
         color = 2;
     else
@@ -50,4 +50,4 @@ else
 end
 
 %not working properly yet
-%writeGame('testVsTest.txt',gameMoves);
+writeGame('testVsTest.txt',gameMoves);

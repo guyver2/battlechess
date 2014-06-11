@@ -11,7 +11,7 @@
 
 #include "cocos2d.h"
 
-#define COCOS2D_DEBUG 0
+//#define COCOS2D_DEBUG 0
 
 #define DEBUG 1
 
