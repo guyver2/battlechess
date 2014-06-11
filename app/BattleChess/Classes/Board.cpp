@@ -73,8 +73,8 @@ bool Board::foggy(int i, int j, char myColor) const {
     return true;
 }
 
-void Board::setSelectedOrigin(int i, int j){
-    if( !isIn(i,j) ){
+void Board::setSelectedOrigin(int i, int j, char myColor){
+    if( !isIn(i,j) || _board[i][j][1] != myColor){
         _move._validOrigin = false;
         return;
     }
@@ -106,12 +106,17 @@ Board::PColor Board::isColor(int i, int j){
 }
 
 void Board::updatePossiblePositions(){
+    _possiblePositions.clear();
     int i = _move._originI;
     int j = _move._originJ;
     std::string piece = _board[i][j];
-    std::pair<int,int> position;
-    _possiblePositions.clear();
+    getPossiblePositions(piece, i, j, _possiblePositions);
+}
+
+void Board::getPossiblePositions( const std::string piece, int i, int j, std::vector< Position >& possiblePositions){
     std::vector< Position > possiblePositionsAux;
+    std::pair<int,int> position;
+    DEBUG2("piece: %s", piece.c_str());
     if(piece == "")
         return;
     if(piece == "pb"){
@@ -143,16 +148,16 @@ void Board::updatePossiblePositions(){
         possiblePositionsAux.push_back(Position(i-1,j+1));
         possiblePositionsAux.push_back(Position(i-1,j-1));
         possiblePositionsAux.push_back(Position(i-1,j));
-        if(contains(_casteable,piece)){
+        if(contains(_castleable,piece)){
             if(piece.c_str()[1] == 'w'){
-                if(contains(_casteable,"rqw"))
+                if(contains(_castleable,"rqw"))
                         possiblePositionsAux.push_back(Position(7,2));
-                if(contains(_casteable,"rkw"))
+                if(contains(_castleable,"rkw"))
                         possiblePositionsAux.push_back(Position(7,6));
             } else if( piece.c_str()[1] == 'b'){
-                if(contains(_casteable,"rqb"))
+                if(contains(_castleable,"rqb"))
                         possiblePositionsAux.push_back(Position(0,2));
-                if(contains(_casteable,"rkb"))
+                if(contains(_castleable,"rkb"))
                         possiblePositionsAux.push_back(Position(0,6));
             }
         }
@@ -194,7 +199,7 @@ void Board::updatePossiblePositions(){
     for(int i=0;i<possiblePositionsAux.size();i++){
         Position pos = possiblePositionsAux[i];
         if(isIn(pos.first, pos.second))
-            _possiblePositions.push_back(pos);
+            possiblePositions.push_back(pos);
     }
 }
 
@@ -216,6 +221,7 @@ std::string Board::toString(){
         for(int j=0; j<8; j++){
             if(i!=0 || j!=0)
                 ss << "_";
+            std::string aux = _board[i][j];
             ss << _board[i][j];
         }
     }
@@ -307,7 +313,7 @@ void Board::fromStringWithoutSave(std::string board){
     std::vector<std::string> boardVect = StringParser::split(boardInfoVect[0], '_');
     _taken = StringParser::split(boardInfoVect[1], '_');
     std::sort(_taken.begin(),_taken.end());
-    _casteable = StringParser::split(boardInfoVect[2], '_');
+    _castleable = StringParser::split(boardInfoVect[2], '_');
     std::istringstream ss(boardInfoVect[3]);
     ss >> _enpassant;
     _winner = boardInfoVect[4].c_str()[0];
@@ -351,9 +357,12 @@ std::vector< std::string > Board::boardsStringsFromMoves(std::string savedGameCo
         DEBUG2("Error reading url, header invalid (does not contain 'Vs.': %s. Aborting replay.", line.c_str());
         return boardsStrings;
     }
+    int i = 0;
     while (std::getline(iss, line))
     {
         //split
+        i++;
+        DEBUG2("Loading move %d", i);
         istringstream iss(line);
         Move move;
         //TODO check that iss is valid
@@ -362,6 +371,10 @@ std::vector< std::string > Board::boardsStringsFromMoves(std::string savedGameCo
         iss >> move._destI;
         iss >> move._destJ;
         this->move(move);
+
+        std::string auxstr = this->toString();
+        DEBUG2("b: %s", auxstr.c_str());
+
         boardsStrings.push_back(this->toString());
     }
     return boardsStrings;
@@ -397,29 +410,82 @@ std::vector< Board > Board::boardsFromMoves(std::string savedGameContent){
 
 std::string Board::castleInfo(int i, int j, int ii, int jj){
     if(_board[i][j][0] == 'k') {
-            if(jj - j == 2){
-                if(_board[i][j][1] == 'w')
-                    return "rkw";
-                else
-                    return "rkb";
-            }else if( j - jj == 2) {
-                if(_board[i][j][1] == 'w')
-                    return "rqw";
-                else
-                    return "rqb";
-            }
+        if(jj - j == 2){
+            if(_board[i][j][1] == 'w')
+                return "rkw";
+            else
+                return "rkb";
+        }else if( j - jj == 2) {
+            if(_board[i][j][1] == 'w')
+                return "rqw";
+            else
+                return "rqb";
+        }
     }
     return "";
 }
 
-void Board::move(const Move& move){
-    
+
+Move Board::getClosest(Move move, const std::vector< Position >& reach){
     int ii = move._destI;
     int jj = move._destJ;
+    int i  = move._originI;
+    int j  = move._originJ;
+    int di,dj;
+    
+    std::string piece = _board[i][j];
+    
+    //knight always reaches destination
+    if(piece.c_str()[0] == 'n')
+        return move;
+    
+    //get direction vector
+    if(ii - i == 0)
+		di = 0;
+	else if(ii - i < 0)
+		di = -1;
+	else
+		di =  1;
+	if(jj - j == 0)
+		dj = 0;
+	else if(jj - j < 0)
+		dj = -1;
+	else
+		dj =  1;
+    
+    //FIXME assumption that moving to the same position is filtered out by the server
+	for(int a = 1; isIn(i+a*di,j+a*dj) && !(i+a*di == ii  && j+a*dj == jj); a++) {
+        std::string obsPiece = _board[i+a*di][j+a*dj];
+        if( obsPiece != "" ){
+            if(obsPiece.c_str()[1] == piece.c_str()[1]){
+                move._destI = i+(a-1)*di;
+                move._destJ = j+(a-1)*dj;
+                break;
+            }else{
+                //taking the enemy piece
+                move._destI = i+a*di;
+                move._destJ = j+a*dj;
+                break;
+            }
+        }
+    }
+	return move;
+}
+
+
+void Board::move(const Move& move){
+    
     int i = move._originI;
     int j = move._originJ;
     //FIXME do I have to implement this too? Or the stored move is the actual valid move?
-    //res = self.getClosest(i,j,ii,jj,reach)
+    
+    std::vector< Position > reach;
+    getPossiblePositions(_board[i][j], i, j, reach);
+    Move reachMove = getClosest(move, reach);
+
+    int ii = reachMove._destI;
+    int jj = reachMove._destJ;
+    
     //FIXME some error testing would be nice to prevent EXC_BAD_ACCESS
     if(_board[ii][jj] != "")
         _taken.push_back(_board[ii][jj]);
@@ -427,7 +493,23 @@ void Board::move(const Move& move){
     //if pawn, moved diagonally but nothing killed it means we had killed in passant at (i,jj) during game
     if(_board[i][j][0] == 'p' && j != jj && _board[ii][jj] == "")
         _board[i][jj] = "";
-     
+    
+    //# if we were performing a castle, move the tower too
+    std::string whichRock = castleInfo(i,j,ii,jj);
+    if(whichRock == "rqb"){
+        _board[0][0] = "";
+        _board[0][3] = "rb";
+    } else if(whichRock == "rkb"){
+        _board[0][7] = "";
+        _board[0][5] = "rb";
+    } else if(whichRock == "rqw") {
+        _board[7][0] = "";
+        _board[7][3] = "rw";
+    } else if(whichRock == "rkw") {
+        _board[7][7] = "";
+        _board[7][5] = "rw";
+    }
+
     //# replace destination with origin
     _board[ii][jj] = _board[i][j];
     _board[i][j] = "";
@@ -435,20 +517,4 @@ void Board::move(const Move& move){
      //# if a pawn reached the end of the board, it becomse a queen
      if(_board[ii][jj][0] == 'p' && (ii==0 || ii==7))
          _board[ii][jj] = 'q'+ _board[ii][jj][1];
-     
-     //# if we were performing a castle, move the tower too
-    std::string whichRock = castleInfo(i,j,ii,jj);
-    if(whichRock == "rqb"){
-      _board[0][0] = "";
-     _board[0][3] = "rb";
-    } else if(whichRock == "rkb"){
-     _board[0][7] = "";
-     _board[0][5] = "rb";
-    } else if(whichRock == "rqw") {
-     _board[7][0] = "";
-     _board[7][3] = "rw";
-    } else if(whichRock == "rkw") {
-     _board[7][7] = "";
-     _board[7][5] = "rw";
-    }
-}
+     }

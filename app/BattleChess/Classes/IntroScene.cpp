@@ -38,8 +38,10 @@ IntroScene::~IntroScene()
 
 bool IntroLayer::init()
 {
-	if ( CCLayerColor::initWithColor( ccc4(255,204,153,255) ) )
-	{
+    bool bRet = false;
+    do {
+        CC_BREAK_IF (! CCLayerColor::initWithColor( ccc4(255,204,153,255) ) );
+        
 		CCSize winSize = CCDirector::sharedDirector()->getWinSize();
         
         CCScale9Sprite * fieldSprite = CCScale9Sprite::create("field.png");
@@ -72,23 +74,45 @@ bool IntroLayer::init()
         _pEditName->setDelegate(this);
         this->addChild(_pEditName);
         
-        /*
-        _swipe = CCSwipeGestureRecognizer::create();
-        _swipe->setTarget(this, callfuncO_selector(IntroLayer::didSwipe));
-        _swipe->setDirection(kSwipeGestureRecognizerDirectionRight | kSwipeGestureRecognizerDirectionLeft);
-        _swipe->setCancelsTouchesInView(true);
-        this->addChild(_swipe);
-        */
+        CCMenuItemImage *pCloseItem = CCMenuItemImage::create(
+                                                              "CloseNormal.png",
+                                                              "CloseSelected.png",
+                                                              this,
+                                                              menu_selector(IntroLayer::menuCloseCallback));
+		CC_BREAK_IF(! pCloseItem);
+        
+		// Place the menu item bottom-right conner.
+        CCSize visibleSize = CCDirector::sharedDirector()->getVisibleSize();
+        CCPoint origin = CCDirector::sharedDirector()->getVisibleOrigin();
+        
+		pCloseItem->setPosition(ccp(origin.x + visibleSize.width - pCloseItem->getContentSize().width/2,
+                                    origin.y + pCloseItem->getContentSize().height/2));
+        
+		// Create a menu with the "close" menu item, it's an auto release object.
+		CCMenu* pMenu = CCMenu::create(pCloseItem, NULL);
+		pMenu->setPosition(CCPointZero);
+		CC_BREAK_IF(! pMenu);
+        this->addChild(pMenu, 1);
+
         this->setTouchEnabled(true);
         
        	schedule( schedule_selector(IntroLayer::tick) );
         
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+        bRet = true;
+        
+	} while (0);
+    
+    return bRet;
+}
+
+void IntroLayer::menuCloseCallback(CCObject* pSender)
+{
+	// "close" menu item clicked
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT) || (CC_TARGET_PLATFORM == CC_PLATFORM_WP8)
+    CCMessageBox("You pressed the close button. Windows Store Apps do not implement a close button.", "Alert");
+#else
+    CCDirector::sharedDirector()->end();
+#endif
 }
 
 /**
@@ -155,12 +179,14 @@ void IntroLayer::tick(float dt){
     
 }
 
-void IntroLayer::IntroDone()
-{
-	CCDirector::sharedDirector()->replaceScene( GameLayer::scene() );
-}
-
 IntroLayer::~IntroLayer()
 {
     this->removeAllChildrenWithCleanup(true);
 }
+
+
+void IntroLayer::registerWithTouchDispatcher()
+{
+    CCDirector::sharedDirector()->getTouchDispatcher()->addStandardDelegate(this,0);
+}
+

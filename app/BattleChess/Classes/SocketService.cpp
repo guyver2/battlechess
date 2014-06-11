@@ -354,9 +354,10 @@ void* SocketService::ssRequest(void *data)
             if(instance->ssread(packet.header, packet.body)){
                 
                 //FIXME with espera activa/mutex, quick patch
-                if(packet.header == "OVER")
+                if(packet.header == "OVER"){
                     instance->_terminate = true;
-                
+                    instance->ssclose();
+                }
                 #ifdef _WINDOWS_
                 instance->_recvQueue.push(packet);
                 #else
@@ -424,12 +425,18 @@ void SocketService::openUrl(const std::string& url, std::string& content){
     else
     {
         cocos2d::CCLog("no curl");
+        content="";
     }
     
 }
 
-void SocketService::fetchMoves(std::string url, std::vector<std::string> moves){
-    
-    
-    
+void SocketService::ssshutdown(){
+    _terminate = true;
+    shutdown(_sockd, SHUT_RDWR);
+}
+
+void SocketService::ssclose(){
+    _terminate = true;
+    if(close(_sockd) < 0)
+        DEBUG2("Socket failed to close.");
 }

@@ -20,7 +20,7 @@ class IntroLayer : public cocos2d::CCLayerColor, public cocos2d::extension::CCEd
 public:
     IntroLayer():_label(NULL) {};
     virtual ~IntroLayer();
-    bool init();
+    virtual bool init();
     CREATE_FUNC(IntroLayer);
     
     void IntroDone();
@@ -33,8 +33,10 @@ public:
     cocos2d::extension::CCEditBox * _pEditName;
     void editboxEventHandler();
     
+    virtual void menuCloseCallback(cocos2d::CCObject* pSender);
     void editBoxReturn(cocos2d::extension::CCEditBox* editBox);
     
+    void registerWithTouchDispatcher();
     CC_SYNTHESIZE_READONLY(cocos2d::CCLabelTTF*, _label, Label);
     CC_SYNTHESIZE_READONLY(cocos2d::CCLabelTTF*, _titleLabel, TitleLabel);
 

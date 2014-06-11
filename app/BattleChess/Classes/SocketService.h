@@ -67,6 +67,9 @@ public:
     int charArray2Int(const char sizeChar[5]);
     //TODO packet structure
     bool start();
+    void ssshutdown();
+    void ssclose();
+    
     
     bool connectProtocol(std::string myName, std::string& color);
     bool waitInit(std::string& url, std::string& opponentName);
@@ -74,7 +77,6 @@ public:
 
     //replay
     void openUrl(const std::string& url, std::string& content);
-    void fetchMoves(std::string url, std::vector<std::string> moves);
     
     //multithreading
     void sendPacket(const Packet& packet);

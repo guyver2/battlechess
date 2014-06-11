@@ -17,7 +17,6 @@ public:
     
     enum state {
         CONNECT,
-        GETNICK,
         GETCOLOR,
         SENDNICK,
         GETURL,

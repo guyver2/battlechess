@@ -7,7 +7,6 @@ using namespace std;
 
 const char *state_str[]={
     "CONNECT",
-    "GETNICK",
     "GETCOLOR",
     "SENDNICK",
     "GETURL",
@@ -24,7 +23,7 @@ const char *state_str[]={
     "REPLAY",
     "RECONNECT" };
 
-GameLayer::GameLayer() : _state(GETNICK), _somethingChanged(true)
+GameLayer::GameLayer() : _state(CONNECT), _somethingChanged(true)
 {
 	CCLog("GameLayer Contructor...");
     _replayBoardCount = 0;
@@ -84,15 +83,8 @@ bool GameLayer::init()
 	bool bRet = false;
 	do 
 	{
-		//////////////////////////////////////////////////////////////////////////
-		// super init first
-		//////////////////////////////////////////////////////////////////////////
-
+		
 		CC_BREAK_IF(! CCLayerColor::initWithColor( ccc4(204,204,204,255) ) );
-
-		//////////////////////////////////////////////////////////////////////////
-		// add your codes below...
-		/////////////////
 
         //TODO does this go here?
         _screenSize = CCDirector::sharedDirector()->getVisibleSize();
@@ -194,7 +186,6 @@ bool GameLayer::init()
         _infoNode->addChild(_titleLabel);
 
         this->addChild(_infoNode, Board::kForeground);
-        DEBUG2("TEST");
 
         //_backgroundGameSprite = CCSprite::createWithSpriteFrameName("background.png");
         _backgroundGameSprite = CCSprite::create("background.png");
@@ -243,7 +234,6 @@ bool GameLayer::init()
 		//CocosDenshion::SimpleAudioEngine::sharedEngine()->playBackgroundMusic("background-music-aac.wav", true);
 
 		bRet = true;
-        DEBUG2("TESTEND");
 
 	} while (0);
 
@@ -419,6 +409,7 @@ void GameLayer::menuCloseCallback(CCObject* pSender)
     CCDirector::sharedDirector()->end();
 #endif
 }
+
 void GameLayer::menuSoundCallback(CCObject* pSender)
 {
     //TODO use setEffectVolume(0) and setBackgroundMusicVolume(0)
@@ -488,7 +479,7 @@ void GameLayer::ccTouchesEnded(CCSet* touches, CCEvent* event)
                     break;
                 CCLog("board coords i:%d, j:%d",i,j);
                 if(!_board._move._validOrigin) {
-                    _board.setSelectedOrigin(i,j);
+                    _board.setSelectedOrigin(i,j, _gameInfo.playerColor);
                     break;
                 }
                 if(!_board._move._validDest)
@@ -499,7 +490,7 @@ void GameLayer::ccTouchesEnded(CCSet* touches, CCEvent* event)
                 std::string newSelPiece = _board._board[i][j];
                 if(newSelPiece != "" && newSelPiece.c_str()[1] == _gameInfo.playerColor){
                     //we clicked at a piece of ours, change last selected piece
-                    _board.setSelectedOrigin(i,j);
+                    _board.setSelectedOrigin(i,j, _gameInfo.playerColor);
                     //invalidate dest
                     _board._move._validDest = false;
                 // }else if(newSelPiece == "" || newSelPiece.c_str()[1] != _gameInfo.playerColor){
@@ -532,6 +523,14 @@ void GameLayer::ccTouchesEnded(CCSet* touches, CCEvent* event)
                 }
                 //retrieve all board strings //FIXME creating Boards causes error on destructor
                 _board._collectedBoardStrings = _board.boardsStringsFromMoves(content);
+                
+                if(_board._collectedBoardStrings.size() == 0){
+                    DEBUG2("Connection failed. Defaulting to same scene.");
+                    _label->setString("Replay connection failed.");
+                    _label->setVisible(true);
+                    break;
+                }
+                    
                 //go to last board
                 _replayBoardCount = _board._collectedBoardStrings.size()-1;
                 
@@ -567,11 +566,6 @@ void GameLayer::updateGame(float dt)
 
     Packet packet;
     switch(_state){
-        case GETNICK:
-            //todo fetch username through app use another scene
-            
-            changeState( CONNECT );
-            break;
         case RECONNECT:
             //TODO connection was lost
             break;
@@ -779,8 +773,7 @@ void GameLayer::updateGame(float dt)
             break;
         case OVER:
         case DECIDEWINNER:
-            //already done by himself
-            _ssSocket._terminate = true;
+            _ssSocket.ssshutdown();
             //_gameInfo.playerColor = packet.body.c_str()[0];
             if(_board._winner == _gameInfo.playerColor)
                 changeState( WINGAME );

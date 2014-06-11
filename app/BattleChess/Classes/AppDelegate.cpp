@@ -10,6 +10,7 @@ AppDelegate::AppDelegate() {
 
 AppDelegate::~AppDelegate() 
 {
+    CCLog("AppDelegate destructor");
 }
 
 bool AppDelegate::applicationDidFinishLaunching() {
@@ -61,7 +62,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     CCScene *pScene;
     
     if(cocos2d::CCUserDefault::sharedUserDefault()->getStringForKey("username") == "") {
-        // create a scene. it's an autorelease object
+        //create a scene. it's an autorelease object
         pScene = IntroScene::create();
     } else {
         pScene = GameLayer::scene();
