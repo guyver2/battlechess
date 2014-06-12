@@ -49,7 +49,7 @@ static AppDelegate s_sharedApplication;
 		// set window parameters
 		[window becomeFirstResponder];
 		[window setContentView:glView];
-		[window setTitle:@"SampleGame"];
+		[window setTitle:@"BattleChess"];
 		[window makeKeyAndOrderFront:self];
 		[window setAcceptsMouseMovedEvents:NO];
         

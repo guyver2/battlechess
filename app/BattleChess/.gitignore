@@ -2,6 +2,10 @@
 #####################
 build
 
+# dependencies #
+################
+libs
+
 # Compiled source #
 ###################
 *.com
@@ -10,6 +14,7 @@ build
 *.exe
 *.o
 *.so
+*.a
 
 # Packages #
 ############
