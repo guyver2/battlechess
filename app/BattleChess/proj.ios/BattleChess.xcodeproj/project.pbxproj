@@ -156,20 +156,28 @@
 		106DCFDF193E048A00C3AE34 /* SettingsOn.png in Resources */ = {isa = PBXBuildFile; fileRef = 106DCFD9193E048A00C3AE34 /* SettingsOn.png */; };
 		106DCFE6193E051E00C3AE34 /* HomeOn.png in Resources */ = {isa = PBXBuildFile; fileRef = 106DCFE4193E051E00C3AE34 /* HomeOn.png */; };
 		106DCFE7193E051E00C3AE34 /* HomeOff.png in Resources */ = {isa = PBXBuildFile; fileRef = 106DCFE5193E051E00C3AE34 /* HomeOff.png */; };
+		10755BF7194AFC9100D51537 /* bybsy.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 10755BF6194AFC9100D51537 /* bybsy.ttf */; };
+		10755C05194AFC9B00D51537 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 10755BF9194AFC9B00D51537 /* Default-568h@2x.png */; };
+		10755C06194AFC9B00D51537 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = 10755BFA194AFC9B00D51537 /* Default.png */; };
+		10755C07194AFC9B00D51537 /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 10755BFB194AFC9B00D51537 /* Default@2x.png */; };
+		10755C08194AFC9B00D51537 /* icon-114.png in Resources */ = {isa = PBXBuildFile; fileRef = 10755BFC194AFC9B00D51537 /* icon-114.png */; };
+		10755C09194AFC9B00D51537 /* icon-120.png in Resources */ = {isa = PBXBuildFile; fileRef = 10755BFD194AFC9B00D51537 /* icon-120.png */; };
+		10755C0A194AFC9B00D51537 /* icon-144.png in Resources */ = {isa = PBXBuildFile; fileRef = 10755BFE194AFC9B00D51537 /* icon-144.png */; };
+		10755C0B194AFC9B00D51537 /* icon-152.png in Resources */ = {isa = PBXBuildFile; fileRef = 10755BFF194AFC9B00D51537 /* icon-152.png */; };
+		10755C0C194AFC9B00D51537 /* icon-32.png in Resources */ = {isa = PBXBuildFile; fileRef = 10755C00194AFC9B00D51537 /* icon-32.png */; };
+		10755C0D194AFC9B00D51537 /* icon-48.png in Resources */ = {isa = PBXBuildFile; fileRef = 10755C01194AFC9B00D51537 /* icon-48.png */; };
+		10755C0E194AFC9B00D51537 /* icon-57.png in Resources */ = {isa = PBXBuildFile; fileRef = 10755C02194AFC9B00D51537 /* icon-57.png */; };
+		10755C0F194AFC9B00D51537 /* icon-76.png in Resources */ = {isa = PBXBuildFile; fileRef = 10755C03194AFC9B00D51537 /* icon-76.png */; };
+		10755C10194AFC9B00D51537 /* icon.xcf in Resources */ = {isa = PBXBuildFile; fileRef = 10755C04194AFC9B00D51537 /* icon.xcf */; };
+		10755C13194B052800D51537 /* darkbackground.png in Resources */ = {isa = PBXBuildFile; fileRef = 10755C12194B052800D51537 /* darkbackground.png */; };
+		10755C15194B06BB00D51537 /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 10755C14194B06BB00D51537 /* icon.png */; };
 		107DC60619251A78000D9DED /* battlechess_sprites_hd.plist in Resources */ = {isa = PBXBuildFile; fileRef = 107DC60219251A78000D9DED /* battlechess_sprites_hd.plist */; };
 		107DC60719251A78000D9DED /* battlechess_sprites_hd.png in Resources */ = {isa = PBXBuildFile; fileRef = 107DC60319251A78000D9DED /* battlechess_sprites_hd.png */; };
 		108DB5BF192F51C900ED76B0 /* battlechessSprites.plist in Resources */ = {isa = PBXBuildFile; fileRef = 108DB5BD192F51C900ED76B0 /* battlechessSprites.plist */; };
 		108DB5C0192F51C900ED76B0 /* battlechessSprites.png in Resources */ = {isa = PBXBuildFile; fileRef = 108DB5BE192F51C900ED76B0 /* battlechessSprites.png */; };
 		108DB5C3192F533700ED76B0 /* CloseSelected.png in Resources */ = {isa = PBXBuildFile; fileRef = 108DB5C1192F533700ED76B0 /* CloseSelected.png */; };
 		108DB5C4192F533700ED76B0 /* CloseNormal.png in Resources */ = {isa = PBXBuildFile; fileRef = 108DB5C2192F533700ED76B0 /* CloseNormal.png */; };
-<<<<<<< HEAD
-<<<<<<< HEAD
 		109593BB193E440500057C03 /* background.png in Resources */ = {isa = PBXBuildFile; fileRef = 109593BA193E440500057C03 /* background.png */; };
-=======
->>>>>>> 7643ce9... swipe gesture, extensions link in both android and ios, better messages, userdefaultdata, automatic skip of intro, first attempt to use relative resolution
-=======
-		109593BB193E440500057C03 /* background.png in Resources */ = {isa = PBXBuildFile; fileRef = 109593BA193E440500057C03 /* background.png */; };
->>>>>>> e82ed02... introscreen working, submenus working, replay working, background image, job's done
 		10BCF3DB19371A5600EBAD88 /* libcocos2dx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 10BCF3D4193717FD00EBAD88 /* libcocos2dx.a */; };
 		10BCF3DC19371A5A00EBAD88 /* libCocosDenshion.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 10BCF3DA1937184300EBAD88 /* libCocosDenshion.a */; };
 		10BCF67819374DBA00EBAD88 /* CCActivityIndicator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 10BCF64E19374DB900EBAD88 /* CCActivityIndicator.cpp */; };
@@ -579,21 +587,27 @@
 		10580B0B19241B7A003A55B9 /* GameLayerScene.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GameLayerScene.cpp; sourceTree = "<group>"; };
 		10580B0F19241BD3003A55B9 /* SocketService.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SocketService.cpp; sourceTree = "<group>"; };
 		10580B1019241BD3003A55B9 /* SocketService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SocketService.h; sourceTree = "<group>"; };
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> e82ed02... introscreen working, submenus working, replay working, background image, job's done
 		106DCFD4193E048A00C3AE34 /* SoundOff.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = SoundOff.png; sourceTree = "<group>"; };
 		106DCFD5193E048A00C3AE34 /* SoundOn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = SoundOn.png; sourceTree = "<group>"; };
 		106DCFD8193E048A00C3AE34 /* SettingsOff.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = SettingsOff.png; sourceTree = "<group>"; };
 		106DCFD9193E048A00C3AE34 /* SettingsOn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = SettingsOn.png; sourceTree = "<group>"; };
 		106DCFE4193E051E00C3AE34 /* HomeOn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = HomeOn.png; sourceTree = "<group>"; };
 		106DCFE5193E051E00C3AE34 /* HomeOff.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = HomeOff.png; sourceTree = "<group>"; };
-<<<<<<< HEAD
-=======
->>>>>>> 7643ce9... swipe gesture, extensions link in both android and ios, better messages, userdefaultdata, automatic skip of intro, first attempt to use relative resolution
-=======
->>>>>>> e82ed02... introscreen working, submenus working, replay working, background image, job's done
+		10755BF6194AFC9100D51537 /* bybsy.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = bybsy.ttf; sourceTree = "<group>"; };
+		10755BF9194AFC9B00D51537 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
+		10755BFA194AFC9B00D51537 /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
+		10755BFB194AFC9B00D51537 /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
+		10755BFC194AFC9B00D51537 /* icon-114.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-114.png"; sourceTree = "<group>"; };
+		10755BFD194AFC9B00D51537 /* icon-120.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-120.png"; sourceTree = "<group>"; };
+		10755BFE194AFC9B00D51537 /* icon-144.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-144.png"; sourceTree = "<group>"; };
+		10755BFF194AFC9B00D51537 /* icon-152.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-152.png"; sourceTree = "<group>"; };
+		10755C00194AFC9B00D51537 /* icon-32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-32.png"; sourceTree = "<group>"; };
+		10755C01194AFC9B00D51537 /* icon-48.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-48.png"; sourceTree = "<group>"; };
+		10755C02194AFC9B00D51537 /* icon-57.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-57.png"; sourceTree = "<group>"; };
+		10755C03194AFC9B00D51537 /* icon-76.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-76.png"; sourceTree = "<group>"; };
+		10755C04194AFC9B00D51537 /* icon.xcf */ = {isa = PBXFileReference; lastKnownFileType = file; path = icon.xcf; sourceTree = "<group>"; };
+		10755C12194B052800D51537 /* darkbackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = darkbackground.png; sourceTree = "<group>"; };
+		10755C14194B06BB00D51537 /* icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon.png; sourceTree = "<group>"; };
 		107A0E2119266A860004EF0E /* constants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = constants.h; sourceTree = "<group>"; };
 		107DC60219251A78000D9DED /* battlechess_sprites_hd.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = battlechess_sprites_hd.plist; sourceTree = "<group>"; };
 		107DC60319251A78000D9DED /* battlechess_sprites_hd.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = battlechess_sprites_hd.png; sourceTree = "<group>"; };
@@ -601,14 +615,7 @@
 		108DB5BE192F51C900ED76B0 /* battlechessSprites.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = battlechessSprites.png; sourceTree = "<group>"; };
 		108DB5C1192F533700ED76B0 /* CloseSelected.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = CloseSelected.png; sourceTree = "<group>"; };
 		108DB5C2192F533700ED76B0 /* CloseNormal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = CloseNormal.png; sourceTree = "<group>"; };
-<<<<<<< HEAD
-<<<<<<< HEAD
 		109593BA193E440500057C03 /* background.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = background.png; sourceTree = "<group>"; };
-=======
->>>>>>> 7643ce9... swipe gesture, extensions link in both android and ios, better messages, userdefaultdata, automatic skip of intro, first attempt to use relative resolution
-=======
-		109593BA193E440500057C03 /* background.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = background.png; sourceTree = "<group>"; };
->>>>>>> e82ed02... introscreen working, submenus working, replay working, background image, job's done
 		10BCF3CF193717FD00EBAD88 /* cocos2dx.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = cocos2dx.xcodeproj; path = ../lib/cocos2dx/proj.ios/cocos2dx.xcodeproj; sourceTree = "<group>"; };
 		10BCF3D51937184300EBAD88 /* CocosDenshion.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CocosDenshion.xcodeproj; path = ../lib/CocosDenshion/proj.ios/CocosDenshion.xcodeproj; sourceTree = "<group>"; };
 		10BCF64E19374DB900EBAD88 /* CCActivityIndicator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CCActivityIndicator.cpp; sourceTree = "<group>"; };
@@ -1416,6 +1423,25 @@
 			name = "Other Frameworks";
 			sourceTree = "<group>";
 		};
+		10755BF8194AFC9B00D51537 /* icons */ = {
+			isa = PBXGroup;
+			children = (
+				10755BF9194AFC9B00D51537 /* Default-568h@2x.png */,
+				10755BFA194AFC9B00D51537 /* Default.png */,
+				10755BFB194AFC9B00D51537 /* Default@2x.png */,
+				10755BFC194AFC9B00D51537 /* icon-114.png */,
+				10755BFD194AFC9B00D51537 /* icon-120.png */,
+				10755BFE194AFC9B00D51537 /* icon-144.png */,
+				10755BFF194AFC9B00D51537 /* icon-152.png */,
+				10755C00194AFC9B00D51537 /* icon-32.png */,
+				10755C01194AFC9B00D51537 /* icon-48.png */,
+				10755C02194AFC9B00D51537 /* icon-57.png */,
+				10755C03194AFC9B00D51537 /* icon-76.png */,
+				10755C04194AFC9B00D51537 /* icon.xcf */,
+			);
+			path = icons;
+			sourceTree = "<group>";
+		};
 		107DC5FE19251A78000D9DED /* sd */ = {
 			isa = PBXGroup;
 			children = (
@@ -1594,6 +1620,10 @@
 		784521C214EBA449009D533B /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				10755C14194B06BB00D51537 /* icon.png */,
+				10755C12194B052800D51537 /* darkbackground.png */,
+				10755BF8194AFC9B00D51537 /* icons */,
+				10755BF6194AFC9100D51537 /* bybsy.ttf */,
 				109593BA193E440500057C03 /* background.png */,
 				106DCFE4193E051E00C3AE34 /* HomeOn.png */,
 				106DCFE5193E051E00C3AE34 /* HomeOff.png */,
@@ -1757,50 +1787,33 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				10755C0E194AFC9B00D51537 /* icon-57.png in Resources */,
+				10755C15194B06BB00D51537 /* icon.png in Resources */,
 				107DC60619251A78000D9DED /* battlechess_sprites_hd.plist in Resources */,
-<<<<<<< HEAD
-<<<<<<< HEAD
 				109593BB193E440500057C03 /* background.png in Resources */,
-=======
->>>>>>> 7643ce9... swipe gesture, extensions link in both android and ios, better messages, userdefaultdata, automatic skip of intro, first attempt to use relative resolution
-=======
-				109593BB193E440500057C03 /* background.png in Resources */,
->>>>>>> e82ed02... introscreen working, submenus working, replay working, background image, job's done
 				10BCF68219374DBA00EBAD88 /* ccactivityindicator_5.gif in Resources */,
 				108DB5C4192F533700ED76B0 /* CloseNormal.png in Resources */,
 				108DB5BF192F51C900ED76B0 /* battlechessSprites.plist in Resources */,
+				10755C0A194AFC9B00D51537 /* icon-144.png in Resources */,
 				108DB5C3192F533700ED76B0 /* CloseSelected.png in Resources */,
 				10BCF68119374DBA00EBAD88 /* ccactivityindicator_4.gif in Resources */,
 				10BCF67E19374DBA00EBAD88 /* ccactivityindicator_12.gif in Resources */,
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> e82ed02... introscreen working, submenus working, replay working, background image, job's done
 				106DCFDB193E048A00C3AE34 /* SoundOn.png in Resources */,
+				10755C07194AFC9B00D51537 /* Default@2x.png in Resources */,
 				106DCFDA193E048A00C3AE34 /* SoundOff.png in Resources */,
+				10755C0D194AFC9B00D51537 /* icon-48.png in Resources */,
 				10BCF68419374DBA00EBAD88 /* ccactivityindicator_7.gif in Resources */,
 				106DCFE7193E051E00C3AE34 /* HomeOff.png in Resources */,
-<<<<<<< HEAD
-=======
 				10BCF68419374DBA00EBAD88 /* ccactivityindicator_7.gif in Resources */,
->>>>>>> 7643ce9... swipe gesture, extensions link in both android and ios, better messages, userdefaultdata, automatic skip of intro, first attempt to use relative resolution
-=======
->>>>>>> e82ed02... introscreen working, submenus working, replay working, background image, job's done
 				782F4619153FEDF0009FC2E5 /* Default.png in Resources */,
 				10BCF69219374DBA00EBAD88 /* README.md in Resources */,
 				10BCF68F19374DBA00EBAD88 /* ccpagecontrol_full_dot.png in Resources */,
 				10BCF68319374DBA00EBAD88 /* ccactivityindicator_6.gif in Resources */,
 				107DC60719251A78000D9DED /* battlechess_sprites_hd.png in Resources */,
-<<<<<<< HEAD
-<<<<<<< HEAD
 				106DCFDE193E048A00C3AE34 /* SettingsOff.png in Resources */,
 				106DCFE6193E051E00C3AE34 /* HomeOn.png in Resources */,
-=======
->>>>>>> 7643ce9... swipe gesture, extensions link in both android and ios, better messages, userdefaultdata, automatic skip of intro, first attempt to use relative resolution
-=======
 				106DCFDE193E048A00C3AE34 /* SettingsOff.png in Resources */,
 				106DCFE6193E051E00C3AE34 /* HomeOn.png in Resources */,
->>>>>>> e82ed02... introscreen working, submenus working, replay working, background image, job's done
 				10BCF67C19374DBA00EBAD88 /* ccactivityindicator_10.gif in Resources */,
 				D4EF94E815BD319200D803EB /* Icon-57.png in Resources */,
 				105231E3193CC42000B41EFB /* Android.mk in Resources */,
@@ -1809,6 +1822,20 @@
 				D4EF94EA15BD319500D803EB /* Icon-114.png in Resources */,
 				D4EF94EC15BD319B00D803EB /* Icon-72.png in Resources */,
 				10EF4116192B94CF007895AF /* field.png in Resources */,
+				10755C06194AFC9B00D51537 /* Default.png in Resources */,
+				106DCFDE193E048A00C3AE34 /* SettingsOff.png in Resources */,
+				106DCFE6193E051E00C3AE34 /* HomeOn.png in Resources */,
+				10755C13194B052800D51537 /* darkbackground.png in Resources */,
+				10BCF67C19374DBA00EBAD88 /* ccactivityindicator_10.gif in Resources */,
+				105231E3193CC42000B41EFB /* Android.mk in Resources */,
+				10BCF68519374DBA00EBAD88 /* ccactivityindicator_8.gif in Resources */,
+				108DB5C0192F51C900ED76B0 /* battlechessSprites.png in Resources */,
+				10755C05194AFC9B00D51537 /* Default-568h@2x.png in Resources */,
+				10EF4116192B94CF007895AF /* field.png in Resources */,
+				10755C0B194AFC9B00D51537 /* icon-152.png in Resources */,
+				10755BF7194AFC9100D51537 /* bybsy.ttf in Resources */,
+				10755C09194AFC9B00D51537 /* icon-120.png in Resources */,
+				10755C10194AFC9B00D51537 /* icon.xcf in Resources */,
 				10BCF67B19374DBA00EBAD88 /* ccactivityindicator_1.gif in Resources */,
 				10BCF68E19374DBA00EBAD88 /* ccpagecontrol_empty_dot.png in Resources */,
 				D4EF94EE15BD319D00D803EB /* Icon-144.png in Resources */,
@@ -1820,16 +1847,13 @@
 				10BCF67F19374DBA00EBAD88 /* ccactivityindicator_2.gif in Resources */,
 				D446FD47161020AC000ADA7B /* Default@2x.png in Resources */,
 				10BCF67919374DBA00EBAD88 /* ccactivityindicator.plist in Resources */,
+				10755C0F194AFC9B00D51537 /* icon-76.png in Resources */,
 				10BCF68019374DBA00EBAD88 /* ccactivityindicator_3.gif in Resources */,
 				10BCF68619374DBA00EBAD88 /* ccactivityindicator_9.gif in Resources */,
-<<<<<<< HEAD
-<<<<<<< HEAD
 				106DCFDF193E048A00C3AE34 /* SettingsOn.png in Resources */,
-=======
->>>>>>> 7643ce9... swipe gesture, extensions link in both android and ios, better messages, userdefaultdata, automatic skip of intro, first attempt to use relative resolution
-=======
 				106DCFDF193E048A00C3AE34 /* SettingsOn.png in Resources */,
->>>>>>> e82ed02... introscreen working, submenus working, replay working, background image, job's done
+				10755C08194AFC9B00D51537 /* icon-114.png in Resources */,
+				10755C0C194AFC9B00D51537 /* icon-32.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

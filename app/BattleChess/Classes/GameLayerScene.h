@@ -61,6 +61,8 @@ public:
     
     SocketService _ssSocket;
     
+    CC_SYNTHESIZE_READONLY(cocos2d::CCLabelTTF*, _battlechessTitleLabel, BattlechessTitleLabel);
+    
     CC_SYNTHESIZE_READONLY(cocos2d::CCLabelTTF*, _infoLabel, InfoLabel);
     CC_SYNTHESIZE_READONLY(cocos2d::CCLabelTTF*, _titleLabel, TitleLabel);
     CC_SYNTHESIZE_READONLY(cocos2d::CCLabelTTF*, _subtitleLabel, TurnLabel);

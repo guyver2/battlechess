@@ -44,6 +44,10 @@
 	</dict>
 	<key>CFBundleIdentifier</key>
 	<string>org.sxbn.BattleChess</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>./bybsy.ttf</string>
+	</array>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>

@@ -108,13 +108,19 @@ bool GameLayer::init()
             menu_selector(GameLayer::menuSoundCallback));
         */
         
-        CCMenuItemSprite* p1 = CCMenuItemSprite::create(CCSprite::create("SoundOn.png"), CCSprite::create("SoundOff.png"));
-        CCMenuItemSprite* p2 = CCMenuItemSprite::create(CCSprite::create("SoundOff.png"), CCSprite::create("SoundOn.png"));
         
-        _pSoundItem = CCMenuItemToggle::createWithTarget(this, menu_selector(GameLayer::menuSoundCallback), p1, p2,NULL);
+        CCMenuItemSprite* soundOn = CCMenuItemSprite::create(CCSprite::create("SoundOn.png"), CCSprite::create("SoundOff.png"));
+        CCMenuItemSprite* soundOff = CCMenuItemSprite::create(CCSprite::create("SoundOff.png"), CCSprite::create("SoundOn.png"));
+
+        _pSoundItem = CCMenuItemToggle::createWithTarget(this, menu_selector(GameLayer::menuSoundCallback), soundOff, soundOn,NULL);
+            
         CC_BREAK_IF(! _pSoundItem);
+        if(cocos2d::CCUserDefault::sharedUserDefault()->getBoolForKey("sound", false))
+            _pSoundItem->setSelectedIndex(0);
+        else
+            _pSoundItem->setSelectedIndex(1);
+
         //TODO get sound from default user
-        _pSoundItem->setSelectedIndex(0);
         pMenuItems->addObject(_pSoundItem);
         
         _pSettingsItem = CCMenuItemImage::create(
@@ -125,13 +131,13 @@ bool GameLayer::init()
         CC_BREAK_IF(! _pSettingsItem);
         pMenuItems->addObject(_pSettingsItem);
                               
-        _pHomeItem = CCMenuItemImage::create(
-            "HomeOn.png",
-            "HomeOff.png",
-            this,
-            menu_selector(GameLayer::menuHomeCallback));
-		CC_BREAK_IF(! _pHomeItem);
-        pMenuItems->addObject(_pHomeItem);
+//        _pHomeItem = CCMenuItemImage::create(
+//            "HomeOn.png",
+//            "HomeOff.png",
+//            this,
+//            menu_selector(GameLayer::menuHomeCallback));
+//		CC_BREAK_IF(! _pHomeItem);
+//        pMenuItems->addObject(_pHomeItem);
         
         CCMenu* pMenu = CCMenu::createWithArray(pMenuItems);
         
@@ -146,8 +152,8 @@ bool GameLayer::init()
         _pSoundItem->setPosition(lastItemPosition);
         lastItemPosition = lastItemPosition - ccp(_pSettingsItem->getContentSize().width,0);
         _pSettingsItem->setPosition(lastItemPosition);
-        lastItemPosition = lastItemPosition - ccp(_pHomeItem->getContentSize().width,0);
-		_pHomeItem->setPosition(lastItemPosition);
+//        lastItemPosition = lastItemPosition - ccp(_pHomeItem->getContentSize().width,0);
+//		_pHomeItem->setPosition(lastItemPosition);
 
 		// Create a menu with the "close" menu item, it's an auto release object.
 		pMenu->setPosition(CCPointZero);
@@ -160,30 +166,45 @@ bool GameLayer::init()
         
         _tmpTextInfoNode = new cocos2d::CCNode();
         _label = CCLabelTTF::create("Connecting...","Artial", 32);
-         _label->setColor( ccc3(255, 0, 0) );
+         _label->setColor( ccc3(150, 20, 20) );
          _label->setPosition( ccp(_screenSize.width/2, _screenSize.height/2) );
          _tmpTextInfoNode->addChild(_label);
          this->addChild(_tmpTextInfoNode, Board::kForeground);
 
         _infoNode = new cocos2d::CCNode();
         _subtitleLabel = CCLabelTTF::create("","Artial", 12);
-        _subtitleLabel->setColor( ccc3(255, 0, 0) );
+        _subtitleLabel->setColor( ccc3(150, 20, 20) );
         CCPoint subtitlePoint = board2screen(-1,0);
         subtitlePoint.y -= 5;
         _subtitleLabel->setPosition( subtitlePoint );
         _subtitleLabel->setAnchorPoint(ccp(0,1));
         _infoNode->addChild(_subtitleLabel);
-
-        std::string title = _gameInfo.playerName + " Game";
+        
+        std::string title = _gameInfo.playerName;
         _titleLabel = CCLabelTTF::create(title.c_str(), "Artial", 24);
-        _titleLabel->setColor( ccc3(0, 0, 0) );
-        CCPoint titlePoint = board2screen(-1,3);
+        _titleLabel->setColor( ccc3(200, 20, 20) );
+        CCPoint titlePoint = board2screen(-1,4);
         titlePoint.y += 15;
         //titlePoint.y = _screenSize.height/2;
         _titleLabel->setPosition( titlePoint );
-        _titleLabel->setAnchorPoint(ccp(0,0.5f));
+        _titleLabel->setAnchorPoint(ccp(0.5f,0.5f));
         _infoNode->addChild(_titleLabel);
 
+        //TODO Move icons and title to a layer
+#if ((CC_TARGET_PLATFORM == CC_PLATFORM_IOS) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC))
+        // custom ttf files are defined in Test-info.plist
+        _battlechessTitleLabel = CCLabelTTF::create("Battlechess","bybsy",32);
+#else
+        _battlechessTitleLabel = CCLabelTTF::create("Battlechess","./bybsy.ttf", 32);
+#endif
+
+        _battlechessTitleLabel->setColor( ccc3(200, 10, 10) );
+        titlePoint.y += 35;
+        //titlePoint.y = _screenSize.height/2;
+        _battlechessTitleLabel->setPosition( titlePoint );
+        _battlechessTitleLabel->setAnchorPoint(ccp(0.5f,0.5f));
+        _infoNode->addChild(_battlechessTitleLabel);
+        
         this->addChild(_infoNode, Board::kForeground);
 
         //_backgroundGameSprite = CCSprite::createWithSpriteFrameName("background.png");
@@ -191,8 +212,7 @@ bool GameLayer::init()
         if(_backgroundGameSprite) {
 
             _backgroundGameSprite->setScale(max(_screenSize.width/_backgroundGameSprite->boundingBox().size.width,_screenSize.height/_backgroundGameSprite->boundingBox().size.height));
-
-            _backgroundGameSprite->setOpacity(100);
+            _backgroundGameSprite->setOpacity(255);
             _backgroundGameSprite->setPosition(ccp(_screenSize.width/2, _screenSize.height/2));
             _backgroundGameSprite->setVisible(true);
 

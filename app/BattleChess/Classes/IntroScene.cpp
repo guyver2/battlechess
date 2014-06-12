@@ -40,7 +40,7 @@ bool IntroLayer::init()
 {
     bool bRet = false;
     do {
-        CC_BREAK_IF (! CCLayerColor::initWithColor( ccc4(255,204,153,255) ) );
+        CC_BREAK_IF (! CCLayerColor::initWithColor( ccc4(0,0,0,255) ) );
         
 		CCSize winSize = CCDirector::sharedDirector()->getWinSize();
         
@@ -58,9 +58,20 @@ bool IntroLayer::init()
 		//this->addChild(fieldSprite);
         
         this->_titleLabel = CCLabelTTF::create("Username: ","Artial", 15);
-		_titleLabel->setColor( ccc3(0, 0, 0) );
+		_titleLabel->setColor( ccc3(255, 10, 10) );
 		_titleLabel->setPosition( ccp(winSize.width/2 - fieldSprite->boundingBox().size.height/2, winSize.height/2 + fieldSprite->boundingBox().size.height/2 + 10) );
 		this->addChild(_titleLabel);
+        
+#if ((CC_TARGET_PLATFORM == CC_PLATFORM_IOS) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC))
+        // custom ttf files are defined in Test-info.plist
+        _battlechessTitleLabel = CCLabelTTF::create("Battlechess","bybsy",32);
+#else
+        _battlechessTitleLabel = CCLabelTTF::create("Battlechess","./bybsy.ttf", 32);
+#endif
+        _battlechessTitleLabel->setColor( ccc3(200, 10, 10) );
+        _battlechessTitleLabel->setPosition( ccp(winSize.width/2, winSize.height/2 + fieldSprite->boundingBox().size.height/2 +_backgroundGameSprite->boundingBox().size.height + 10 + 40) );
+        _battlechessTitleLabel->setAnchorPoint(ccp(0.5f,0.5f));
+        this->addChild(_battlechessTitleLabel);
         
         std::string name = GameInfo::getUsername();
         
@@ -68,7 +79,7 @@ bool IntroLayer::init()
         _pEditName->setPosition(ccp(winSize.width/2, winSize.height/2));
         _pEditName->setFontColor(ccRED);
         _pEditName->setPlaceHolder(name.c_str());
-        _pEditName->setMaxLength(8);
+        _pEditName->setMaxLength(18);
         _pEditName->setReturnType(kKeyboardReturnTypeDone);
         _pEditName->setDelegate(this);
         this->addChild(_pEditName);

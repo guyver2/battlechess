@@ -23,15 +23,15 @@ public:
     virtual bool init();
     CREATE_FUNC(IntroLayer);
     
+
+private:
     void IntroDone();
     void ccTouchesEnded(cocos2d::CCSet* touches, cocos2d::CCEvent* event);
     void tick(float dt);
     
-    CCSwipeGestureRecognizer * _swipe;
-    void didSwipe(cocos2d::CCObject *swipeObj);
-    
     cocos2d::extension::CCEditBox * _pEditName;
     void editboxEventHandler();
+    
     
     virtual void menuCloseCallback(cocos2d::CCObject* pSender);
     void editBoxReturn(cocos2d::extension::CCEditBox* editBox);
@@ -39,6 +39,12 @@ public:
     void registerWithTouchDispatcher();
     CC_SYNTHESIZE_READONLY(cocos2d::CCLabelTTF*, _label, Label);
     CC_SYNTHESIZE_READONLY(cocos2d::CCLabelTTF*, _titleLabel, TitleLabel);
+    CC_SYNTHESIZE_READONLY(cocos2d::CCLabelTTF*, _battlechessTitleLabel, BattlechessTitleLabel);
+    cocos2d::CCSprite * _backgroundGameSprite;
+    
+    CCSwipeGestureRecognizer * _swipe;
+    void didSwipe(cocos2d::CCObject *swipeObj);
+
 
 };
 
