@@ -80,7 +80,7 @@ That new rule has some direct consequences on the gameplay.
 ## Android & iOS Apps :
 
 
-- Android .apk file can be downloaded from this link : [http://git.sxbn.org/battleChess/BattleChess-debug.apk](http://git.sxbn.org/battleChess/BattleChess-debug.apk)
+- Android .apk file can be downloaded from this link : [http://git.sxbn.org/battleChess/BattleChess.apk](http://git.sxbn.org/battleChess/BattleChess.apk)
 
 - iOS app is ready and working, but thanks to Apple's App Store terms we cannot release it without paying...
 
