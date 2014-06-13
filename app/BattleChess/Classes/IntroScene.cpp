@@ -8,6 +8,7 @@
 
 #include "IntroScene.h"
 #include "GameLayerScene.h"
+#include "constants.h"
 
 using namespace cocos2d;
 using namespace cocos2d::extension;
@@ -59,7 +60,7 @@ bool IntroLayer::init()
         
         this->_titleLabel = CCLabelTTF::create("Username: ","Artial", 15);
 		_titleLabel->setColor( ccc3(255, 10, 10) );
-		_titleLabel->setPosition( ccp(winSize.width/2 - fieldSprite->boundingBox().size.height/2, winSize.height/2 + fieldSprite->boundingBox().size.height/2 + 10) );
+		_titleLabel->setPosition( ccp(winSize.width/2 - fieldSprite->boundingBox().size.height/2, winSize.height/2 + fieldHeight/2 + 10) );
 		this->addChild(_titleLabel);
         
 #if ((CC_TARGET_PLATFORM == CC_PLATFORM_IOS) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC))
@@ -69,7 +70,7 @@ bool IntroLayer::init()
         _battlechessTitleLabel = CCLabelTTF::create("Battlechess","./bybsy.ttf", 32);
 #endif
         _battlechessTitleLabel->setColor( ccc3(200, 10, 10) );
-        _battlechessTitleLabel->setPosition( ccp(winSize.width/2, winSize.height/2 + fieldSprite->boundingBox().size.height/2 +_backgroundGameSprite->boundingBox().size.height + 10 + 40) );
+        _battlechessTitleLabel->setPosition( ccp(winSize.width/2, winSize.height/2 + fieldHeight/2 +_backgroundGameSprite->boundingBox().size.height + 10 + 40) );
         _battlechessTitleLabel->setAnchorPoint(ccp(0.5f,0.5f));
         this->addChild(_battlechessTitleLabel);
         
@@ -122,10 +123,10 @@ void IntroLayer::menuCloseCallback(CCObject* pSender)
     CCMessageBox("You pressed the close button. Windows Store Apps do not implement a close button.", "Alert");
 #else
     CCDirector::sharedDirector()->end();
-//#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
     //android fails to close too
     exit(0);
-//#endif
+#endif
 #endif
 }
 
@@ -188,7 +189,12 @@ void IntroLayer::tick(float dt){
     /*if(_pEditName->getText() != NULL){
         fprintf(stderr,"text: %s", _pEditName->getText());
     }*/
-    
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
+    //CCEditBox does not work on mac
+    CCScene * GameLayerScene = GameLayer::scene();
+    CCDirector::sharedDirector()->replaceScene( GameLayerScene );
+#endif
+
     
 }
 

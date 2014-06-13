@@ -54,15 +54,10 @@ public:
     IntroScene():_layer(NULL) {};
     ~IntroScene();
     bool init();
-    void setSocket(SocketService *socket){
-        this->ssSocket = socket;
-    }
     CREATE_FUNC(IntroScene);
     
     CC_SYNTHESIZE_READONLY(IntroLayer*, _layer, Layer);
     
-private:
-    SocketService * ssSocket;
 };
 
 #endif /* defined(__SampleGame__IntroScene__) */

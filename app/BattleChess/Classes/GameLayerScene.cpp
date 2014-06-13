@@ -172,17 +172,17 @@ bool GameLayer::init()
          this->addChild(_tmpTextInfoNode, Board::kForeground);
 
         _infoNode = new cocos2d::CCNode();
-        _subtitleLabel = CCLabelTTF::create("","Artial", 12);
-        _subtitleLabel->setColor( ccc3(150, 20, 20) );
-        CCPoint subtitlePoint = board2screen(-1,0);
-        subtitlePoint.y -= 5;
-        _subtitleLabel->setPosition( subtitlePoint );
-        _subtitleLabel->setAnchorPoint(ccp(0,1));
+        _subtitleLabel = CCLabelTTF::create("","Artial", 22);
+        _subtitleLabel->setColor( ccc3(255, 0, 0) );
+        //CCPoint subtitlePoint = board2screen(-1,0);
+        //subtitlePoint.y -= 5;
+        _subtitleLabel->setPosition( board2screen(9,6) );
+        _subtitleLabel->setAnchorPoint(ccp(0.0f,0.5f));
         _infoNode->addChild(_subtitleLabel);
         
         std::string title = _gameInfo.playerName;
         _titleLabel = CCLabelTTF::create(title.c_str(), "Artial", 24);
-        _titleLabel->setColor( ccc3(200, 20, 20) );
+        _titleLabel->setColor( ccc3(255, 0, 0) );
         CCPoint titlePoint = board2screen(-1,4);
         titlePoint.y += 15;
         //titlePoint.y = _screenSize.height/2;
@@ -404,15 +404,21 @@ void GameLayer::boardPopulate(const Board& board){
 
     //FIXME move the game info to somewhere else
     if(_state == MYTURN) {
-        if(_gameInfo.playerColor == 'w')
+        if(_gameInfo.playerColor == 'w') {
             _subtitleLabel->setString(GameInfo::WHITE.c_str());
-        else
+            _subtitleLabel->setPosition( board2screen(9,6) );
+        } else {
             _subtitleLabel->setString(GameInfo::BLACK.c_str());
+            _subtitleLabel->setPosition( board2screen(-1,0) );
+        }
     }else if(_state == HISTURN) {
-        if(_gameInfo.playerColor == 'w')
+        if(_gameInfo.playerColor == 'w'){
             _subtitleLabel->setString(GameInfo::BLACK.c_str());
-        else
+            _subtitleLabel->setPosition( board2screen(-1,0) );
+        } else {
             _subtitleLabel->setString(GameInfo::WHITE.c_str());
+            _subtitleLabel->setPosition( board2screen(9,6) );
+        }
     }else{
         //_subtitleLabel->setString("");
     }
@@ -426,10 +432,10 @@ void GameLayer::menuCloseCallback(CCObject* pSender)
     CCMessageBox("You pressed the close button. Windows Store Apps do not implement a close button.", "Alert");
 #else
     CCDirector::sharedDirector()->end();
-//#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
     //Android fails to close too
     exit(0);
-//#endif
+#endif
 #endif
 }
 
@@ -594,7 +600,9 @@ void GameLayer::ccTouchesEnded(CCSet* touches, CCEvent* event)
                 _newGameSprite->setVisible(false);
                 _replayGameSprite->setVisible(false);
                 _label->setVisible(false);
-                _subtitleLabel->setString("Swipe left/right for replay");
+                _subtitleLabel->setPosition( board2screen(9,4) );
+                _subtitleLabel->setAnchorPoint(ccp(0.5f, 0.5f));
+                _subtitleLabel->setString("<-- Swipe for replay -->");
                 _subtitleLabel->setVisible(true);
                 changeState(REPLAY);
             } else {

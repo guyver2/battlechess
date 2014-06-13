@@ -45,7 +45,7 @@ fi
 
 # paths
 
-if [ -z "${NDK_ROOT+aaa}" ];then
+if [ -z "${NDK_ROOT}" ];then
 echo "NDK_ROOT not defined. Please define NDK_ROOT in your environment or in local.properties"
 exit 1
 fi
@@ -105,4 +105,4 @@ else
     "$NDK_ROOT"/ndk-build -C "$APP_ANDROID_ROOT" $* \
         "NDK_MODULE_PATH=${COCOS2DX_ROOT}:${COCOS2DX_ROOT}/cocos2dx/platform/third_party/android/prebuilt"
 fi
-echo "build native script finished. Run ant debug."
+echo "build native script finished."

@@ -211,6 +211,10 @@
 		10D670E2191BCD8200439855 /* Board.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 10D670E0191BCD8200439855 /* Board.cpp */; };
 		10EC4E5B1925385F00117A17 /* battlechess_sprites_hd.plist in Resources */ = {isa = PBXBuildFile; fileRef = 10EC4E591925385F00117A17 /* battlechess_sprites_hd.plist */; };
 		10EC4E5C1925385F00117A17 /* battlechess_sprites_hd.png in Resources */ = {isa = PBXBuildFile; fileRef = 10EC4E5A1925385F00117A17 /* battlechess_sprites_hd.png */; };
+		10EDB799194B6CA900CB3A5F /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 10EDB798194B6CA900CB3A5F /* Images.xcassets */; };
+		10EDB79D194B6F8200CB3A5F /* darkbackground.png in Resources */ = {isa = PBXBuildFile; fileRef = 10EDB79B194B6F8200CB3A5F /* darkbackground.png */; };
+		10EDB79E194B6F8200CB3A5F /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 10EDB79C194B6F8200CB3A5F /* icon.png */; };
+		10EDB7A0194B703A00CB3A5F /* bybsy.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 10EDB79F194B703A00CB3A5F /* bybsy.ttf */; };
 		41BC70AD15BF7CCE006A0A6C /* Icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 41BC70AC15BF7CCE006A0A6C /* Icon.icns */; };
 		41CD6C6515BF7574005E6F29 /* AppController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 41CD6C6315BF7574005E6F29 /* AppController.mm */; };
 		41CD6C6615BF7574005E6F29 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 41CD6C6415BF7574005E6F29 /* main.m */; };
@@ -668,6 +672,10 @@
 		10EC4E591925385F00117A17 /* battlechess_sprites_hd.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = battlechess_sprites_hd.plist; sourceTree = "<group>"; };
 		10EC4E5A1925385F00117A17 /* battlechess_sprites_hd.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = battlechess_sprites_hd.png; sourceTree = "<group>"; };
 		10EC4E5E1925387900117A17 /* GameInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GameInfo.h; sourceTree = "<group>"; };
+		10EDB798194B6CA900CB3A5F /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = BattleChess/Images.xcassets; sourceTree = SOURCE_ROOT; };
+		10EDB79B194B6F8200CB3A5F /* darkbackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = darkbackground.png; sourceTree = "<group>"; };
+		10EDB79C194B6F8200CB3A5F /* icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon.png; sourceTree = "<group>"; };
+		10EDB79F194B703A00CB3A5F /* bybsy.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = bybsy.ttf; sourceTree = "<group>"; };
 		41BC70AC15BF7CCE006A0A6C /* Icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Icon.icns; sourceTree = "<group>"; };
 		41CD6C5115BF748C005E6F29 /* BattleChess.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BattleChess.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		41CD6C6215BF7574005E6F29 /* AppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppController.h; sourceTree = "<group>"; };
@@ -1881,6 +1889,10 @@
 		ABC96BC316FE18D00089A41B /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				10EDB79F194B703A00CB3A5F /* bybsy.ttf */,
+				10EDB79B194B6F8200CB3A5F /* darkbackground.png */,
+				10EDB79C194B6F8200CB3A5F /* icon.png */,
+				10EDB798194B6CA900CB3A5F /* Images.xcassets */,
 				10755BA61949D2E200D51537 /* SoundOff.png */,
 				10755BA71949D2E200D51537 /* SoundOn.png */,
 				10755BA81949D2E200D51537 /* background.png */,
@@ -1980,7 +1992,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				10EDB79E194B6F8200CB3A5F /* icon.png in Resources */,
 				107556241949B30200D51537 /* libfmodexL-4.36.01.so in Resources */,
+				10EDB7A0194B703A00CB3A5F /* bybsy.ttf in Resources */,
+				10EDB799194B6CA900CB3A5F /* Images.xcassets in Resources */,
 				10EC4E5B1925385F00117A17 /* battlechess_sprites_hd.plist in Resources */,
 				1075591E1949B67500D51537 /* ccactivityindicator_6.gif in Resources */,
 				107556231949B30200D51537 /* libfmodex.so in Resources */,
@@ -1996,6 +2011,7 @@
 				10EC4E5C1925385F00117A17 /* battlechess_sprites_hd.png in Resources */,
 				10755BB01949D2E200D51537 /* SoundOff.png in Resources */,
 				10755BA51949D19600D51537 /* battlechessSprites.png in Resources */,
+				10EDB79D194B6F8200CB3A5F /* darkbackground.png in Resources */,
 				41CD6C6F15BF7673005E6F29 /* MainMenu.xib in Resources */,
 				10755BB31949D2E200D51537 /* field.png in Resources */,
 				107559181949B67500D51537 /* ccactivityindicator_11.gif in Resources */,
@@ -2276,6 +2292,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
 				GCC_C_LANGUAGE_STANDARD = "compiler-default";
 				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
@@ -2328,6 +2345,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
 				GCC_C_LANGUAGE_STANDARD = "compiler-default";
 				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
