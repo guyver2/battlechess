@@ -33,11 +33,13 @@ set(COCOS_LIBS cocos2d cocosdenshion)
 
 set(bcsources main.cpp
         ../Classes/AppDelegate.cpp 
-        ../Classes/GameOverScene.cpp 
         ../Classes/GameLayerScene.cpp 
+        ../Classes/IntroScene.cpp 
         ../Classes/SocketService.cpp 
         ../Classes/Board.cpp     
         ../Classes/WaitingOpponentScene.cpp
+        ../../lib/cocos2d-x-extensions/CCGestureRecognizer/CCSwipeGestureRecognizer.cpp
+        ../../lib/cocos2d-x-extensions/CCGestureRecognizer/CCGestureRecognizer.cpp 
         ../Classes/GameInfo.cpp)
 
 add_executable(battlechess ${bcsources})
