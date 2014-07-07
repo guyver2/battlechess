@@ -462,7 +462,8 @@ Move Board::getClosest(Move move, const std::vector< Position >& reach){
 		dj =  1;
     
     //FIXME assumption that moving to the same position is filtered out by the server
-	for(int a = 1; isIn(i+a*di,j+a*dj) && !(i+a*di == ii  && j+a*dj == jj); a++) {
+    //FIXME added quick patch for pawn attempting a long jump on an occupied spot
+	for(int a = 1; isIn(i+a*di,j+a*dj) && !(i+(a-1)*di == ii  && j+(a-1)*dj == jj); a++) {
         std::string obsPiece = _board[i+a*di][j+a*dj];
         if( obsPiece != "" ){
             if(obsPiece.c_str()[1] == piece.c_str()[1]){
@@ -470,10 +471,16 @@ Move Board::getClosest(Move move, const std::vector< Position >& reach){
                 move._destJ = j+(a-1)*dj;
                 break;
             }else{
-                //taking the enemy piece
-                move._destI = i+a*di;
-                move._destJ = j+a*dj;
-                break;
+                //if enemy encountered and I'm a pawn jumping vertically, go to previous location
+                if(piece.c_str()[0] == 'p' && dj == 0) {
+                    move._destI = i+(a-1)*di;
+                    move._destJ = j+(a-1)*dj;
+                } else {
+                    //taking the enemy piece
+                    move._destI = i+a*di;
+                    move._destJ = j+a*dj;
+                    break;
+                }
             }
         }
     }

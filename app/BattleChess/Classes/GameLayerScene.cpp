@@ -684,6 +684,9 @@ void GameLayer::updateGame(float dt)
             break;
         case GETURL:
             if(_ssSocket.getPacket(packet)){
+                
+                if(cocos2d::CCUserDefault::sharedUserDefault()->getBoolForKey("sound", true))
+                    CocosDenshion::SimpleAudioEngine::sharedEngine()->playEffect("pew-pew-lei.wav");
                 //FIXME handle waiting oponent through a scene
                 _label->setVisible(false);
                 if(packet.header == "OVER"){
