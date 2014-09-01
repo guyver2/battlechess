@@ -421,7 +421,7 @@ class Board(object):
 				self.castleable.remove('rqb')
 			elif [i, j] == RKBPOS and 'rkb' in self.castleable:
 				self.castleable.remove('rkb')
-			elif [ii, j] == RQWPOS and 'rqw' in self.castleable:
+			elif [i, j] == RQWPOS and 'rqw' in self.castleable:
 				self.castleable.remove('rqw')
 			elif [i, j] == RKWPOS and 'rkw' in self.castleable:
 				self.castleable.remove('rkw')
