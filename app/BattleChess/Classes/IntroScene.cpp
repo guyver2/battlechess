@@ -173,51 +173,6 @@ void IntroLayer::didSwipe(cocos2d::CCObject *swipeObj){
     
 }
 
-void IntroLayer::menuCloseCallback(CCObject* pSender)
-{
-	// "close" menu item clicked
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT) || (CC_TARGET_PLATFORM == CC_PLATFORM_WP8)
-    CCMessageBox("You pressed the close button. Windows Store Apps do not implement a close button.", "Alert");
-#else
-    CCDirector::sharedDirector()->end();
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-    //android fails to close too
-    exit(0);
-#endif
-#endif
-}
-
-/**
- * This method is called when the return button was pressed or the outside area of keyboard was touched.
- * @param editBox The edit box object that generated the event.
- */
-void IntroLayer::editBoxReturn(cocos2d::extension::CCEditBox* editBox) {
-    
-    if(_pEditName->getText() != NULL){
-        fprintf(stderr,"username: %s", _pEditName->getText());
-        cocos2d::CCUserDefault::sharedUserDefault()->setStringForKey("username", _pEditName->getText());
-    
-        CCScene * GameLayerScene = GameLayer::scene();
-        CCLog("replacing scene");
-        CCDirector::sharedDirector()->replaceScene( GameLayerScene );
-    }
-
-    
-};
-
-void IntroLayer::didSwipe(cocos2d::CCObject *swipeObj){
-    CCLog("swipe detected");
-    CCSwipe * swipe = (CCSwipe*)swipeObj;
-    CCPoint p = swipe->location;
-    
-    CCLOG("swiped x pos: %f, y pos: %f", p.x, p.y);
-    if(swipe->direction == kSwipeGestureRecognizerDirectionLeft){
-        CCLOG("swiped left");
-    } else {
-        CCLOG("swiped right");
-    }
-    
-}
 
 void IntroLayer::ccTouchesEnded(CCSet* touches, CCEvent* event)
 {
