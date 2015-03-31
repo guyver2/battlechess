@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+# proublyd brought to you by Antoine Letouzey and Pol Monso !
+
 import pygame
 import sys
 import time
