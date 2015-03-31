@@ -83,6 +83,7 @@ bool GameLayer::init()
 	bool bRet = false;
 	do 
 	{
+		
 		CC_BREAK_IF(! CCLayerColor::initWithColor( ccc4(204,204,204,255) ) );
 
         //TODO does this go here?
@@ -449,39 +450,6 @@ void GameLayer::menuSoundCallback(CCObject* pSender)
         _pSoundItem->setSelectedIndex(0);
     else
         _pSoundItem->setSelectedIndex(1);
-
-
-}
-void GameLayer::menuSettingsCallback(CCObject* pSender)
-{
-    changeState(OVER);
-    IntroScene * IntroScene = IntroScene::create();
-    CCDirector::sharedDirector()->replaceScene( IntroScene );
-
-}
-void GameLayer::menuHomeCallback(CCObject* pSender)
-{
-    changeState(OVER);
-    CCScene * gameScene = GameLayer::scene();
-    CCDirector::sharedDirector()->replaceScene( gameScene );
-
-}
-
-void GameLayer::didSwipe(cocos2d::CCObject *swipeObj){
-    CCSwipe * swipe = (CCSwipe*)swipeObj;
-    CCPoint p = swipe->location;
-    
-    if(_state == REPLAY) {
-        _somethingChanged = true;
-        if(swipe->direction == kSwipeGestureRecognizerDirectionLeft){
-            CCLOG("swiped left");
-            nextBoard();
-        } else {
-            CCLOG("swiped right");
-            previousBoard();
-        }
-    }
-}
 
 
 }

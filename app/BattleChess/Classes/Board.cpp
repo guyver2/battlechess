@@ -531,5 +531,17 @@ void Board::move(const Move& move){
      
      //# if a pawn reached the end of the board, it becomes a queen
      if(_board[ii][jj][0] == 'p' && (ii==0 || ii==7))
-         _board[ii][jj] = 'q'+ _board[ii][jj][1];
+         _board[ii][jj][0] = 'q';
+    
+    for(int i=0; i<8;i++){
+        for(int j=0;j<8; j++){
+            if(_board[i][j].length() != 0 && _board[i][j].length() != 2) {
+                DEBUG2("Error while processing move %s (%d,%d) -> %s (%d,%d)", _board[i][j].c_str(),i,j,_board[ii][jj].c_str(),ii,jj);
+                this->print();
+                assert(!"replay parsing error");
+                _board[i][j] = "";
+            }
+        }
+    }
+               
 }

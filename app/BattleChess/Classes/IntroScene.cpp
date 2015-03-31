@@ -54,9 +54,20 @@ bool IntroLayer::init()
         fieldSprite->setPosition(ccp(winSize.width/2, winSize.height/2));
 		//this->addChild(fieldSprite);
         
-        //CCSprite *fieldSprite = CCSprite::create("field.png");
-        fieldSprite->setPosition(ccp(winSize.width/2, winSize.height/2));
-		//this->addChild(fieldSprite);
+        int fieldHeight = 0.7*fieldSprite->boundingBox().size.height;
+        
+        _backgroundGameSprite = CCSprite::create("icon.png");
+        if(_backgroundGameSprite) {
+            
+            _backgroundGameSprite->setAnchorPoint(ccp(0.5f,0.0f));
+            _backgroundGameSprite->setPosition(ccp(winSize.width/2, winSize.height/2 + fieldHeight/2 + 10));
+            _backgroundGameSprite->setVisible(true);
+            
+            this->addChild(_backgroundGameSprite, Board::kBackground);
+        } else {
+            DEBUG2("Background image could not be loaded. Ignoring it.");
+        }
+
         
         this->_titleLabel = CCLabelTTF::create("Username: ","Artial", 15);
 		_titleLabel->setColor( ccc3(255, 10, 10) );
@@ -114,6 +125,52 @@ bool IntroLayer::init()
 	} while (0);
     
     return bRet;
+}
+
+void IntroLayer::menuCloseCallback(CCObject* pSender)
+{
+	// "close" menu item clicked
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT) || (CC_TARGET_PLATFORM == CC_PLATFORM_WP8)
+    CCMessageBox("You pressed the close button. Windows Store Apps do not implement a close button.", "Alert");
+#else
+    CCDirector::sharedDirector()->end();
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+    //android fails to close too
+    exit(0);
+#endif
+#endif
+}
+
+/**
+ * This method is called when the return button was pressed or the outside area of keyboard was touched.
+ * @param editBox The edit box object that generated the event.
+ */
+void IntroLayer::editBoxReturn(cocos2d::extension::CCEditBox* editBox) {
+    
+    if(_pEditName->getText() != NULL){
+        fprintf(stderr,"username: %s", _pEditName->getText());
+        cocos2d::CCUserDefault::sharedUserDefault()->setStringForKey("username", _pEditName->getText());
+    
+        CCScene * GameLayerScene = GameLayer::scene();
+        CCLog("replacing scene");
+        CCDirector::sharedDirector()->replaceScene( GameLayerScene );
+    }
+
+    
+};
+
+void IntroLayer::didSwipe(cocos2d::CCObject *swipeObj){
+    CCLog("swipe detected");
+    CCSwipe * swipe = (CCSwipe*)swipeObj;
+    CCPoint p = swipe->location;
+    
+    CCLOG("swiped x pos: %f, y pos: %f", p.x, p.y);
+    if(swipe->direction == kSwipeGestureRecognizerDirectionLeft){
+        CCLOG("swiped left");
+    } else {
+        CCLOG("swiped right");
+    }
+    
 }
 
 void IntroLayer::menuCloseCallback(CCObject* pSender)

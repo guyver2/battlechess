@@ -77,7 +77,6 @@ public:
 
     //replay
     void openUrl(const std::string& url, std::string& content);
-    void fetchMoves(std::string url, std::vector<std::string> moves);
     
     //multithreading
     void sendPacket(const Packet& packet);
