@@ -5,42 +5,42 @@
 	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
 	<false/>
 	<key>IDESourceControlProjectIdentifier</key>
-	<string>7721D0F9-9A41-4216-BA44-963306A66580</string>
+	<string>9CC51FA7-09FE-4EC8-A94A-2144B74E3A24</string>
 	<key>IDESourceControlProjectName</key>
 	<string>BattleChess</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
-		<key>1D72B050-BF5A-4013-801A-5E9743605E7E</key>
-		<string>iccvlabsrv16.epfl.ch:/home/letouzey/git/battlechess.git</string>
 		<key>429DF550-C3E7-4FD8-A21E-6A61039231BE</key>
 		<string>https://github.com/spalx/cocos2d-x-extensions.git</string>
 		<key>6357211C-E304-426C-B534-BDA49039CAE5</key>
 		<string>https://github.com/dualface/cocos2d-x-extensions.git</string>
+		<key>E9EEACF6-EB20-4D8B-BB72-928032AA156B</key>
+		<string>https://github.com/quimnuss/battlechess.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
 	<string>app/BattleChess/proj.ios/BattleChess.xcodeproj/project.xcworkspace</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
-		<key>1D72B050-BF5A-4013-801A-5E9743605E7E</key>
-		<string>../../../../..</string>
 		<key>429DF550-C3E7-4FD8-A21E-6A61039231BE</key>
 		<string>../../../lib/cocos2d-x-extensions</string>
 		<key>6357211C-E304-426C-B534-BDA49039CAE5</key>
 		<string>../../../lib/cocos2dx/cocos2d-x-extensions0</string>
+		<key>E9EEACF6-EB20-4D8B-BB72-928032AA156B</key>
+		<string>../../../../..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
-	<string>iccvlabsrv16.epfl.ch:/home/letouzey/git/battlechess.git</string>
+	<string>https://github.com/quimnuss/battlechess.git</string>
 	<key>IDESourceControlProjectVersion</key>
 	<integer>110</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
-	<string>1D72B050-BF5A-4013-801A-5E9743605E7E</string>
+	<string>E9EEACF6-EB20-4D8B-BB72-928032AA156B</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>1D72B050-BF5A-4013-801A-5E9743605E7E</string>
+			<string>E9EEACF6-EB20-4D8B-BB72-928032AA156B</string>
 			<key>IDESourceControlWCCName</key>
 			<string>battlechess</string>
 		</dict>

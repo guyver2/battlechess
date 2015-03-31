@@ -85,6 +85,10 @@ That new rule has some direct consequences on the gameplay.
 - iOS app is ready and working, but thanks to Apple's App Store terms we cannot release it without paying...
 
 
+### Building the app
+
+If you are builind the app from source and it complains that cocos2dx doesn't have neon_matrix_impl.c, copy it from cocos2dmods/ to the directory where it is looking for it.
+
 
 ## Credits & Licence :
 
@@ -106,8 +110,12 @@ That new rule has some direct consequences on the gameplay.
 ![img5](http://git.sxbn.org/battleChess/5.jpg)  
 
 ## Screenshots Android & iOS App :
-![img1](http://git.sxbn.org/battleChess/m1.png)  
-![img2](http://git.sxbn.org/battleChess/m2.png)  
-![img3](http://git.sxbn.org/battleChess/m3.png)  
-![img4](http://git.sxbn.org/battleChess/m4.png)  
+
+<center> ![img1](https://www.dropbox.com/s/vds1kulhv1my05e/icon.png?dl=1) </center>
+
+![img2](https://www.dropbox.com/s/n4b25d7113u910l/m2.png?dl=1)
+![img3](https://www.dropbox.com/s/fuuz4w5b7d2amco/m3.png?dl=1)
+![img4](https://www.dropbox.com/s/cwtly4znbsj0n4t/m5.png?dl=1)
+![img4](https://www.dropbox.com/s/mwi5b705eks01ky/m4.png?dl=1)
+<center> ![img1](https://www.dropbox.com/s/72vvoty6h1na1bw/m1.png?dl=1) </center>
 
