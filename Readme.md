@@ -103,11 +103,11 @@ If you are builind the app from source and it complains that cocos2dx doesn't ha
 - Licence : GPL
 
 ## Screenshots :
-![img1](http://git.sxbn.org/battleChess/1.jpg)  
-![img2](http://git.sxbn.org/battleChess/2.jpg)  
-![img3](http://git.sxbn.org/battleChess/3.jpg)  
-![img4](http://git.sxbn.org/battleChess/4.jpg)  
-![img5](http://git.sxbn.org/battleChess/5.jpg)  
+![img1](http://sxbn.org/~antoine/git/battlechess/1.jpg)  
+![img2](http://sxbn.org/~antoine/git/battlechess/2.jpg)  
+![img3](http://sxbn.org/~antoine/git/battlechess/3.jpg)  
+![img4](http://sxbn.org/~antoine/git/battlechess/4.jpg)  
+![img5](http://sxbn.org/~antoine/git/battlechess/5.jpg)  
 
 ## Screenshots Android & iOS App :
 
