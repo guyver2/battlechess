@@ -51,9 +51,9 @@ That new rule has some direct consequences on the gameplay.
  
 
 - Replay mode :  
-	You just got beaten and you don't know what just happened. Don't worry that happens a lot. Every game played are saved on the server and can be downloaded from this webpage : [http://git.sxbn.org/battleChess/games/](http://git.sxbn.org/battleChess/games/)  
+	You just got beaten and you don't know what just happened. Don't worry that happens a lot. Every game played are saved on the server and can be downloaded from this webpage : [http://sxbn.org/~antoine/games/](http://sxbn.org/~antoine/games/)  
 	You can either download the file or replay it from the url directly using one of the following commands :  
-	`python battleChess.py -p http://git.sxbn.org/battleChess/games/2014_03_07_14_06_37_lance_hardwood_Vs_sniper.txt`  
+	`python battleChess.py -p http://sxbn.org/~antoine/games/2014_03_07_14_06_37_lance_hardwood_Vs_sniper.txt`  
 	`python battleChess.py -p ./2014_03_07_14_06_37_lance_hardwood_Vs_sniper.txt`
 
 - Using the server application :  
@@ -80,7 +80,7 @@ That new rule has some direct consequences on the gameplay.
 ## Android & iOS Apps :
 
 
-- Android .apk file can be downloaded from this link : [http://git.sxbn.org/battleChess/BattleChess.apk](http://git.sxbn.org/battleChess/BattleChess.apk)
+- Android .apk file can be downloaded from this link : [http://sxbn.org/~antoine/git/battlechess/BattleChess.apk](http://sxbn.org/~antoine/git/battlechess/BattleChess.apk)
 
 - iOS app is ready and working, but thanks to Apple's App Store terms we cannot release it without paying...
 
