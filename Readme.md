@@ -13,7 +13,7 @@
 - Quick game :  
 	`python battleChess.py`  
 - Download :  
-	`git clone http://git.sxbn.org/battleChess.git`  
+	`git clone https://github.com/quimnuss/battlechess.git`  
 
 
 ## Introduction :  
