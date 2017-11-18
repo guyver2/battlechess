@@ -111,12 +111,16 @@ If you are builind the app from source and it complains that cocos2dx doesn't ha
 
 ## Screenshots Android & iOS App :
 
-<center> ![img1](https://user-images.githubusercontent.com/4179721/32983272-5a2a240a-cc92-11e7-8152-37b1bc18eeaf.png) </center>
+<p align="center"> 
+<img src="https://user-images.githubusercontent.com/4179721/32983272-5a2a240a-cc92-11e7-8152-37b1bc18eeaf.png">
+</p>
 
 ![m2](https://user-images.githubusercontent.com/4179721/32983274-5a8e9868-cc92-11e7-94f0-cadc6b50e038.png)
 ![m3](https://user-images.githubusercontent.com/4179721/32983275-5ab8462c-cc92-11e7-8e4d-becde7cfe0da.png)
 ![m4](https://user-images.githubusercontent.com/4179721/32983276-5ad82ab4-cc92-11e7-98a3-419f788f1670.png)
 ![m5](https://user-images.githubusercontent.com/4179721/32983277-5afbe6f2-cc92-11e7-880c-8efd8ecb53db.png)
 
-<center> ![img1](https://user-images.githubusercontent.com/4179721/32983273-5a4dbf1e-cc92-11e7-8be8-f34fac9ab2f8.png) </center>
+<p align="center"> 
+<img src="https://user-images.githubusercontent.com/4179721/32983273-5a4dbf1e-cc92-11e7-8be8-f34fac9ab2f8.png">
+</p>
 
