@@ -111,11 +111,12 @@ If you are builind the app from source and it complains that cocos2dx doesn't ha
 
 ## Screenshots Android & iOS App :
 
-<center> ![img1](https://www.dropbox.com/s/vds1kulhv1my05e/icon.png?dl=1) </center>
+<center> ![img1](https://user-images.githubusercontent.com/4179721/32983272-5a2a240a-cc92-11e7-8152-37b1bc18eeaf.png) </center>
 
-![img2](https://www.dropbox.com/s/n4b25d7113u910l/m2.png?dl=1)
-![img3](https://www.dropbox.com/s/fuuz4w5b7d2amco/m3.png?dl=1)
-![img4](https://www.dropbox.com/s/cwtly4znbsj0n4t/m5.png?dl=1)
-![img4](https://www.dropbox.com/s/mwi5b705eks01ky/m4.png?dl=1)
-<center> ![img1](https://www.dropbox.com/s/72vvoty6h1na1bw/m1.png?dl=1) </center>
+![m2](https://user-images.githubusercontent.com/4179721/32983274-5a8e9868-cc92-11e7-94f0-cadc6b50e038.png)
+![m3](https://user-images.githubusercontent.com/4179721/32983275-5ab8462c-cc92-11e7-8e4d-becde7cfe0da.png)
+![m4](https://user-images.githubusercontent.com/4179721/32983276-5ad82ab4-cc92-11e7-98a3-419f788f1670.png)
+![m5](https://user-images.githubusercontent.com/4179721/32983277-5afbe6f2-cc92-11e7-880c-8efd8ecb53db.png)
+
+<center> ![img1](https://user-images.githubusercontent.com/4179721/32983273-5a4dbf1e-cc92-11e7-8be8-f34fac9ab2f8.png) </center>
 
