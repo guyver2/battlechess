@@ -21,14 +21,6 @@ class Board(object):
 		self.winner = None
 		self.enpassant = -1
 
-		# debug purpose
-		#self.board[1][4] = 'kw'
-		# self.board[2][3] = 'pw'
-		# self.board[2][5] = 'pw'
-		# self.board[4][4] = 'qb'
-		# self.board[4][3] = 'bb'
-		# self.board[4][5] = 'rb'
-
 	def reset(self):
 		self.board = [['' for i in xrange(8)] for j in xrange(8)]
 		self.board[0] = ['rb', 'nb', 'bb', 'qb', 'kb', 'bb', 'nb', 'rb']
@@ -374,10 +366,6 @@ class Board(object):
 			else :
 				return False, []
 		if self.board[ii][jj] != '':
-			# sniper sound
-			#if self.visibility : # check if we're not in playback mode
-			#	if (abs(ii-i) > 1 or abs(jj-j) > 1) and (self.visibility[ii][jj] == False or self.visibility[i][j] == False):
-			#		self.sniper.play()
 			self.taken.append(str(self.board[ii][jj]))
 
 		#check if we killed in passant
@@ -530,7 +518,8 @@ if __name__ == '__main__':
 	print board.castleable
 	print board.winner
 
-	board.move(6,2,4,2)
+	print(board.move(1,2,4,2)) # invalid move
+	print(board.move(6,2,4,2)) # valid move
 
 	print '----------------'
 
