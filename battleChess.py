@@ -8,7 +8,7 @@ import time
 import socket
 import threading
 import random
-import urllib
+import urllib.request
 from core.Board import Board
 from pygame.locals import *
 from communication import sendData, recvData, waitForMessage
@@ -444,7 +444,7 @@ def networkGame(argv, screen, sprite_board, sprite_pieces, sniper):
 
 def replay(url, screen, sprite_board, sprite_pieces, sniper):
     
-    fic = urllib.urlopen(url)
+    fic = urllib.request.urlopen(url)
     matchup = fic.readline()
     pygame.display.set_caption(matchup)
 
