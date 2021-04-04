@@ -1,0 +1,8 @@
+requests
+python-jose[cryptography]
+fastapi
+passlib[bcrypt]
+uvicorn
+python-multipart
+pytest
+pygame

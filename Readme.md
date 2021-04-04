@@ -57,12 +57,19 @@ That new rule has some direct consequences on the gameplay.
 	`python battleChess.py -p ./2014_03_07_14_06_37_lance_hardwood_Vs_sniper.txt`
 
 - Using the server application :  
-	If you want to host your own server (you don't have to). You just need to run the server.py programm on a computer that can be reached through the network. Change the port and hostname if you want and pass those informations to the client application.
+	If you want to host your own server (you don't have to). You just need to run the api with
+	`$ uvicorn server.btchApi:app --reload`
+	program on a computer that can be reached through the network. Change the port and hostname if you want and pass those informations to the client application. Check `$ uvicorn --help`.
+	You'll need to install the packages listed in `requirements.txt`. You can do so with `$ pip install -r requirements.txt`
+
+	You can go to `localhost:8000/docs` for the documentation and usage examples. Authenticate on the upper right with `johndoe` and `secret`
 
 - Information sent on the network :  
 	If you worry about privacy, you can launch your own server. It's pretty straigthforward to see from the source code that nothing is sent anywhere else.  
 	The only information sent and stored on the server are your nickname and the moves you make.
 
+- Tests:
+	You can use the `$ pytest` runner to run the tests from the root of the project.
 
 ## How to play :
 
