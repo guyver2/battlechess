@@ -1,12 +1,28 @@
 import unittest
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
 from jose import JWTError, jwt
 
-from .btchApi import app, get_password_hash, set_fake_db, get_fake_db
+from .btchApi import app, get_db
+
+from .btchApiDB import SessionLocal, Base
+from . import crud, models
+from .utils import get_password_hash
 
 from fastapi.testclient import TestClient
 
+
 class Test_Api(unittest.TestCase):
+
+    def override_get_db(self):
+        try:
+            db = self.TestingSessionLocal()
+            yield db
+        finally:
+            db.close()
+
 
     def fakedb(self):        
         fake_users_db = {
@@ -29,13 +45,26 @@ class Test_Api(unittest.TestCase):
 
     def setUp(self):
         # create db, users, games...
-        set_fake_db(self.fakedb())
+        # set_fake_db(self.fakedb())
+        
+        SQLALCHEMY_DATABASE_URL = 'sqlite:///:memory:'
+        # SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 
+        engine = create_engine(
+            SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+        )
+        self.TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+        Base.metadata.create_all(bind=engine)
+
+        app.dependency_overrides[get_db] = self.override_get_db
+        
         self.client = TestClient(app)
     
     def tearDown(self):
         # delete db
-        set_fake_db(self.fakedb())
+        # set_fake_db(self.fakedb())
+        pass
 
     def test__version(self):
         response = self.client.get("/version")
@@ -48,7 +77,7 @@ class Test_Api(unittest.TestCase):
             "/users/",
             json={
                 "username": "alice", 
-                "full_name": "Alice la Suisse", 
+                "full_name": "Alice la Suisse",
                 "email": "alice@lasuisse.ch", 
                 "hashed_password": hashed_password
             },
@@ -57,12 +86,14 @@ class Test_Api(unittest.TestCase):
         print(response.json())
 
         self.assertEqual(response.status_code, 200)
+        self.assertIsNotNone(response.json())
         self.assertDictEqual(response.json(), {
             "username": "alice",
             "full_name": "Alice la Suisse",
             "email": "alice@lasuisse.ch",
+            "id": 1,
             "hashed_password": hashed_password,
-            "disabled": False
+            "is_active": True
         })
 
     def test__getUsers__unauthorized(self):
@@ -94,7 +125,7 @@ class Test_Api(unittest.TestCase):
         self.assertListEqual(list(response.json().keys()), ['access_token', 'token_type'])
 
     def test__createUser__persistence(self):
-        hashed_password = get_password_hash("secret")
+        hashed_password = crud.get_password_hash("secret")
         response = self.client.post(
             "/users/",
             json={
@@ -114,6 +145,9 @@ class Test_Api(unittest.TestCase):
             },
         )
 
+        self.assertIsNotNone(response.json())
+        print(response.json())
+        self.assertIn('access_token', response.json())
         token = response.json()['access_token']
 
         response = self.client.get(
@@ -123,3 +157,7 @@ class Test_Api(unittest.TestCase):
         
         self.assertEqual(response.status_code, 200)
         self.assertListEqual(response.json(), ["johndoe", "janedoe", "alice"])
+
+
+    def test__joinGame(self):
+        pass
