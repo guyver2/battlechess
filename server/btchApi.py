@@ -72,6 +72,15 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 app = FastAPI()
 
+def set_fake_db(fake_db):
+    global fake_users_db
+    print(fake_users_db)
+    fake_users_db = fake_db.copy()
+    print(fake_users_db)
+    print(fake_db)
+
+def get_fake_db():
+    return fake_users_db
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
@@ -91,7 +100,7 @@ def add_user(db, user: UserInDB):
         "username": user.username,
         "full_name": user.full_name,
         "email": user.email,
-        "hashed_password": get_password_hash(user.password),
+        "hashed_password": user.hashed_password,
         "disabled": False,
     }
 
@@ -181,6 +190,10 @@ async def read_users_me(current_user: User = Depends(get_current_active_user)):
 @app.get("/users/me/games/")
 async def read_own_games(current_user: User = Depends(get_current_active_user)):
     return [Game(**game) for gameName, game in fake_games_db.items() if game['white'] == current_user.username or game['black'] == current_user.username]
+
+@app.get("/users/")
+async def get_users(current_user: User = Depends(get_current_active_user)):
+    return list(fake_users_db.keys())
 
 @app.post("/users/")
 async def create_user(new_user: UserInDB):
