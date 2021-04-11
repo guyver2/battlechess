@@ -1,6 +1,7 @@
 import unittest
 
 from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 from jose import JWTError, jwt
@@ -16,9 +17,20 @@ from fastapi.testclient import TestClient
 
 class Test_Api(unittest.TestCase):
 
-    def override_get_db(self):
+    @classmethod
+    def setUpClass(cls):
+        SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+
+        cls.engine = create_engine(
+            SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+        )
+ 
+        cls.TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=cls.engine)
+       
+    @classmethod
+    def override_get_db(cls):
         try:
-            db = self.TestingSessionLocal()
+            db = cls.TestingSessionLocal()
             yield db
         finally:
             db.close()
@@ -44,18 +56,12 @@ class Test_Api(unittest.TestCase):
         return fake_users_db
 
     def setUp(self):
+        # TODO setUp correctly with begin..rollback instead of create..drop
         # create db, users, games...
-        # set_fake_db(self.fakedb())
-        
-        SQLALCHEMY_DATABASE_URL = 'sqlite:///:memory:'
-        # SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+       
+        # Base = declarative_base()
 
-        engine = create_engine(
-            SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-        )
-        self.TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-        Base.metadata.create_all(bind=engine)
+        Base.metadata.create_all(bind=self.engine)
 
         app.dependency_overrides[get_db] = self.override_get_db
         
@@ -63,7 +69,7 @@ class Test_Api(unittest.TestCase):
     
     def tearDown(self):
         # delete db
-        # set_fake_db(self.fakedb())
+        Base.metadata.drop_all(self.engine)
         pass
 
     def test__version(self):
@@ -101,6 +107,15 @@ class Test_Api(unittest.TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test__authenticate(self):
+
+        # db = self.TestingSessionLocal()
+        # res = db.query(models.User).all()
+        # print("result: {}".format(res))
+        # for r in res:
+        #     print("row: {}".format(r))
+        # db.close()
+
+        # add a user
         hashed_password = get_password_hash("secret")
         response = self.client.post(
             "/users/",
@@ -112,6 +127,7 @@ class Test_Api(unittest.TestCase):
             },
         )
 
+        # test auth
         response = self.client.post(
             "/token",
             headers={"Content-Type": "application/x-www-form-urlencoded"},
@@ -151,12 +167,12 @@ class Test_Api(unittest.TestCase):
         token = response.json()['access_token']
 
         response = self.client.get(
-            "/users/",
+            "/users/usernames",
             headers={"Authorization": "Bearer " + token},
         )
         
         self.assertEqual(response.status_code, 200)
-        self.assertListEqual(response.json(), ["johndoe", "janedoe", "alice"])
+        self.assertListEqual(response.json(), ["alice"])
 
 
     def test__joinGame(self):

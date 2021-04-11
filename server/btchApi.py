@@ -173,30 +173,26 @@ async def login_for_access_token(
     return {"access_token": access_token, "token_type": "bearer"}
 
 @app.get("/users/me/", response_model=schemas.User)
-async def read_users_me(current_user: schemas.User = Depends(get_current_active_user)):
+def read_users_me(current_user: schemas.User = Depends(get_current_active_user)):
     return current_user
 
 
 @app.get("/users/me/games/")
-async def read_own_games(
-    current_user: schemas.User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-    ):
-    return [
-        Game(**game)
-        for gameName, game in db.items()
-        if game['white'] == current_user.username
-        or game['black'] == current_user.username
-    ]
+def read_own_games(current_user: schemas.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    return [Game(**game) for gameName, game in db.items() if game['white'] == current_user.username or game['black'] == current_user.username]
 
-@app.get("/users/", response_model=List[schemas.User])
-def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+@app.get("/users/",  response_model=List[schemas.User])
+def read_users(skip: int = 0, limit: int = 100, current_user: schemas.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     users = crud.get_users(db, skip=skip, limit=limit)
     return users
 
+@app.get("/users/usernames", response_model=List[str])
+def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    users = crud.get_users(db, skip=skip, limit=limit)
+    return [user.username for user in users]
 
 @app.post("/users/")
-async def create_user(new_user: schemas.UserCreate, db: Session = Depends(get_db)):
+def create_user(new_user: schemas.UserCreate, db: Session = Depends(get_db)):
     user = crud.get_user(db, new_user.username)
     user_exists_exception = HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
@@ -212,16 +208,13 @@ async def create_user(new_user: schemas.UserCreate, db: Session = Depends(get_db
 
 
 @app.get("/games/")
-async def get_new_game(current_user: schemas.User = Depends(get_current_active_user)):
+def get_new_game(current_user: schemas.User = Depends(get_current_active_user)):
     handle = crud.create_game()
     return {"game_handle": handle}
 
 
 @app.get("/games/{gameUUID}")
-async def get_game_by_handle(
-    gameUUID: str,
-    current_user: schemas.User = Depends(get_current_active_user)
-    ):
+def get_game_by_handle(gameUUID: str, current_user: schemas.User = Depends(get_current_active_user)):
     game = get_active_game(gameUUID, current_user)
     if not game:
         raise HTTPException(
@@ -260,9 +253,7 @@ def query_turn(gameUUID: str, current_user: schemas.User = Depends(get_current_a
     pass
 
 @app.post("/games/{gameUUID}/move")
-async def post_move(gameUUID: str,
-                    current_user: User = Depends(get_current_active_user),
-                    current_game: Game = Depends(get_active_game)):
+def post_move(gameUUID: str, current_user: schemas.User = Depends(get_current_active_user), current_game: schemas.Game = Depends(get_active_game)):
     game = get_active_game(gameUUID, current_user)
     if not game:
         raise HTTPException(
