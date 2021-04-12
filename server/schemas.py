@@ -42,7 +42,6 @@ class Move(BaseModel):
 class UserBase(BaseModel):
     username: str
     full_name: Optional[str] = None
-    disabled: Optional[bool] = None
     email: Optional[str] = None
 
 class UserCreate(UserBase):

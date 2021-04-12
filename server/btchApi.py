@@ -61,6 +61,8 @@ fake_games_db = {
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+models.Base.metadata.create_all(bind=engine)
+
 app = FastAPI()
 # allow for CORS
 origins = ["*"]
@@ -115,7 +117,7 @@ def try_set_player(gameUUID, user):
     return get_game(gameUUID)
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
+async def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -126,17 +128,17 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
-        token_data = TokenData(username=username)
+        token_data = schemas.TokenData(username=username)
     except JWTError:
         raise credentials_exception
-    user = crud.get_user(db, username=token_data.username)
+    user = crud.get_user_by_username(db, username=token_data.username)
     if user is None:
         raise credentials_exception
     return user
 
 async def get_current_active_user(current_user: schemas.User = Depends(get_current_user)):
-    if current_user.disabled:
-        raise HTTPException(status_code=400, detail="Inactive user")
+    if not current_user.is_active:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user")
     return current_user
 
 async def get_active_game(
@@ -179,7 +181,9 @@ def read_users_me(current_user: schemas.User = Depends(get_current_active_user))
 
 @app.get("/users/me/games/")
 def read_own_games(current_user: schemas.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
-    return [Game(**game) for gameName, game in db.items() if game['white'] == current_user.username or game['black'] == current_user.username]
+    games = crud.get_games_by_owner(db, current_user)
+    # TODO refactor this for db query result from .all()
+    return [Game(**game) for gameName, game in games if game['white'] == current_user.username or game['black'] == current_user.username]
 
 @app.get("/users/",  response_model=List[schemas.User])
 def read_users(skip: int = 0, limit: int = 100, current_user: schemas.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
@@ -193,9 +197,9 @@ def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
 
 @app.post("/users/")
 def create_user(new_user: schemas.UserCreate, db: Session = Depends(get_db)):
-    user = crud.get_user(db, new_user.username)
+    user = crud.get_user_by_username(db, new_user.username)
     user_exists_exception = HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN,
+        status_code=status.HTTP_409_CONFLICT,
         detail="username taken",
         headers={"WWW-Authenticate": "Bearer"},
     )
