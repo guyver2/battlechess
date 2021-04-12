@@ -58,3 +58,6 @@ def get_game(gameUUID):
     if gameUUID not in fake_games_db:
         raise game_exception
     return Game(**fake_games_db[gameUUID])
+
+def get_games_by_owner(db: Session, user: schemas.User):
+    return db.query(models.Game).filter(models.Game.owner == user).all()
