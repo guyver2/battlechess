@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -8,11 +9,24 @@ from jose import JWTError, jwt
 
 from .btchApi import app, get_db
 
-from .btchApiDB import SessionLocal, Base
+from .btchApiDB import SessionLocal, Base, BtchDBContextManager
 from . import crud, models
 from .utils import get_password_hash
 
 from fastapi.testclient import TestClient
+
+# TODO we might want to use a Test db context manager with 
+# all the setUpClass code in it to handle the db session
+# and then rollback at the end of the test instead of dropping tables
+# class TestBtchDBContextManager:
+#     def __init__(self):
+#         self.db = cls.TestingSessionLocal()
+
+#     def __enter__(self):
+#         return self.db
+
+#     def __exit__(self, exc_type, exc_value, traceback):
+#         self.db.close()
 
 
 class Test_Api(unittest.TestCase):
@@ -35,7 +49,6 @@ class Test_Api(unittest.TestCase):
         finally:
             db.close()
 
-
     def fakedb(self):        
         fake_users_db = {
             "johndoe": {
@@ -55,6 +68,18 @@ class Test_Api(unittest.TestCase):
         }
         return fake_users_db
 
+    # needs to be weitin db contextmanager
+    def addFakeUsers(self, db):
+        for username, user in self.fakedb().items():
+            db_user = models.User(username=user["username"], full_name=user["full_name"], email=user["email"], hashed_password=user["hashed_password"])
+            db.add(db_user)
+            db.commit()
+    
+    def getToken(self, username):
+        return crud.create_access_token(
+            data={"sub": username}, expires_delta=timedelta(minutes=3000)
+        )
+
     def setUp(self):
         # TODO setUp correctly with begin..rollback instead of create..drop
         # create db, users, games...
@@ -66,9 +91,12 @@ class Test_Api(unittest.TestCase):
         app.dependency_overrides[get_db] = self.override_get_db
         
         self.client = TestClient(app)
+
+        self.db = self.TestingSessionLocal()
     
     def tearDown(self):
         # delete db
+        self.db.close()
         Base.metadata.drop_all(self.engine)
         pass
 
@@ -107,13 +135,6 @@ class Test_Api(unittest.TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test__authenticate(self):
-
-        # db = self.TestingSessionLocal()
-        # res = db.query(models.User).all()
-        # print("result: {}".format(res))
-        # for r in res:
-        #     print("row: {}".format(r))
-        # db.close()
 
         # add a user
         hashed_password = get_password_hash("secret")
@@ -174,6 +195,23 @@ class Test_Api(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertListEqual(response.json(), ["alice"])
 
+    def test__addUser__withinContext(self):
+        self.addFakeUsers(self.db)
+
+    def test__addUser__persistence(self):
+        self.addFakeUsers(self.db)
+
+        users = self.db.query(models.User).all()
+
+        token = self.getToken("johndoe")
+
+        response = self.client.get(
+            "/users/usernames",
+            headers={"Authorization": "Bearer " + token},
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertListEqual(response.json(), ["johndoe", "janedoe"])        
 
     def test__joinGame(self):
         pass
