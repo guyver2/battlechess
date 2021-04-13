@@ -207,7 +207,6 @@ def create_user(new_user: schemas.UserCreate, db: Session = Depends(get_db)):
         raise user_exists_exception
     else:
         db_user = crud.create_user(db, new_user)
-        print(db_user)
         return crud.get_user_by_username(db, new_user.username)
 
 
