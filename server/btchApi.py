@@ -209,9 +209,8 @@ def create_user(new_user: schemas.UserCreate, db: Session = Depends(get_db)):
         db_user = crud.create_user(db, new_user)
         return crud.get_user_by_username(db, new_user.username)
 
-
-@app.get("/games/")
-def get_new_game(current_user: schemas.User = Depends(get_current_active_user)):
+@app.post("/games/")
+def post_new_game(new_game: schemas.GameCreate, current_user: schemas.User = Depends(get_current_active_user)):
     handle = crud.create_game()
     return {"game_handle": handle}
 
