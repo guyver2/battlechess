@@ -16,13 +16,15 @@ class GameSnap(BaseModel):
     snap: str
 
 class GameBase(BaseModel):
-    handle: str
+    pass
 
 class GameCreate(GameBase):
+    random: bool
     pass
 
 class Game(GameBase):
     id: int
+    handle: str
     create_time: Optional[datetime] = None
     owner_id: int
     white_id: Optional[int] = None

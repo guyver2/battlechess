@@ -18,9 +18,18 @@ from fastapi.testclient import TestClient
 # TODO we might want to use a Test db context manager with 
 # all the setUpClass code in it to handle the db session
 # and then rollback at the end of the test instead of dropping tables
-# class TestBtchDBContextManager:
-#     def __init__(self):
-#         self.db = cls.TestingSessionLocal()
+# something like:
+#  class TestBtchDBContextManager:
+#      def __init__(self):
+#         SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+
+#         engine = create_engine(
+#             SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+#         )
+ 
+#         TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=cls.engine)
+       
+#         self.db = TestingSessionLocal()
 
 #     def __enter__(self):
 #         return self.db
@@ -68,12 +77,16 @@ class Test_Api(unittest.TestCase):
         }
         return fake_users_db
 
-    # needs to be weitin db contextmanager
     def addFakeUsers(self, db):
         for username, user in self.fakedb().items():
             db_user = models.User(username=user["username"], full_name=user["full_name"], email=user["email"], hashed_password=user["hashed_password"])
             db.add(db_user)
             db.commit()
+        firstusername,_ = self.fakedb().keys()
+        return self.getToken(firstusername)
+
+    def addFakeGames(self, db):
+        pass
     
     def getToken(self, username):
         return crud.create_access_token(
@@ -81,7 +94,7 @@ class Test_Api(unittest.TestCase):
         )
 
     def setUp(self):
-        # TODO setUp correctly with begin..rollback instead of create..drop
+        # TODO setUp correctly with begin-rollback instead of create-drop
         # create db, users, games...
        
         # Base = declarative_base()
@@ -195,15 +208,13 @@ class Test_Api(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertListEqual(response.json(), ["alice"])
 
-    def test__addUser__withinContext(self):
+    def test__addFakeUsers(self):
         self.addFakeUsers(self.db)
 
-    def test__addUser__persistence(self):
-        self.addFakeUsers(self.db)
+    def test__getUsernames(self):
+        token = self.addFakeUsers(self.db)
 
         users = self.db.query(models.User).all()
-
-        token = self.getToken("johndoe")
 
         response = self.client.get(
             "/users/usernames",
@@ -211,7 +222,26 @@ class Test_Api(unittest.TestCase):
         )
         
         self.assertEqual(response.status_code, 200)
-        self.assertListEqual(response.json(), ["johndoe", "janedoe"])        
+        self.assertListEqual(response.json(), ["johndoe", "janedoe"])
 
+    def test__db_cleanup(self):
+
+        users = self.db.query(models.User).all()
+
+        self.assertListEqual(users, [])
+
+    def test__createGame(self):
+        token = self.addFakeUsers(self.db)
+
+        response = self.client.post(
+            '/games/',
+            headers={'Authorization': 'Bearer ' + token,
+                     'Content-Type': 'application/x-www-form-urlencoded'},
+            data={
+                'username': 'johndoe', 
+                'password': 'secret',
+            },
+        )
+        
     def test__joinGame(self):
         pass
