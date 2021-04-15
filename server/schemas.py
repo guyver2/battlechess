@@ -20,7 +20,6 @@ class GameBase(BaseModel):
 
 class GameCreate(GameBase):
     random: bool
-    pass
 
 class Game(GameBase):
     id: int

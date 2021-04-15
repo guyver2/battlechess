@@ -5,9 +5,27 @@ from jose import JWTError, jwt
 
 from . import models, schemas
 
-from .utils import get_password_hash, verify_password
+from .utils import get_password_hash, verify_password, get_random_string
 
-from .config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
+from .config import (
+    SECRET_KEY, ALGORITHM,
+    ACCESS_TOKEN_EXPIRE_MINUTES, HANDLEBASEURL,
+)
+
+# TODO redo this. I hate myself for writing it.
+def create_game_handle(db: Session):
+    randstr = get_random_string()
+    handle = HANDLEBASEURL + randstr
+    print(handle)
+    # Check if it exists (and its idle?) Or we could add the id or something.
+    for i in range(5):
+        repeatedHandleGame = db.query(models.Game).filter(models.Game.handle == handle).first()
+        if repeatedHandleGame is None:
+            break
+
+    if repeatedHandleGame is not None:
+        return None
+    return handle
 
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
@@ -46,9 +64,26 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-def create_game():
-    # TODO generate links
-    return "https://bt.ch/lkml4a3.d3"
+def create_game(db: Session, user: schemas.User, gameOptions: schemas.GameCreate):
+    user = get_user_by_username(db, user.username)
+    if not user:
+        return False
+
+    handle = create_game_handle(db)
+
+    # TODO list status strings somewhere
+    db_game = models.Game(
+        owner_id=user.id,
+        create_time=datetime.now(timezone.utc),
+        handle=handle,
+        status="idle",
+        turn="white",
+        random=gameOptions.random
+    )
+    db.add(db_game)
+    db.commit()
+    db.refresh(db_game)
+    return db_game
 
 def get_game(gameUUID):
     game_exception = HTTPException(
@@ -61,3 +96,6 @@ def get_game(gameUUID):
 
 def get_games_by_owner(db: Session, user: schemas.User):
     return db.query(models.Game).filter(models.Game.owner == user).all()
+
+def get_game_by_handle(db: Session, gameUUID):
+    return db.query(models.Game).filter(models.Game.handle == gameUUID).first()
