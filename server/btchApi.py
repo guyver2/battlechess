@@ -15,50 +15,6 @@ from . import crud, models, schemas
 
 from .btchApiDB import SessionLocal, engine
 
-fake_users_db = {
-    "johndoe": {
-        "username": "johndoe",
-        "full_name": "John Doe",
-        "email": "johndoe@example.com",
-        "hashed_password":
-        "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
-        "disabled": False,
-    },
-    "janedoe": {
-        "username": "janedoe",
-        "full_name": "Jane Doe",
-        "email": "janedoe@example.com",
-        "hashed_password":
-        "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
-        "disabled": False,
-    }
-}
-
-fake_games_db = {
-    "lkml4a3.d3": {
-        "handle": "lkml4a3.d3",
-        "white": "johndoe",
-        "black": "janedoe",
-        "status": "started",
-        "create_time": datetime(2021, 1, 1, tzinfo=timezone.utc),
-    },
-    "da39a3ee5e": {
-        "handle": "da39a3ee5e",
-        "white": "johndoe",
-        "black": "janedoe",
-        "status": "running",
-        "create_time": datetime(2021, 3, 12, tzinfo=timezone.utc),
-    },
-    "d3255bfef9": {
-        "handle": "d3255bfef9",
-        "white": "johndoe",
-        "black": None,
-        "status": "open",
-        "create_time": datetime(2021, 4, 5, tzinfo=timezone.utc),
-    }
-}
-
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 models.Base.metadata.create_all(bind=engine)
@@ -73,15 +29,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-def set_fake_db(fake_db):
-    global fake_users_db
-    fake_users_db = fake_db.copy()
-
-
-def get_fake_db():
-    return fake_users_db
 
 # Dependency
 def get_db():
@@ -117,7 +64,10 @@ def try_set_player(gameUUID, user):
     return get_game(gameUUID)
 
 
-async def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+async def get_current_user(
+    db: Session = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
+):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -148,7 +98,9 @@ async def get_active_game(
     game = get_game(gameUUID)
 
 async def set_player(
-    gameUUID, current_user: schemas.User = Depends(get_current_active_user)):
+    gameUUID,
+    current_user: schemas.User = Depends(get_current_active_user)
+):
     try_set_player(gameUUID, current_user)
 
 
@@ -180,13 +132,26 @@ def read_users_me(current_user: schemas.User = Depends(get_current_active_user))
 
 
 @app.get("/users/me/games/")
-def read_own_games(current_user: schemas.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+def read_own_games(
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
     games = crud.get_games_by_owner(db, current_user)
     # TODO refactor this for db query result from .all()
-    return [Game(**game) for gameName, game in games if game['white'] == current_user.username or game['black'] == current_user.username]
+    return [
+        Game(**game)
+        for gameName, game in games
+        if game['white'] == current_user.username
+        or game['black'] == current_user.username
+    ]
 
 @app.get("/users/",  response_model=List[schemas.User])
-def read_users(skip: int = 0, limit: int = 100, current_user: schemas.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+def read_users(
+    skip: int = 0,
+    limit: int = 100,
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
     users = crud.get_users(db, skip=skip, limit=limit)
     return users
 
@@ -194,6 +159,17 @@ def read_users(skip: int = 0, limit: int = 100, current_user: schemas.User = Dep
 def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = crud.get_users(db, skip=skip, limit=limit)
     return [user.username for user in users]
+
+@app.get("/users/active_game")
+def read_users(db: Session = Depends(get_db)):
+    game = get_active_game(gameUUID, current_user)
+    if not game:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="game not found",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return game
 
 @app.post("/users/")
 def create_user(new_user: schemas.UserCreate, db: Session = Depends(get_db)):
@@ -210,25 +186,43 @@ def create_user(new_user: schemas.UserCreate, db: Session = Depends(get_db)):
         return crud.get_user_by_username(db, new_user.username)
 
 @app.post("/games/")
-def post_new_game(new_game: schemas.GameCreate, current_user: schemas.User = Depends(get_current_active_user)):
-    handle = crud.create_game()
-    return {"game_handle": handle}
+def post_new_game(
+    new_game: schemas.GameCreate,
+    db: Session = Depends(get_db),
+    current_user: schemas.User = Depends(get_current_active_user)
+):
+    return crud.create_game(db, current_user, new_game)
 
 
 @app.get("/games/{gameUUID}")
-def get_game_by_handle(gameUUID: str, current_user: schemas.User = Depends(get_current_active_user)):
-    game = get_active_game(gameUUID, current_user)
-    if not game:
+def get_game_by_handle(
+    gameUUID: str,
+    db: Session = Depends(get_db),
+    current_user: schemas.User = Depends(get_current_active_user)
+):
+    return crud.get_game_by_handle(db, gameUUID)
+
+# lists available games
+@app.get("/games/{gameUUID}/list", response_model=List[schemas.Game])
+def join_game(
+    gameUUID: str,
+    current_user: schemas.User = Depends(get_current_active_user)
+):
+    games = get_available_games(current_user)
+    if not games:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="game not found",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    return game
+    return games
 
 # joines an existing game. error when game already started
 @app.get("/games/{gameUUID}/join")
-def join_game(gameUUID: str, current_user: schemas.User = Depends(get_current_active_user)):
+def join_game(
+    gameUUID: str,
+    current_user: schemas.User = Depends(get_current_active_user)
+):
     game = get_active_game(gameUUID, current_user)
     if not game:
         raise HTTPException(
@@ -240,13 +234,17 @@ def join_game(gameUUID: str, current_user: schemas.User = Depends(get_current_ac
     return game
 
 # either creates a new game or joins an existing unstarted random game. Random games can not be joined via "join_game".
-@app.get("/games/random")
+@app.post("/games/random")
 def join_random_game(current_user: schemas.User = Depends(get_current_active_user)):
-    pass
+    return None
+    return game
 
 # serialized board state
 @app.get("/games/{gameUUID}/board")
-def query_board(gameUUID: str, current_user: schemas.User = Depends(get_current_active_user)):
+def query_board(
+    gameUUID: str,
+    current_user: schemas.User = Depends(get_current_active_user)
+):
     pass
 
 # who's turn is it (None means that the game is over)
@@ -255,7 +253,11 @@ def query_turn(gameUUID: str, current_user: schemas.User = Depends(get_current_a
     pass
 
 @app.post("/games/{gameUUID}/move")
-def post_move(gameUUID: str, current_user: schemas.User = Depends(get_current_active_user), current_game: schemas.Game = Depends(get_active_game)):
+def post_move(
+    gameUUID: str,
+    current_user: schemas.User = Depends(get_current_active_user),
+    current_game: schemas.Game = Depends(get_active_game)
+):
     game = get_active_game(gameUUID, current_user)
     if not game:
         raise HTTPException(

@@ -25,6 +25,7 @@ class Game(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     create_time = Column(DateTime)
+    handle = Column(String)
     owner_id = Column(Integer, ForeignKey("user.id"))
     white_id = Column(Integer, ForeignKey("user.id"))
     black_id = Column(Integer, ForeignKey("user.id"))
