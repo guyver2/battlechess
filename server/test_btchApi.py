@@ -122,8 +122,8 @@ class Test_Api(unittest.TestCase):
         firstusername,_ = self.fakeusersdb().keys()
         return self.getToken(firstusername)
 
-    def addFakeGames(self, db):
-        for handle, game in self.fakegamesdb().items():
+    def addFakeGames(self, db, fakegamesdb):
+        for handle, game in fakegamesdb.items():
             owner = db.query(models.User).filter(models.User.username == game['owner']).first()
             white = db.query(models.User).filter(models.User.username == game['white']).first()
             black = db.query(models.User).filter(models.User.username == game['black']).first()
@@ -313,7 +313,7 @@ class Test_Api(unittest.TestCase):
 
     def test__get_game_by_handle(self):
         token = self.addFakeUsers(self.db)
-        handle = self.addFakeGames(self.db)
+        handle = self.addFakeGames(self.db, self.fakegamesdb())
 
         response = self.client.get(
             f'/games/{handle}',
@@ -343,9 +343,11 @@ class Test_Api(unittest.TestCase):
     # TODO
     def test__joinRandomGame(self):
         token = self.addFakeUsers(self.db)
-        handle = self.addFakeGames(self.db)
+        handle = self.addFakeGames(self.db, self.fakegamesdb())
 
-        response = self.client.update(
+        oneUser = self.db.query(models.User)[1]
+
+        response = self.client.patch(
             f'/games/random',
             headers={
                 'Authorization': 'Bearer ' + token,
@@ -355,6 +357,8 @@ class Test_Api(unittest.TestCase):
 
         print(response.json())
         self.assertEqual(response.status_code, 200)
+        self.assertNotEqual(response.json(), {})
+        self.assertTrue(response.json()['white_id'] == oneUser.id or response.json()['black_id'] == oneUser.id)
         self.assertDictEqual(response.json(), {
             'black_id': None,
             'create_time': mock.ANY,
@@ -367,9 +371,27 @@ class Test_Api(unittest.TestCase):
             'white_id': 1,
         })
 
+    def test__joinRandomGame__noneAvailable(self):
+        token = self.addFakeUsers(self.db)
+        gamesdbmod = self.fakegamesdb()
+        gamesdbmod['d3255bfef9']['status'] = 'done'
+        handle = self.addFakeGames(self.db, gamesdbmod)
+
+        response = self.client.patch(
+            f'/games/random',
+            headers={
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json',
+            },
+        )
+
+        print(response.json())
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(response.json(), {})
+
     def _test__findGame(self):
         token = self.addFakeUsers(self.db)
-        handle = self.addFakeGames(self.db)
+        handle = self.addFakeGames(self.db, self.fakegamesdb())
 
         response = self.client.get(
             f'/games/{handle}/join',
@@ -399,7 +421,7 @@ class Test_Api(unittest.TestCase):
 
     def _test__joinGame(self):
         token = self.addFakeUsers(self.db)
-        handle = self.addFakeGames(self.db)
+        handle = self.addFakeGames(self.db, self.fakegamesdb())
 
         response = self.client.get(
             f'/games/{handle}/join',
