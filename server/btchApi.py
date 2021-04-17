@@ -234,7 +234,7 @@ def join_game(
     return game
 
 # either creates a new game or joins an existing unstarted random game. Random games can not be joined via "join_game".
-@app.post("/games/random")
+@app.update("/games/random")
 def join_random_game(current_user: schemas.User = Depends(get_current_active_user)):
     return None
     return game
