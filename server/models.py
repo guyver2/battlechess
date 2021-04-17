@@ -31,16 +31,31 @@ class Game(Base):
     black_id = Column(Integer, ForeignKey("user.id"))
     status = Column(String)
     turn = Column(String)
-    random = Column(Boolean)  
+    random = Column(Boolean)
 
     owner = relationship("User", backref="games", foreign_keys=[owner_id])
     white = relationship("User", backref="whites", foreign_keys=[white_id])
     black = relationship("User", backref="blacks", foreign_keys=[black_id])
-    
+
     # owner = relationship("User", foreign_keys=[owner_id], back_populates="games")
     # white = relationship("User", back_populates="whites", foreign_keys=[white_id])
     # black = relationship("User", back_populates="blacks", foreign_keys=[black_id])
     snaps = relationship("GameSnap", back_populates="game")
+
+    def set_player(self, user: User):
+
+        print(f"before setting player {self.__dict__}")
+        if not self.white_id and not self.black_id:
+            # TODO random
+            self.white_id = user.id
+        elif not self.white_id:
+            self.white_id = user.id
+        elif not self.black_id:
+            self.black_id = user.id
+        else:
+            #error player already set
+            raise
+        print(f"after setting player {self.__dict__}")
 
 class GameSnap(Base):
 

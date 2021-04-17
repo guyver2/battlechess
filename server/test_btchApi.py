@@ -98,6 +98,14 @@ class Test_Api(unittest.TestCase):
                 "winner": "johndoe",
                 "create_time": datetime(2021, 3, 12, tzinfo=timezone.utc),
             },
+            "123fr12339": {
+                "handle": "123fr12339",
+                "owner": "janedoe",
+                "white": "janedoe",
+                "black": None,
+                "status": "idle",
+                "create_time": datetime(2021, 4, 5, tzinfo=timezone.utc),
+            },
             "d3255bfef9": {
                 "handle": "d3255bfef9",
                 "owner": "johndoe",
@@ -332,7 +340,7 @@ class Test_Api(unittest.TestCase):
             'black_id': None,
             'create_time': mock.ANY,
             'handle': mock.ANY,
-            'id': 3,
+            'id': 4,
             'owner_id': 1,
             'random': False,
             'status': 'idle',
@@ -348,7 +356,7 @@ class Test_Api(unittest.TestCase):
         oneUser = self.db.query(models.User)[1]
 
         response = self.client.patch(
-            f'/games/random',
+            '/games/random',
             headers={
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json',
@@ -360,25 +368,25 @@ class Test_Api(unittest.TestCase):
         self.assertNotEqual(response.json(), {})
         self.assertTrue(response.json()['white_id'] == oneUser.id or response.json()['black_id'] == oneUser.id)
         self.assertDictEqual(response.json(), {
-            'black_id': None,
+            'black_id': 1,
             'create_time': mock.ANY,
             'handle': mock.ANY,
             'id': 3,
-            'owner_id': 1,
+            'owner_id': 2,
             'random': False,
             'status': 'idle',
             'turn': 'white',
-            'white_id': 1,
+            'white_id': 2,
         })
 
     def test__joinRandomGame__noneAvailable(self):
         token = self.addFakeUsers(self.db)
         gamesdbmod = self.fakegamesdb()
-        gamesdbmod['d3255bfef9']['status'] = 'done'
+        gamesdbmod['123fr12339']['status'] = 'done'
         handle = self.addFakeGames(self.db, gamesdbmod)
 
         response = self.client.patch(
-            f'/games/random',
+            '/games/random',
             headers={
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json',
@@ -407,15 +415,15 @@ class Test_Api(unittest.TestCase):
         print(response.json())
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(response.json(), {
-            'black_id': None,
+            'black_id': 1,
             'create_time': mock.ANY,
             'handle': mock.ANY,
             'id': 3,
-            'owner_id': 1,
+            'owner_id': 2,
             'random': False,
             'status': 'idle',
             'turn': 'white',
-            'white_id': 1,
+            'white_id': 2,
         })
 
 
