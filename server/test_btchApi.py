@@ -345,7 +345,7 @@ class Test_Api(unittest.TestCase):
         token = self.addFakeUsers(self.db)
         handle = self.addFakeGames(self.db)
 
-        response = self.client.get(
+        response = self.client.update(
             f'/games/random',
             headers={
                 'Authorization': 'Bearer ' + token,
