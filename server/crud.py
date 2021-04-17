@@ -1,3 +1,5 @@
+import random
+from sqlalchemy import or_, and_
 from sqlalchemy.orm import Session
 from typing import Optional, Tuple, Set
 from datetime import datetime, timedelta, timezone
@@ -99,3 +101,18 @@ def get_games_by_owner(db: Session, user: schemas.User):
 
 def get_game_by_handle(db: Session, gameUUID):
     return db.query(models.Game).filter(models.Game.handle == gameUUID).first()
+
+def get_game_idle_random(db: Session, user: schemas.User):
+    query = db.query(models.Game).filter(
+        and_(
+            models.Game.status.is_("idle"),
+            models.Game.white_id.is_not(user.id),
+            models.Game.black_id.is_not(user.id)
+        )
+    )
+    numAvailableGames = query.count()
+    if numAvailableGames == 0:
+        return {}
+    rand = random.randrange(0, numAvailableGames)
+    game = query[rand]
+    return game

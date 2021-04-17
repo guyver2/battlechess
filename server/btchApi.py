@@ -235,8 +235,14 @@ def join_game(
 
 # either creates a new game or joins an existing unstarted random game. Random games can not be joined via "join_game".
 @app.patch("/games/random")
-def join_random_game(current_user: schemas.User = Depends(get_current_active_user)):
-    return {}
+def join_random_game(
+    db: Session = Depends(get_db),
+    current_user: schemas.User = Depends(get_current_active_user)
+):
+    game = crud.get_game_idle_random(db, current_user)
+    if not game:
+        return {}
+    game.set_player(current_user)
     return game
 
 # serialized board state
