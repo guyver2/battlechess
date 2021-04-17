@@ -234,9 +234,9 @@ def join_game(
     return game
 
 # either creates a new game or joins an existing unstarted random game. Random games can not be joined via "join_game".
-@app.update("/games/random")
+@app.patch("/games/random")
 def join_random_game(current_user: schemas.User = Depends(get_current_active_user)):
-    return None
+    return {}
     return game
 
 # serialized board state
@@ -249,7 +249,10 @@ def query_board(
 
 # who's turn is it (None means that the game is over)
 @app.get("/games/{gameUUID}/turn")
-def query_turn(gameUUID: str, current_user: schemas.User = Depends(get_current_active_user)):
+def query_turn(
+    gameUUID: str,
+    current_user: schemas.User = Depends(get_current_active_user)
+):
     pass
 
 @app.post("/games/{gameUUID}/move")
