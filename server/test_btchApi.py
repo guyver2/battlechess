@@ -38,6 +38,11 @@ from fastapi.testclient import TestClient
 #     def __exit__(self, exc_type, exc_value, traceback):
 #         self.db.close()
 
+# uncomment this to debug SQL
+# import logging
+# logging.basicConfig()
+# logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+
 
 class Test_Api(unittest.TestCase):
 
@@ -67,6 +72,8 @@ class Test_Api(unittest.TestCase):
                 "email": "johndoe@example.com",
                 "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
                 "disabled": False,
+                "avatar": None,
+                "created_at":  datetime(2021, 1, 1, tzinfo=timezone.utc),
             },
             "janedoe": {
                 "username": "janedoe",
@@ -74,6 +81,8 @@ class Test_Api(unittest.TestCase):
                 "email": "janedoe@example.com",
                 "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
                 "disabled": False,
+                "avatar": None,
+                "created_at":  datetime(2021, 1, 1, tzinfo=timezone.utc),
             }
         }
         return fake_users_db
@@ -81,37 +90,41 @@ class Test_Api(unittest.TestCase):
     def fakegamesdb(self):
         fake_games_db = {
             "lkml4a3.d3": {
-                "handle": "lkml4a3.d3",
+                "uuid": "lkml4a3.d3",
                 "owner": "johndoe",
                 "white": "johndoe",
                 "black": "janedoe",
                 "status": "started",
-                "turn": "johndoe",
+                "public": False,
+                "turn": "white",
                 "create_time": datetime(2021, 1, 1, tzinfo=timezone.utc),
             },
             "da39a3ee5e": {
-                "handle": "da39a3ee5e",
+                "uuid": "da39a3ee5e",
                 "owner": "janedoe",
                 "white": "johndoe",
                 "black": "janedoe",
-                "status": "done",
+                "status": "ended",
+                "public": False,
                 "winner": "johndoe",
                 "create_time": datetime(2021, 3, 12, tzinfo=timezone.utc),
             },
             "123fr12339": {
-                "handle": "123fr12339",
+                "uuid": "123fr12339",
                 "owner": "janedoe",
                 "white": "janedoe",
                 "black": None,
                 "status": "idle",
+                "public": True,
                 "create_time": datetime(2021, 4, 5, tzinfo=timezone.utc),
             },
             "d3255bfef9": {
-                "handle": "d3255bfef9",
+                "uuid": "d3255bfef9",
                 "owner": "johndoe",
                 "white": "johndoe",
                 "black": None,
                 "status": "idle",
+                "public": False,
                 "create_time": datetime(2021, 4, 5, tzinfo=timezone.utc),
             }
         }
@@ -131,23 +144,22 @@ class Test_Api(unittest.TestCase):
         return self.getToken(firstusername)
 
     def addFakeGames(self, db, fakegamesdb):
-        for handle, game in fakegamesdb.items():
+        for uuid, game in fakegamesdb.items():
             owner = db.query(models.User).filter(models.User.username == game['owner']).first()
             white = db.query(models.User).filter(models.User.username == game['white']).first()
             black = db.query(models.User).filter(models.User.username == game['black']).first()
             db_game = models.Game(
-                create_time=game["create_time"],
-                handle=game["handle"],
+                created_at=game["create_time"],
+                uuid=game["uuid"],
                 owner_id=owner.id,
                 white_id=white.id if white is not None else None,
                 black_id=black.id if black is not None else None,
                 status=game["status"],
                 turn=game.get("turn", "white"),
-                random=game.get("random", False),
             )
             db.add(db_game)
             db.commit()
-        return handle
+        return uuid
 
     def getToken(self, username):
         return crud.create_access_token(
@@ -197,11 +209,13 @@ class Test_Api(unittest.TestCase):
         self.assertIsNotNone(response.json())
         self.assertDictEqual(response.json(), {
             "username": "alice",
+            "created_at": mock.ANY,
             "full_name": "Alice la Suisse",
             "email": "alice@lasuisse.ch",
             "id": 1,
             "hashed_password": hashed_password,
-            "is_active": True
+            "avatar": None,
+            "status": "active",
         })
 
     def test__getUsers__unauthorized(self):
@@ -301,7 +315,7 @@ class Test_Api(unittest.TestCase):
                 'Content-Type': 'application/json',
             },
             json={
-                'random': False,
+                'public': False,
             },
         )
 
@@ -309,22 +323,23 @@ class Test_Api(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(response.json(), {
             'black_id': None,
-            'create_time': mock.ANY,
-            'handle': mock.ANY,
+            'created_at': mock.ANY,
+            'uuid': mock.ANY,
             'id': 1,
+            'last_move_time': None,
             'owner_id': 1,
-            'random': False,
+            'public': False,
             'status': 'idle',
             'turn': 'white',
             'white_id': None
         })
 
-    def test__get_game_by_handle(self):
+    def test__get_game_by_uuid(self):
         token = self.addFakeUsers(self.db)
-        handle = self.addFakeGames(self.db, self.fakegamesdb())
+        uuid = self.addFakeGames(self.db, self.fakegamesdb())
 
         response = self.client.get(
-            f'/games/{handle}',
+            f'/games/{uuid}',
             headers={
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json',
@@ -338,11 +353,12 @@ class Test_Api(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(response.json(), {
             'black_id': None,
-            'create_time': mock.ANY,
-            'handle': mock.ANY,
+            'created_at': mock.ANY,
+            'uuid': mock.ANY,
             'id': 4,
             'owner_id': 1,
-            'random': False,
+            'last_move_time': None,
+            'public': True,
             'status': 'idle',
             'turn': 'white',
             'white_id': 1,
@@ -351,7 +367,7 @@ class Test_Api(unittest.TestCase):
     # TODO
     def test__joinRandomGame(self):
         token = self.addFakeUsers(self.db)
-        handle = self.addFakeGames(self.db, self.fakegamesdb())
+        uuid = self.addFakeGames(self.db, self.fakegamesdb())
 
         oneUser = self.db.query(models.User)[1]
 
@@ -369,11 +385,12 @@ class Test_Api(unittest.TestCase):
         self.assertTrue(response.json()['white_id'] == oneUser.id or response.json()['black_id'] == oneUser.id)
         self.assertDictEqual(response.json(), {
             'black_id': 1,
-            'create_time': mock.ANY,
-            'handle': mock.ANY,
+            'created_at': mock.ANY,
+            'uuid': mock.ANY,
+            'last_move_time': mock.ANY,
             'id': 3,
             'owner_id': 2,
-            'random': False,
+            'public': True,
             'status': 'idle',
             'turn': 'white',
             'white_id': 2,
@@ -383,7 +400,7 @@ class Test_Api(unittest.TestCase):
         token = self.addFakeUsers(self.db)
         gamesdbmod = self.fakegamesdb()
         gamesdbmod['123fr12339']['status'] = 'done'
-        handle = self.addFakeGames(self.db, gamesdbmod)
+        uuid = self.addFakeGames(self.db, gamesdbmod)
 
         response = self.client.patch(
             '/games/random',
@@ -399,10 +416,10 @@ class Test_Api(unittest.TestCase):
 
     def _test__findGame(self):
         token = self.addFakeUsers(self.db)
-        handle = self.addFakeGames(self.db, self.fakegamesdb())
+        uuid = self.addFakeGames(self.db, self.fakegamesdb())
 
         response = self.client.get(
-            f'/games/{handle}/join',
+            f'/games/{uuid}/join',
             headers={
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json',
@@ -417,7 +434,7 @@ class Test_Api(unittest.TestCase):
         self.assertDictEqual(response.json(), {
             'black_id': 1,
             'create_time': mock.ANY,
-            'handle': mock.ANY,
+            'uuid': mock.ANY,
             'id': 3,
             'owner_id': 2,
             'random': False,
@@ -429,10 +446,10 @@ class Test_Api(unittest.TestCase):
 
     def _test__joinGame(self):
         token = self.addFakeUsers(self.db)
-        handle = self.addFakeGames(self.db, self.fakegamesdb())
+        uuid = self.addFakeGames(self.db, self.fakegamesdb())
 
         response = self.client.get(
-            f'/games/{handle}/join',
+            f'/games/{uuid}/join',
             headers={
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json',
@@ -447,7 +464,7 @@ class Test_Api(unittest.TestCase):
         self.assertDictEqual(response.json(), {
             'black_id': None,
             'create_time': mock.ANY,
-            'handle': mock.ANY,
+            'uuid': mock.ANY,
             'id': 3,
             'owner_id': 1,
             'random': False,

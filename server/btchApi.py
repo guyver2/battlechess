@@ -20,6 +20,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
 # allow for CORS
 origins = ["*"]
 app.add_middleware(
@@ -37,31 +38,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
-
-# TODO I don't like this, seems error prone. SQLAlchemy will probably make it better
-def setGame(gameUUID, dbgame):
-    global fake_games_db
-    fake_games_db[gameUUID] = dbgame
-
-
-def try_set_player(gameUUID, user):
-    dbgame = fake_games_db[gameUUID]
-    if dbgame['white'] and dbgame['black']:
-        game_exception = HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Game has no free player slots",
-        )
-        raise game_exception
-
-    if not dbgame['white']:
-        dbgame['white'] = user['username']
-    elif not dbgame['black']:
-        dbgame['black'] = user['username']
-
-    # TODO race condition
-    setGame(gameUUID, dbgame)
-    return get_game(gameUUID)
 
 
 async def get_current_user(
@@ -87,7 +63,7 @@ async def get_current_user(
     return user
 
 async def get_current_active_user(current_user: schemas.User = Depends(get_current_user)):
-    if not current_user.is_active:
+    if not current_user.is_active():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user")
     return current_user
 
@@ -195,12 +171,12 @@ def post_new_game(
 
 
 @app.get("/games/{gameUUID}")
-def get_game_by_handle(
+def get_game_by_uuid(
     gameUUID: str,
     db: Session = Depends(get_db),
     current_user: schemas.User = Depends(get_current_active_user)
 ):
-    return crud.get_game_by_handle(db, gameUUID)
+    return crud.get_game_by_uuid(db, gameUUID)
 
 # lists available games
 @app.get("/games/{gameUUID}/list", response_model=List[schemas.Game])

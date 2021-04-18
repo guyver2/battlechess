@@ -10,28 +10,33 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
     full_name = Column(String)
+    avatar = Column(String)
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
-    is_active = Column(Boolean, default=True)
+    status = Column(String, default="active")
+    created_at = Column(DateTime)
 
     # games = relationship("Game", back_populates="owner", foreign_keys='Game.owner_id')
     # whites = relationship("Game", back_populates="white")
     # blacks = relationship("Game", back_populates="black")
 
+    def is_active(self):
+        return self.status == "active"
 
 class Game(Base):
 
     __tablename__ = "game"
 
     id = Column(Integer, primary_key=True, index=True)
-    create_time = Column(DateTime)
-    handle = Column(String)
+    created_at = Column(DateTime)
+    uuid = Column(String)
     owner_id = Column(Integer, ForeignKey("user.id"))
     white_id = Column(Integer, ForeignKey("user.id"))
     black_id = Column(Integer, ForeignKey("user.id"))
-    status = Column(String)
-    turn = Column(String)
-    random = Column(Boolean)
+    status = Column(String, default="waiting")
+    turn = Column(String, default="white")
+    last_move_time = Column(DateTime)
+    public = Column(Boolean, default=True)
 
     owner = relationship("User", backref="games", foreign_keys=[owner_id])
     white = relationship("User", backref="whites", foreign_keys=[white_id])
@@ -44,7 +49,6 @@ class Game(Base):
 
     def set_player(self, user: User):
 
-        print(f"before setting player {self.__dict__}")
         if not self.white_id and not self.black_id:
             # TODO random
             self.white_id = user.id
@@ -55,17 +59,19 @@ class Game(Base):
         else:
             #error player already set
             raise
-        print(f"after setting player {self.__dict__}")
+
 
 class GameSnap(Base):
 
     __tablename__ = "gamesnaps"
 
-
     id = Column(Integer, primary_key=True, index=True)
-    create_time = Column(DateTime)
-    time_delta = Column(Integer, index=True)
+    created_at = Column(DateTime)
     serializedGame = Column(String)
     game_id = Column(Integer, ForeignKey("game.id"))
+    move = Column(String)
+    taken = Column(String)
+    castelable = Column(String)
+    move_number = Column(Integer)
 
     game = relationship("Game", back_populates="snaps")

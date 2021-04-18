@@ -19,11 +19,11 @@ class GameBase(BaseModel):
     pass
 
 class GameCreate(GameBase):
-    random: bool
+    public: bool
 
 class Game(GameBase):
     id: int
-    handle: str
+    uuid: str
     create_time: Optional[datetime] = None
     owner_id: int
     white_id: Optional[int] = None
@@ -50,7 +50,7 @@ class UserCreate(UserBase):
 
 class User(UserBase):
     id: int
-    is_active: bool
+    status: str
     games: List[Game] = []
     whites: List[Game] = []
     blacks: List[Game] = []
