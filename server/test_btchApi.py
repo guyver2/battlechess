@@ -97,7 +97,7 @@ class Test_Api(unittest.TestCase):
                 "status": "started",
                 "public": False,
                 "turn": "white",
-                "create_time": datetime(2021, 1, 1, tzinfo=timezone.utc),
+                "created_at": datetime(2021, 1, 1, tzinfo=timezone.utc),
             },
             "da39a3ee5e": {
                 "uuid": "da39a3ee5e",
@@ -107,7 +107,7 @@ class Test_Api(unittest.TestCase):
                 "status": "ended",
                 "public": False,
                 "winner": "johndoe",
-                "create_time": datetime(2021, 3, 12, tzinfo=timezone.utc),
+                "created_at": datetime(2021, 3, 12, tzinfo=timezone.utc),
             },
             "123fr12339": {
                 "uuid": "123fr12339",
@@ -116,7 +116,7 @@ class Test_Api(unittest.TestCase):
                 "black": None,
                 "status": "idle",
                 "public": True,
-                "create_time": datetime(2021, 4, 5, tzinfo=timezone.utc),
+                "created_at": datetime(2021, 4, 5, tzinfo=timezone.utc),
             },
             "d3255bfef9": {
                 "uuid": "d3255bfef9",
@@ -125,10 +125,23 @@ class Test_Api(unittest.TestCase):
                 "black": None,
                 "status": "idle",
                 "public": False,
-                "create_time": datetime(2021, 4, 5, tzinfo=timezone.utc),
+                "created_at": datetime(2021, 4, 5, tzinfo=timezone.utc),
             }
         }
         return fake_games_db
+
+    def fakegamesnaps(self):
+        fake_games_snaps = [{
+                "game_uuid": "lkml4a3.d3",
+                "move": "b8c8",
+                "board": "RNBQKBNRPPPPPPPP________________________________pppppppprnbqkbnr",
+                "taken": "",
+                "castelable": "",
+                "movenumber": 1,
+                "created_at": datetime(2021, 4, 5, tzinfo=timezone.utc),
+            },
+            ]
+        return fake_games_snaps
 
     def addFakeUsers(self, db):
         for username, user in self.fakeusersdb().items():
@@ -149,17 +162,33 @@ class Test_Api(unittest.TestCase):
             white = db.query(models.User).filter(models.User.username == game['white']).first()
             black = db.query(models.User).filter(models.User.username == game['black']).first()
             db_game = models.Game(
-                created_at=game["create_time"],
+                created_at=game["created_at"],
                 uuid=game["uuid"],
                 owner_id=owner.id,
                 white_id=white.id if white is not None else None,
                 black_id=black.id if black is not None else None,
                 status=game["status"],
+                last_move_time=None,
                 turn=game.get("turn", "white"),
+                public=game["public"]
             )
             db.add(db_game)
             db.commit()
         return uuid
+
+    def addFakeGameSnaps(self, db, fakegamesnaps):
+        for snap in fakegamesnaps:
+            db_game = models.GameSnap(
+                created_at=snap["created_at"],
+                game_id=snap["game_id"],
+                board=snap["board"],
+                move=snap["move"],
+                taken=snap["taken"],
+                castelable=snap["castelable"],
+                move_number=snap["move_number"],
+            )
+            db.add(db_game)
+            db.commit()
 
     def getToken(self, username):
         return crud.create_access_token(
@@ -358,7 +387,7 @@ class Test_Api(unittest.TestCase):
             'id': 4,
             'owner_id': 1,
             'last_move_time': None,
-            'public': True,
+            'public': False,
             'status': 'idle',
             'turn': 'white',
             'white_id': 1,
