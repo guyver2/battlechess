@@ -2,6 +2,8 @@ import random
 import string
 from passlib.context import CryptContext
 
+from .config import HANDLEBASEURL
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def verify_password(plain_password, hashed_password):
@@ -17,3 +19,6 @@ def get_random_string(length=6):
     letters = string.ascii_lowercase
     result_str = ''.join(random.choice(letters) for i in range(length))
     return result_str
+
+def handle2uuid(uuid):
+    return HANDLEBASEURL + uuid

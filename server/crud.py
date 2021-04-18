@@ -15,19 +15,18 @@ from .config import (
 )
 
 # TODO redo this. I hate myself for writing it.
-def create_game_handle(db: Session):
-    randstr = get_random_string()
-    handle = HANDLEBASEURL + randstr
-    print(handle)
+def create_game_uuid(db: Session):
+    uuid = get_random_string()
+    print(uuid)
     # Check if it exists (and its idle?) Or we could add the id or something.
     for i in range(5):
-        repeatedHandleGame = db.query(models.Game).filter(models.Game.handle == handle).first()
+        repeatedHandleGame = db.query(models.Game).filter(models.Game.uuid == uuid).first()
         if repeatedHandleGame is None:
             break
 
     if repeatedHandleGame is not None:
         return None
-    return handle
+    return uuid
 
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
@@ -71,16 +70,16 @@ def create_game(db: Session, user: schemas.User, gameOptions: schemas.GameCreate
     if not user:
         return False
 
-    handle = create_game_handle(db)
+    uuid = create_game_uuid(db)
 
     # TODO list status strings somewhere
     db_game = models.Game(
         owner_id=user.id,
-        create_time=datetime.now(timezone.utc),
-        handle=handle,
+        created_at=datetime.now(timezone.utc),
+        uuid=uuid,
         status="idle",
         turn="white",
-        random=gameOptions.random
+        public=gameOptions.public
     )
     db.add(db_game)
     db.commit()
@@ -99,8 +98,8 @@ def get_game(gameUUID):
 def get_games_by_owner(db: Session, user: schemas.User):
     return db.query(models.Game).filter(models.Game.owner == user).all()
 
-def get_game_by_handle(db: Session, gameUUID):
-    return db.query(models.Game).filter(models.Game.handle == gameUUID).first()
+def get_game_by_uuid(db: Session, gameUUID):
+    return db.query(models.Game).filter(models.Game.uuid == gameUUID).first()
 
 def get_game_idle_random(db: Session, user: schemas.User):
     query = db.query(models.Game).filter(
