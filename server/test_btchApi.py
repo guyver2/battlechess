@@ -130,14 +130,14 @@ class Test_Api(unittest.TestCase):
         }
         return fake_games_db
 
-    def fakegamesnaps(self):
+    def fakegamesnapsdb(self):
         fake_games_snaps = [{
                 "game_uuid": "lkml4a3.d3",
                 "move": "b8c8",
                 "board": "RNBQKBNRPPPPPPPP________________________________pppppppprnbqkbnr",
                 "taken": "",
                 "castelable": "",
-                "movenumber": 1,
+                "move_number": 1,
                 "created_at": datetime(2021, 4, 5, tzinfo=timezone.utc),
             },
             ]
@@ -177,10 +177,13 @@ class Test_Api(unittest.TestCase):
         return uuid
 
     def addFakeGameSnaps(self, db, fakegamesnaps):
+        # TODO get game from uuid
         for snap in fakegamesnaps:
+            guuid = snap["game_uuid"]
+
             db_game = models.GameSnap(
                 created_at=snap["created_at"],
-                game_id=snap["game_id"],
+                game_id=None,
                 board=snap["board"],
                 move=snap["move"],
                 taken=snap["taken"],
@@ -500,4 +503,30 @@ class Test_Api(unittest.TestCase):
             'status': 'idle',
             'turn': 'white',
             'white_id': 1,
+        })
+
+    def _test__getsnap(self):
+        token = self.addFakeUsers(self.db)
+        uuid = self.addFakeGames(self.db, self.fakegamesdb())
+        self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
+
+        response = self.client.get(
+            f'/games/{uuid}/snap/0',
+            headers={
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json',
+            },
+        )
+
+        print(response.json())
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(response.json(), {
+            'game_id': 1,
+            'created_at': mock.ANY,
+            'id': 1,
+            'move': '',
+            'taken': '',
+            'castelable': '',
+            'move_number': 1,
+            'board': '',
         })

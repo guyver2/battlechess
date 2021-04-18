@@ -251,3 +251,11 @@ def post_move(
             headers={"Authorization": "Bearer"},
         )
     return game
+
+@app.get("/games/{gameUUID}/snap/{moveNum}")
+def query_turn(
+    gameUUID: str,
+    moveNum: int,
+    current_user: schemas.User = Depends(get_current_active_user)
+):
+    return {}
