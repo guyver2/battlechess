@@ -63,11 +63,11 @@ class Game(Base):
 
 class GameSnap(Base):
 
-    __tablename__ = "gamesnaps"
+    __tablename__ = "gamesnap"
 
     id = Column(Integer, primary_key=True, index=True)
     created_at = Column(DateTime)
-    serializedGame = Column(String)
+    board = Column(String)
     game_id = Column(Integer, ForeignKey("game.id"))
     move = Column(String)
     taken = Column(String)
