@@ -69,9 +69,12 @@ async def get_current_active_user(current_user: schemas.User = Depends(get_curre
 
 async def get_active_game(
     gameUUID,
-    current_user: schemas.User = Depends(get_current_active_user)
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
 ):
-    game = get_game(gameUUID)
+    # TODO check if public and owner/player
+    game = crud.get_game_by_uuid(db, gameUUID)
+    return game
 
 async def set_player(
     gameUUID,
@@ -253,9 +256,43 @@ def post_move(
     return game
 
 @app.get("/games/{gameUUID}/snap/{moveNum}")
-def query_turn(
+def get_snap(
     gameUUID: str,
     moveNum: int,
+    db: Session = Depends(get_db),
     current_user: schemas.User = Depends(get_current_active_user)
 ):
-    return {}
+    game = get_active_game(gameUUID, current_user)
+    if not game:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="game not found",
+            headers={"Authorization": "Bearer"},
+        )
+    snap = crud.get_snap(db, current_user, gameUUID, moveNum)
+    if not snap:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="snap not found",
+            headers={"Authorization": "Bearer"},
+        )
+    return snap
+
+@app.get("/games/{gameUUID}/snaps")
+async def get_snaps(
+    gameUUID: str,
+    db: Session = Depends(get_db),
+    current_user: schemas.User = Depends(get_current_active_user)
+):
+    game = await get_active_game(gameUUID, current_user, db)
+    if not game:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="game not found",
+            headers={"Authorization": "Bearer"},
+        )
+
+    # print(game.__dict__)
+    # for snap in db.query(models.GameSnap).all():
+    #     print(snap.__dict__)
+    return game.snaps

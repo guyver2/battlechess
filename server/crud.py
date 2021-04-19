@@ -115,3 +115,22 @@ def get_game_idle_random(db: Session, user: schemas.User):
     rand = random.randrange(0, numAvailableGames)
     game = query[rand]
     return game
+
+def get_snap(db: Session, user: schemas.User, gameUUID, move_number):
+    game = get_game_by_uuid(db, gameUUID)
+    query = db.query(models.GameSnap).filter(
+        and_(
+            models.GameSnap.game_id == game.id,
+            models.GameSnap.move_number == move_number
+        )
+    )
+
+    if query.count() > 1:
+        print("Error: snap duplicate!")
+
+    snap = query.first()
+
+    return snap
+
+    # color = game.get_player_color(user.id)
+    # snap.prepare_for_player(color)
