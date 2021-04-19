@@ -60,6 +60,15 @@ class Game(Base):
             #error player already set
             raise
 
+    def get_player_color(self, user_id):
+        if user_id == self.white_id:
+            return "white"
+        if user_id == self.black_id:
+            return "black"
+        return None
+
+    def is_finished(self):
+        return self.status == "done"
 
 class GameSnap(Base):
 
@@ -67,11 +76,12 @@ class GameSnap(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     created_at = Column(DateTime)
-    board = Column(String)
     game_id = Column(Integer, ForeignKey("game.id"))
+    board = Column(String)
     move = Column(String)
     taken = Column(String)
     castelable = Column(String)
     move_number = Column(Integer)
 
     game = relationship("Game", back_populates="snaps")
+

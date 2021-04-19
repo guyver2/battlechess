@@ -11,9 +11,37 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     username: Optional[str] = None
 
-class GameSnap(BaseModel):
-    time_delta: Optional[int] = None
-    snap: str
+class GameSnapBase(BaseModel):
+    pass
+
+class GameSnap(GameSnapBase):
+    id: int
+    created_at: Optional[datetime] = None
+    game_id: int
+    board: str
+    taken: str
+    castelable: List[str]
+    move_number: int
+
+    def prepare_for_player(self, player_color: str):
+        #remove other player board
+        # TODO this removes everything, but pieces next to mine should be kept
+        if player_color == 'black':
+            self.board = ''.join(ch if not ch.isupper() else '_' for ch in self.board)
+            self.castelable = [castle for castle in self.castelable if castle.isupper()]
+        elif player_color == 'white':
+            self.board = ''.join(ch if not ch.islower() else '_' for ch in self.board)
+            self.castelable = [castle for castle in self.castelable if castle.isupper()]
+
+        #remove other player castelable
+        self.castelable = self.castelable
+
+    class Config:
+        orm_mode = True
+
+class GameSnapCreate(GameSnapBase):
+    game_id: int
+    move: str
 
 class GameBase(BaseModel):
     pass

@@ -137,10 +137,10 @@ class Test_Api(unittest.TestCase):
                 "board": "RNBQKBNRPPPPPPPP________________________________pppppppprnbqkbnr",
                 "taken": "",
                 "castelable": "",
-                "move_number": 1,
+                "move_number": 0,
                 "created_at": datetime(2021, 4, 5, tzinfo=timezone.utc),
             },
-            ]
+        ]
         return fake_games_snaps
 
     def addFakeUsers(self, db):
@@ -181,9 +181,11 @@ class Test_Api(unittest.TestCase):
         for snap in fakegamesnaps:
             guuid = snap["game_uuid"]
 
+            game = crud.get_game_by_uuid(db, guuid)
+
             db_game = models.GameSnap(
                 created_at=snap["created_at"],
-                game_id=None,
+                game_id=game.id,
                 board=snap["board"],
                 move=snap["move"],
                 taken=snap["taken"],
@@ -505,13 +507,14 @@ class Test_Api(unittest.TestCase):
             'white_id': 1,
         })
 
-    def _test__getsnap(self):
+    def test__getsnap(self):
         token = self.addFakeUsers(self.db)
-        uuid = self.addFakeGames(self.db, self.fakegamesdb())
+        self.addFakeGames(self.db, self.fakegamesdb())
+        firstgame_uuid = list(self.fakegamesdb().values())[0]["uuid"]
         self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
 
         response = self.client.get(
-            f'/games/{uuid}/snap/0',
+            f'/games/{firstgame_uuid}/snap/0',
             headers={
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json',
@@ -524,9 +527,36 @@ class Test_Api(unittest.TestCase):
             'game_id': 1,
             'created_at': mock.ANY,
             'id': 1,
-            'move': '',
+            'move': 'b8c8',
             'taken': '',
             'castelable': '',
-            'move_number': 1,
-            'board': '',
+            'move_number': 0,
+            'board': 'RNBQKBNRPPPPPPPP________________________________pppppppprnbqkbnr',
         })
+
+    def test__getsnaps(self):
+        token = self.addFakeUsers(self.db)
+        self.addFakeGames(self.db, self.fakegamesdb())
+        firstgame_uuid = list(self.fakegamesdb().values())[0]["uuid"]
+        self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
+
+        response = self.client.get(
+            f'/games/{firstgame_uuid}/snaps',
+            headers={
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json',
+            },
+        )
+
+        print(response.json())
+        self.assertEqual(response.status_code, 200)
+        self.assertListEqual(response.json(), [{
+            'game_id': 1,
+            'created_at': mock.ANY,
+            'id': 1,
+            'move': 'b8c8',
+            'taken': '',
+            'castelable': '',
+            'move_number': 0,
+            'board': 'RNBQKBNRPPPPPPPP________________________________pppppppprnbqkbnr',
+        }])
