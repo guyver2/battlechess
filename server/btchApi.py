@@ -267,6 +267,29 @@ async def post_move(
         )
     return game
 
+
+@app.get("/games/{gameUUID}/snap")
+async def get_snap(
+    gameUUID: str,
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    game = await get_game(gameUUID, current_user, db)
+    if not game:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="game not found",
+            headers={"Authorization": "Bearer"},
+        )
+    snap = game.snaps[-1]
+    if not snap:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="snap not found",
+            headers={"Authorization": "Bearer"},
+        )
+    return snap
+
 @app.get("/games/{gameUUID}/snap/{moveNum}")
 async def get_snap(
     gameUUID: str,

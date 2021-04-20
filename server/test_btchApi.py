@@ -133,8 +133,17 @@ class Test_Api(unittest.TestCase):
     def fakegamesnapsdb(self):
         fake_games_snaps = [{
                 "game_uuid": "lkml4a3.d3",
-                "move": "b8c8",
+                "move": "",
                 "board": "RNBQKBNRPPPPPPPP________________________________pppppppprnbqkbnr",
+                "taken": "",
+                "castelable": "",
+                "move_number": 0,
+                "created_at": datetime(2021, 4, 5, tzinfo=timezone.utc),
+            },
+            {
+                "game_uuid": "lkml4a3.d3",
+                "move": "d2d4",
+                "board": "RNBQKBNRPPPPPPPP___________________________p____ppp_pppprnbqkbnr",
                 "taken": "",
                 "castelable": "",
                 "move_number": 0,
@@ -527,7 +536,7 @@ class Test_Api(unittest.TestCase):
             'game_id': 1,
             'created_at': mock.ANY,
             'id': 1,
-            'move': 'b8c8',
+            'move': '',
             'taken': '',
             'castelable': '',
             'move_number': 0,
@@ -535,6 +544,7 @@ class Test_Api(unittest.TestCase):
         })
 
     def test__getsnaps(self):
+        self.maxDiff=None
         token = self.addFakeUsers(self.db)
         self.addFakeGames(self.db, self.fakegamesdb())
         firstgame_uuid = list(self.fakegamesdb().values())[0]["uuid"]
@@ -551,12 +561,51 @@ class Test_Api(unittest.TestCase):
         print(response.json())
         self.assertEqual(response.status_code, 200)
         self.assertListEqual(response.json(), [{
+                'game_id': 1,
+                'created_at': mock.ANY,
+                'id': 1,
+                'move': '',
+                'taken': '',
+                'castelable': '',
+                'move_number': 0,
+                'board': 'RNBQKBNRPPPPPPPP________________________________pppppppprnbqkbnr',
+            },
+            {
+                'game_id': 1,
+                'created_at': mock.ANY,
+                'id': 2,
+                'move': 'd2d4',
+                'taken': '',
+                'castelable': '',
+                'move_number': 0,
+                'board': 'RNBQKBNRPPPPPPPP___________________________p____ppp_pppprnbqkbnr',
+            }]
+        )
+
+
+    def test__getsnap__latest(self):
+        token = self.addFakeUsers(self.db)
+        self.addFakeGames(self.db, self.fakegamesdb())
+        firstgame_uuid = list(self.fakegamesdb().values())[0]["uuid"]
+        self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
+
+        response = self.client.get(
+            f'/games/{firstgame_uuid}/snap',
+            headers={
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json',
+            },
+        )
+
+        print(response.json())
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(response.json(), {
             'game_id': 1,
             'created_at': mock.ANY,
-            'id': 1,
-            'move': 'b8c8',
+            'id': 2,
+            'move': 'd2d4',
             'taken': '',
             'castelable': '',
             'move_number': 0,
-            'board': 'RNBQKBNRPPPPPPPP________________________________pppppppprnbqkbnr',
-        }])
+            'board': 'RNBQKBNRPPPPPPPP___________________________p____ppp_pppprnbqkbnr',
+        })
