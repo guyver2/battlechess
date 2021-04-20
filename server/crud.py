@@ -86,15 +86,6 @@ def create_game(db: Session, user: schemas.User, gameOptions: schemas.GameCreate
     db.refresh(db_game)
     return db_game
 
-def get_game(gameUUID):
-    game_exception = HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail="Could not find game",
-    )
-    if gameUUID not in fake_games_db:
-        raise game_exception
-    return Game(**fake_games_db[gameUUID])
-
 def get_games_by_owner(db: Session, user: schemas.User):
     return db.query(models.Game).filter(models.Game.owner == user).all()
 

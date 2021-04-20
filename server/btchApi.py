@@ -39,7 +39,6 @@ def get_db():
     finally:
         db.close()
 
-
 async def get_current_user(
     db: Session = Depends(get_db),
     token: str = Depends(oauth2_scheme)
@@ -67,7 +66,7 @@ async def get_current_active_user(current_user: schemas.User = Depends(get_curre
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user")
     return current_user
 
-async def get_active_game(
+async def get_game(
     gameUUID,
     current_user: schemas.User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
@@ -106,12 +105,14 @@ async def login_for_access_token(
     return {"access_token": access_token, "token_type": "bearer"}
 
 @app.get("/users/me/", response_model=schemas.User)
-def read_users_me(current_user: schemas.User = Depends(get_current_active_user)):
+async def read_users_me(
+    current_user: schemas.User = Depends(get_current_active_user)
+):
     return current_user
 
 
 @app.get("/users/me/games/")
-def read_own_games(
+async def read_own_games(
     current_user: schemas.User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
@@ -135,23 +136,31 @@ def read_users(
     return users
 
 @app.get("/users/usernames", response_model=List[str])
-def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_users(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db)
+):
     users = crud.get_users(db, skip=skip, limit=limit)
     return [user.username for user in users]
 
-@app.get("/users/active_game")
-def read_users(db: Session = Depends(get_db)):
-    game = get_active_game(gameUUID, current_user)
-    if not game:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="game not found",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    return game
+# we might be playing more than one game, we no longer can use this as-is
+# @app.get("/users/active_game")
+# def read_users(db: Session = Depends(get_db)):
+#     game = get_game(gameUUID, current_user, db)
+#     if not game:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND,
+#             detail="game not found",
+#             headers={"WWW-Authenticate": "Bearer"},
+#         )
+#     return game
 
 @app.post("/users/")
-def create_user(new_user: schemas.UserCreate, db: Session = Depends(get_db)):
+def create_user(
+    new_user: schemas.UserCreate,
+    db: Session = Depends(get_db)
+):
     user = crud.get_user_by_username(db, new_user.username)
     user_exists_exception = HTTPException(
         status_code=status.HTTP_409_CONFLICT,
@@ -167,8 +176,8 @@ def create_user(new_user: schemas.UserCreate, db: Session = Depends(get_db)):
 @app.post("/games/")
 def post_new_game(
     new_game: schemas.GameCreate,
-    db: Session = Depends(get_db),
-    current_user: schemas.User = Depends(get_current_active_user)
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
 ):
     return crud.create_game(db, current_user, new_game)
 
@@ -176,8 +185,8 @@ def post_new_game(
 @app.get("/games/{gameUUID}")
 def get_game_by_uuid(
     gameUUID: str,
-    db: Session = Depends(get_db),
-    current_user: schemas.User = Depends(get_current_active_user)
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
 ):
     return crud.get_game_by_uuid(db, gameUUID)
 
@@ -185,7 +194,8 @@ def get_game_by_uuid(
 @app.get("/games/{gameUUID}/list", response_model=List[schemas.Game])
 def join_game(
     gameUUID: str,
-    current_user: schemas.User = Depends(get_current_active_user)
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
 ):
     games = get_available_games(current_user)
     if not games:
@@ -198,11 +208,12 @@ def join_game(
 
 # joines an existing game. error when game already started
 @app.get("/games/{gameUUID}/join")
-def join_game(
+async def join_game(
     gameUUID: str,
-    current_user: schemas.User = Depends(get_current_active_user)
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
 ):
-    game = get_active_game(gameUUID, current_user)
+    game = await get_game(gameUUID, current_user, db)
     if not game:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -214,9 +225,9 @@ def join_game(
 
 # either creates a new game or joins an existing unstarted random game. Random games can not be joined via "join_game".
 @app.patch("/games/random")
-def join_random_game(
-    db: Session = Depends(get_db),
-    current_user: schemas.User = Depends(get_current_active_user)
+async def join_random_game(
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
 ):
     game = crud.get_game_idle_random(db, current_user)
     if not game:
@@ -226,27 +237,28 @@ def join_random_game(
 
 # serialized board state
 @app.get("/games/{gameUUID}/board")
-def query_board(
+async def query_board(
     gameUUID: str,
-    current_user: schemas.User = Depends(get_current_active_user)
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
 ):
     pass
 
 # who's turn is it (None means that the game is over)
 @app.get("/games/{gameUUID}/turn")
-def query_turn(
+async def query_turn(
     gameUUID: str,
-    current_user: schemas.User = Depends(get_current_active_user)
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
 ):
     pass
 
 @app.post("/games/{gameUUID}/move")
-def post_move(
+async def post_move(
     gameUUID: str,
-    current_user: schemas.User = Depends(get_current_active_user),
-    current_game: schemas.Game = Depends(get_active_game)
+    current_user: schemas.User = Depends(get_current_active_user)
 ):
-    game = get_active_game(gameUUID, current_user)
+    game = await get_game(gameUUID, current_user, db)
     if not game:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -256,13 +268,13 @@ def post_move(
     return game
 
 @app.get("/games/{gameUUID}/snap/{moveNum}")
-def get_snap(
+async def get_snap(
     gameUUID: str,
     moveNum: int,
-    db: Session = Depends(get_db),
-    current_user: schemas.User = Depends(get_current_active_user)
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
 ):
-    game = get_active_game(gameUUID, current_user)
+    game = await get_game(gameUUID, current_user, db)
     if not game:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -281,10 +293,10 @@ def get_snap(
 @app.get("/games/{gameUUID}/snaps")
 async def get_snaps(
     gameUUID: str,
-    db: Session = Depends(get_db),
-    current_user: schemas.User = Depends(get_current_active_user)
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
 ):
-    game = await get_active_game(gameUUID, current_user, db)
+    game = await get_game(gameUUID, current_user, db)
     if not game:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
