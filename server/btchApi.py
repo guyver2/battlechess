@@ -179,6 +179,8 @@ def post_new_game(
     current_user: schemas.User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
+
+
     return crud.create_game(db, current_user, new_game)
 
 
@@ -191,17 +193,16 @@ def get_game_by_uuid(
     return crud.get_game_by_uuid(db, gameUUID)
 
 # lists available games
-@app.get("/games/{gameUUID}/list", response_model=List[schemas.Game])
-def join_game(
-    gameUUID: str,
+@app.get("/games", response_model=List[schemas.Game])
+async def list_available_games(
     current_user: schemas.User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    games = get_available_games(current_user)
+    games = crud.get_public_game_by_status(db, current_user, "waiting")
     if not games:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="game not found",
+            detail="no public games were found",
             headers={"WWW-Authenticate": "Bearer"},
         )
     return games
@@ -224,16 +225,17 @@ async def join_game(
     return game
 
 # either creates a new game or joins an existing unstarted random game. Random games can not be joined via "join_game".
-@app.patch("/games/random")
-async def join_random_game(
-    current_user: schemas.User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-):
-    game = crud.get_game_idle_random(db, current_user)
-    if not game:
-        return {}
-    game.set_player(current_user)
-    return game
+# @app.patch("/games")
+# async def join_random_game(
+#     current_user: schemas.User = Depends(get_current_active_user),
+#     db: Session = Depends(get_db)
+# ):
+#     if random in parameters
+#     game = crud.get_random_public_game_waiting(db, current_user)
+#     if not game:
+#         return {}
+#     game.set_player(current_user)
+#     return game
 
 # serialized board state
 @app.get("/games/{gameUUID}/board")

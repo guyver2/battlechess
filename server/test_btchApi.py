@@ -109,12 +109,22 @@ class Test_Api(unittest.TestCase):
                 "winner": "johndoe",
                 "created_at": datetime(2021, 3, 12, tzinfo=timezone.utc),
             },
+            "da40a3ee5e": {
+                "uuid": "da39a3ee5e",
+                "owner": "janedoe",
+                "white": None,
+                "black": "janedoe",
+                "status": "waiting",
+                "public": True,
+                "winner": None,
+                "created_at": datetime(2021, 3, 12, tzinfo=timezone.utc),
+            },
             "123fr12339": {
                 "uuid": "123fr12339",
                 "owner": "janedoe",
                 "white": "janedoe",
                 "black": None,
-                "status": "idle",
+                "status": "waiting",
                 "public": True,
                 "created_at": datetime(2021, 4, 5, tzinfo=timezone.utc),
             },
@@ -123,7 +133,7 @@ class Test_Api(unittest.TestCase):
                 "owner": "johndoe",
                 "white": "johndoe",
                 "black": None,
-                "status": "idle",
+                "status": "waiting",
                 "public": False,
                 "created_at": datetime(2021, 4, 5, tzinfo=timezone.utc),
             }
@@ -398,55 +408,60 @@ class Test_Api(unittest.TestCase):
             'black_id': None,
             'created_at': mock.ANY,
             'uuid': mock.ANY,
-            'id': 4,
+            'id': 5,
             'owner_id': 1,
             'last_move_time': None,
             'public': False,
-            'status': 'idle',
+            'status': 'waiting',
             'turn': 'white',
             'white_id': 1,
         })
 
-    # TODO
-    def test__joinRandomGame(self):
+    # TODO test list random games before setting my player
+    def _test__joinRandomGame(self):
         token = self.addFakeUsers(self.db)
         uuid = self.addFakeGames(self.db, self.fakegamesdb())
 
         oneUser = self.db.query(models.User)[1]
 
         response = self.client.patch(
-            '/games/random',
+            '/games',
             headers={
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json',
             },
         )
 
+        # TODO join game (client chooses one)
+
         print(response.json())
         self.assertEqual(response.status_code, 200)
         self.assertNotEqual(response.json(), {})
         self.assertTrue(response.json()['white_id'] == oneUser.id or response.json()['black_id'] == oneUser.id)
         self.assertDictEqual(response.json(), {
-            'black_id': 1,
+            'black_id': mock.ANY,
             'created_at': mock.ANY,
             'uuid': mock.ANY,
-            'last_move_time': mock.ANY,
-            'id': 3,
-            'owner_id': 2,
+            'last_move_time': None,
+            'id': mock.ANY,
+            'owner_id': mock.ANY,
             'public': True,
-            'status': 'idle',
+            'status': 'waiting',
             'turn': 'white',
-            'white_id': 2,
+            'white_id': mock.ANY,
         })
+        self.assertTrue(response.json()['black_id'] == oneUser.id or response.json()['white_id'] == oneUser.id)
 
-    def test__joinRandomGame__noneAvailable(self):
+    # TODO deprecated, client chooses game and joins a random one
+    def _test__joinRandomGame__noneAvailable(self):
         token = self.addFakeUsers(self.db)
         gamesdbmod = self.fakegamesdb()
         gamesdbmod['123fr12339']['status'] = 'done'
+        gamesdbmod['da40a3ee5e']['status'] = 'done'
         uuid = self.addFakeGames(self.db, gamesdbmod)
 
         response = self.client.patch(
-            '/games/random',
+            '/games',
             headers={
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json',
@@ -457,34 +472,42 @@ class Test_Api(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(response.json(), {})
 
-    def _test__findGame(self):
+    def test__listAvailableGames(self):
         token = self.addFakeUsers(self.db)
         uuid = self.addFakeGames(self.db, self.fakegamesdb())
 
         response = self.client.get(
-            f'/games/{uuid}/join',
+            '/games',
             headers={
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json',
-            },
-            json={
-                'random': False,
             },
         )
 
         print(response.json())
         self.assertEqual(response.status_code, 200)
-        self.assertDictEqual(response.json(), {
-            'black_id': 1,
+        self.maxDiff = None
+        self.assertListEqual(response.json(), [{
+            'id': 3,
+            'uuid': mock.ANY,
+            'create_time': mock.ANY,
+            'owner_id': 2,
+            'white_id': None,
+            'black_id': 2,
+            'status': 'waiting',
+            'turn': 'white',
+            'snaps': [],
+        },{
+            'black_id': None,
             'create_time': mock.ANY,
             'uuid': mock.ANY,
-            'id': 3,
+            'id': 4,
             'owner_id': 2,
-            'random': False,
-            'status': 'idle',
+            'status': 'waiting',
             'turn': 'white',
             'white_id': 2,
-        })
+            'snaps': [],
+        }])
 
 
     def _test__joinGame(self):
