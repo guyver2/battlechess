@@ -92,19 +92,25 @@ def get_games_by_owner(db: Session, user: schemas.User):
 def get_game_by_uuid(db: Session, gameUUID):
     return db.query(models.Game).filter(models.Game.uuid == gameUUID).first()
 
-def get_game_idle_random(db: Session, user: schemas.User):
-    query = db.query(models.Game).filter(
+def get_public_game_by_status(db: Session, user: schemas.User, status):
+    games = db.query(models.Game).filter(
         and_(
-            models.Game.status.is_("idle"),
+            models.Game.status == status,
             models.Game.white_id.is_not(user.id),
-            models.Game.black_id.is_not(user.id)
+            models.Game.black_id.is_not(user.id),
+            models.Game.public == True
         )
-    )
-    numAvailableGames = query.count()
+    ).all()
+    print(games)
+    return games
+
+def get_random_public_game_waiting(db: Session, user: schemas.User):
+    public_games = get_public_game_by_status(db, user, "waiting")
+    numAvailableGames = len(public_games)
     if numAvailableGames == 0:
         return {}
     rand = random.randrange(0, numAvailableGames)
-    game = query[rand]
+    game = public_games[rand]
     return game
 
 def get_snap(db: Session, user: schemas.User, gameUUID, move_number):

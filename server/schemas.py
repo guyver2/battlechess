@@ -57,6 +57,7 @@ class Game(GameBase):
     white_id: Optional[int] = None
     black_id: Optional[int] = None
     status: str
+    turn: str
     snaps: List[GameSnap] = []
 
     class Config:
