@@ -8,13 +8,15 @@ from sqlalchemy.orm import sessionmaker
 
 from jose import JWTError, jwt
 
+from fastapi.testclient import TestClient
+from fastapi import HTTPException, status
+
 from .btchApi import app, get_db
 
 from .btchApiDB import SessionLocal, Base, BtchDBContextManager
 from . import crud, models
 from .utils import get_password_hash
 
-from fastapi.testclient import TestClient
 
 # TODO we might want to use a Test db context manager with
 # all the setUpClass code in it to handle the db session
@@ -173,7 +175,7 @@ class Test_Api(unittest.TestCase):
             db.add(db_user)
             db.commit()
         firstusername,_ = self.fakeusersdb().keys()
-        return self.getToken(firstusername)
+        return self.getToken(firstusername), firstusername
 
     def addFakeGames(self, db, fakegamesdb):
         for uuid, game in fakegamesdb.items():
@@ -340,7 +342,7 @@ class Test_Api(unittest.TestCase):
         self.addFakeUsers(self.db)
 
     def test__getUsernames(self):
-        token = self.addFakeUsers(self.db)
+        token, _ = self.addFakeUsers(self.db)
 
         users = self.db.query(models.User).all()
 
@@ -359,7 +361,7 @@ class Test_Api(unittest.TestCase):
         self.assertListEqual(users, [])
 
     def test__createGame(self):
-        token = self.addFakeUsers(self.db)
+        token, _ = self.addFakeUsers(self.db)
 
         response = self.client.post(
             '/games/',
@@ -388,7 +390,7 @@ class Test_Api(unittest.TestCase):
         })
 
     def test__get_game_by_uuid(self):
-        token = self.addFakeUsers(self.db)
+        token, _ = self.addFakeUsers(self.db)
         uuid = self.addFakeGames(self.db, self.fakegamesdb())
 
         response = self.client.get(
@@ -418,8 +420,8 @@ class Test_Api(unittest.TestCase):
         })
 
     # TODO test list random games before setting my player
-    def _test__joinRandomGame(self):
-        token = self.addFakeUsers(self.db)
+    def test__joinRandomGame(self):
+        token, _ = self.addFakeUsers(self.db)
         uuid = self.addFakeGames(self.db, self.fakegamesdb())
 
         oneUser = self.db.query(models.User)[1]
@@ -453,8 +455,8 @@ class Test_Api(unittest.TestCase):
         self.assertTrue(response.json()['black_id'] == oneUser.id or response.json()['white_id'] == oneUser.id)
 
     # TODO deprecated, client chooses game and joins a random one
-    def _test__joinRandomGame__noneAvailable(self):
-        token = self.addFakeUsers(self.db)
+    def test__joinRandomGame__noneAvailable(self):
+        token,_ = self.addFakeUsers(self.db)
         gamesdbmod = self.fakegamesdb()
         gamesdbmod['123fr12339']['status'] = 'done'
         gamesdbmod['da40a3ee5e']['status'] = 'done'
@@ -473,7 +475,7 @@ class Test_Api(unittest.TestCase):
         self.assertDictEqual(response.json(), {})
 
     def test__listAvailableGames(self):
-        token = self.addFakeUsers(self.db)
+        token,_ = self.addFakeUsers(self.db)
         uuid = self.addFakeGames(self.db, self.fakegamesdb())
 
         response = self.client.get(
@@ -509,10 +511,15 @@ class Test_Api(unittest.TestCase):
             'snaps': [],
         }])
 
+    def test__joinGame__playerAlreadyInGame(self):
+        token, username = self.addFakeUsers(self.db)
+        self.addFakeGames(self.db, self.fakegamesdb())
 
-    def _test__joinGame(self):
-        token = self.addFakeUsers(self.db)
-        uuid = self.addFakeGames(self.db, self.fakegamesdb())
+        uuid = self.fakegamesdb['123fr12339']
+
+        user = crud.get_user_by_username(self.db, username)
+
+        game_before = self.db.query(models.Game).filter(models.Game.uuid == uuid).first()
 
         response = self.client.get(
             f'/games/{uuid}/join',
@@ -520,27 +527,51 @@ class Test_Api(unittest.TestCase):
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json',
             },
-            json={
-                'random': False,
-            },
         )
+
+        game = self.db.query(models.Game).filter(models.Game.uuid == uuid).first()
+        print(game.__dict__)
 
         print(response.json())
         self.assertEqual(response.status_code, 200)
+        if not game_before.black_id:
+            self.assertEqual(game.black_id, user.id)
+        if not game_before.white_id:
+            self.assertEqual(game.white_id, user.id)
         self.assertDictEqual(response.json(), {
-            'black_id': None,
-            'create_time': mock.ANY,
-            'uuid': mock.ANY,
-            'id': 3,
-            'owner_id': 1,
-            'random': False,
-            'status': 'idle',
+            'black_id': game.black_id,
+            'created_at': mock.ANY,
+            'uuid': game.uuid,
+            'id': game.id,
+            'last_move_time': None,
+            'owner_id': game.owner_id,
+            'public': False,
+            'status': 'waiting',
             'turn': 'white',
-            'white_id': 1,
+            'white_id': game.white_id,
         })
 
+    def test__joinGame__playerAlreadyInGame(self):
+        token, username = self.addFakeUsers(self.db)
+        uuid = self.addFakeGames(self.db, self.fakegamesdb())
+
+        user = crud.get_user_by_username(self.db, username)
+
+        game_before = self.db.query(models.Game).filter(models.Game.uuid == uuid).first()
+
+        response = self.client.get(
+            f'/games/{uuid}/join',
+            headers={
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json',
+            },
+        )
+
+        self.assertEqual(response.status_code, 409)
+        self.assertDictEqual(response.json(), {'detail': 'Player is already in this game'})
+
     def test__getsnap(self):
-        token = self.addFakeUsers(self.db)
+        token, _ = self.addFakeUsers(self.db)
         self.addFakeGames(self.db, self.fakegamesdb())
         firstgame_uuid = list(self.fakegamesdb().values())[0]["uuid"]
         self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
@@ -568,7 +599,7 @@ class Test_Api(unittest.TestCase):
 
     def test__getsnaps(self):
         self.maxDiff=None
-        token = self.addFakeUsers(self.db)
+        token, _ = self.addFakeUsers(self.db)
         self.addFakeGames(self.db, self.fakegamesdb())
         firstgame_uuid = list(self.fakegamesdb().values())[0]["uuid"]
         self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
@@ -607,7 +638,7 @@ class Test_Api(unittest.TestCase):
 
 
     def test__getsnap__latest(self):
-        token = self.addFakeUsers(self.db)
+        token, _ = self.addFakeUsers(self.db)
         self.addFakeGames(self.db, self.fakegamesdb())
         firstgame_uuid = list(self.fakegamesdb().values())[0]["uuid"]
         self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
