@@ -221,21 +221,21 @@ async def join_game(
             detail="game not found",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    set_player(game, current_user)
+
+    game.set_player(current_user)
     return game
 
 # either creates a new game or joins an existing unstarted random game. Random games can not be joined via "join_game".
-# @app.patch("/games")
-# async def join_random_game(
-#     current_user: schemas.User = Depends(get_current_active_user),
-#     db: Session = Depends(get_db)
-# ):
-#     if random in parameters
-#     game = crud.get_random_public_game_waiting(db, current_user)
-#     if not game:
-#         return {}
-#     game.set_player(current_user)
-#     return game
+@app.patch("/games")
+async def join_random_game(
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    game = crud.get_random_public_game_waiting(db, current_user)
+    if not game:
+        return {}
+    game.set_player(current_user)
+    return game
 
 # serialized board state
 @app.get("/games/{gameUUID}/board")

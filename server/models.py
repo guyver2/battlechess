@@ -1,5 +1,6 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.orm import relationship
+from fastapi import HTTPException, status
 
 from .btchApiDB import Base
 
@@ -49,16 +50,30 @@ class Game(Base):
 
     def set_player(self, user: User):
 
+        if self.white_id == user.id or self.black_id == user.id:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Player is already in this game",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
         if not self.white_id and not self.black_id:
             # TODO random
             self.white_id = user.id
+            print("setting white")
         elif not self.white_id:
             self.white_id = user.id
+            print("setting white")
         elif not self.black_id:
             self.black_id = user.id
+            print(f"setting black {self.white_id} {self.black_id}")
         else:
             #error player already set
-            raise
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Game is full",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
     def get_player_color(self, user_id):
         if user_id == self.white_id:
