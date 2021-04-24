@@ -279,7 +279,8 @@ async def query_turn(
 @app.post("/games/{gameUUID}/move")
 async def post_move(
     gameUUID: str,
-    move: dict = Body(...), # or pydantic or query parameter? Probably pydantic to make clear what a move is
+    #move: dict = Body(...), # or pydantic or query parameter? Probably pydantic to make clear what a move is
+    gameMove: schemas.GameMove,
     current_user: schemas.User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
@@ -291,8 +292,10 @@ async def post_move(
             headers={"Authorization": "Bearer"},
         )
 
-    print(move)
-    snap = game.move(move)
+    # snap = game.move(gameMove.move)
+    # deprecated in favor of creating the snap directly in the model
+    # crud.create_snap_by_dict()
+    snap = crud.create_snap_by_move(db, current_user, game, gameMove)
     return snap
 
 

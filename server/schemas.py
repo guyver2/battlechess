@@ -18,6 +18,7 @@ class GameSnap(GameSnapBase):
     id: int
     created_at: Optional[datetime] = None
     game_id: int
+    move: str
     board: str
     taken: str
     castelable: List[str]
@@ -36,9 +37,17 @@ class GameSnap(GameSnapBase):
         #remove other player castelable
         self.castelable = self.castelable
 
+        #remove other player move
+        self.move = self.move
+
     class Config:
         orm_mode = True
 
+class GameMove(BaseModel):
+    move: str
+
+# TODO this could be refactored to a more on-pair with snap
+# currently unused in favor of GameMove
 class GameSnapCreate(GameSnapBase):
     game_id: int
     move: str

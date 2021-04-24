@@ -90,9 +90,12 @@ class Game(Base):
             return None
         return self.snaps[-1]
 
-    def move(self, move):
-        # TODO move
-        return self.get_latest_snap()
+    # TODO should we create the snap here instead of returning
+    # the snap options and delegating to the client?
+    def moveGame(self, move):
+        current_snap = self.get_latest_snap()
+        new_snap_options = current_snap.moveSnap(move)
+        return new_snap_options
 
 class GameSnap(Base):
 
@@ -109,3 +112,24 @@ class GameSnap(Base):
 
     game = relationship("Game", back_populates="snaps")
 
+    def moveSnap(self, move):
+        snapOptions = None
+        # TODO add game logic
+        # build board from model
+        # board.move(move)
+        if move == "d7d5":
+            snapOptions = {
+                "castelable" : "",
+                "taken" : "",
+                "board" : (
+                    'RNBQKBNR'
+                    'PPP_PPPP'
+                    '________'
+                    '___P____'
+                    '___p____'
+                    '________'
+                    'ppp_pppp'
+                    'rnbqkbnr'
+                ),
+            }
+        return snapOptions
