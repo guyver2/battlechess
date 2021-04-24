@@ -448,6 +448,7 @@ class Board(object):
                         boardCopy.board[i][j] = ''
         return boardCopy
 
+    # TODO refactor string representation of board
     # dump as a string to ease portability with other apps
     def toString(self, color=None):
         visibility = [[True for i in range(8)] for j in range(8)]
@@ -512,7 +513,6 @@ class Board(object):
         self.castleable = list(board.castleable)
         self.enpassant = board.enpassant
         self.winner = board.winner
-
 
 if __name__ == '__main__':
     board = Board()
