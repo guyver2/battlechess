@@ -255,7 +255,6 @@ class Test_Api(unittest.TestCase):
         # delete db
         self.db.close()
         Base.metadata.drop_all(self.engine)
-        pass
 
     def test__version(self):
         response = self.client.get("/version")

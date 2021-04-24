@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from fastapi import HTTPException, status
 
 from .btchApiDB import Base
+from core.Board import Board
 
 class User(Base):
 
@@ -133,3 +134,7 @@ class GameSnap(Base):
                 ),
             }
         return snapOptions
+
+    # build a Board class from an instance
+    def toBoard(self):
+        return Board()
