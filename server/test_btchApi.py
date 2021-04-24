@@ -146,20 +146,36 @@ class Test_Api(unittest.TestCase):
         fake_games_snaps = [{
                 "game_uuid": "lkml4a3.d3",
                 "move": "",
-                "board": "RNBQKBNRPPPPPPPP________________________________pppppppprnbqkbnr",
+                "board": ('RNBQKBNR'
+                          'PPPPPPPP'
+                          '________'
+                          '________'
+                          '________'
+                          '________'
+                          'pppppppp'
+                          'rnbqkbnr'
+                         ),
                 "taken": "",
                 "castelable": "",
                 "move_number": 0,
-                "created_at": datetime(2021, 4, 5, tzinfo=timezone.utc),
+                "created_at": datetime(2021, 4, 5, 0, tzinfo=timezone.utc),
             },
             {
                 "game_uuid": "lkml4a3.d3",
                 "move": "d2d4",
-                "board": "RNBQKBNRPPPPPPPP___________________________p____ppp_pppprnbqkbnr",
+                "board": ('RNBQKBNR'
+                          'PPPPPPPP'
+                          '________'
+                          '________'
+                          '___p____'
+                          '________'
+                          'ppp_pppp'
+                          'rnbqkbnr'
+                         ),
                 "taken": "",
                 "castelable": "",
                 "move_number": 1,
-                "created_at": datetime(2021, 4, 5, tzinfo=timezone.utc),
+                "created_at": datetime(2021, 4, 5, 10, tzinfo=timezone.utc),
             },
         ]
         return fake_games_snaps
@@ -204,7 +220,7 @@ class Test_Api(unittest.TestCase):
 
             game = crud.get_game_by_uuid(db, guuid)
 
-            db_game = models.GameSnap(
+            db_snap = models.GameSnap(
                 created_at=snap["created_at"],
                 game_id=game.id,
                 board=snap["board"],
@@ -213,7 +229,7 @@ class Test_Api(unittest.TestCase):
                 castelable=snap["castelable"],
                 move_number=snap["move_number"],
             )
-            db.add(db_game)
+            db.add(db_snap)
             db.commit()
 
     def getToken(self, username):
@@ -570,7 +586,7 @@ class Test_Api(unittest.TestCase):
         self.assertEqual(response.status_code, 409)
         self.assertDictEqual(response.json(), {'detail': 'Player is already in this game'})
 
-    def test__getsnap(self):
+    def test__getsnap__byNum(self):
         token, _ = self.addFakeUsers(self.db)
         self.addFakeGames(self.db, self.fakegamesdb())
         firstgame_uuid = list(self.fakegamesdb().values())[0]["uuid"]
@@ -594,7 +610,15 @@ class Test_Api(unittest.TestCase):
             'taken': '',
             'castelable': '',
             'move_number': 0,
-            'board': 'RNBQKBNRPPPPPPPP________________________________pppppppprnbqkbnr',
+            'board': ('RNBQKBNR'
+                      'PPPPPPPP'
+                      '________'
+                      '________'
+                      '________'
+                      '________'
+                      'pppppppp'
+                      'rnbqkbnr'
+                     ),
         })
 
     def test__getsnaps(self):
@@ -622,7 +646,15 @@ class Test_Api(unittest.TestCase):
                 'taken': '',
                 'castelable': '',
                 'move_number': 0,
-                'board': 'RNBQKBNRPPPPPPPP________________________________pppppppprnbqkbnr',
+                'board': ('RNBQKBNR'
+                          'PPPPPPPP'
+                          '________'
+                          '________'
+                          '________'
+                          '________'
+                          'pppppppp'
+                          'rnbqkbnr'
+                         ),
             },
             {
                 'game_id': 1,
@@ -632,7 +664,15 @@ class Test_Api(unittest.TestCase):
                 'taken': '',
                 'castelable': '',
                 'move_number': 1,
-                'board': 'RNBQKBNRPPPPPPPP___________________________p____ppp_pppprnbqkbnr',
+                'board': ('RNBQKBNR'
+                          'PPPPPPPP'
+                          '________'
+                          '________'
+                          '___p____'
+                          '________'
+                          'ppp_pppp'
+                          'rnbqkbnr'
+                         ),
             }]
         )
 
@@ -661,7 +701,15 @@ class Test_Api(unittest.TestCase):
             'taken': '',
             'castelable': '',
             'move_number': 1,
-            'board': 'RNBQKBNRPPPPPPPP___________________________p____ppp_pppprnbqkbnr',
+            'board': ('RNBQKBNR'
+                      'PPPPPPPP'
+                      '________'
+                      '________'
+                      '___p____'
+                      '________'
+                      'ppp_pppp'
+                      'rnbqkbnr'
+                      ),
         })
 
     def test_getTurn(self):
@@ -690,6 +738,10 @@ class Test_Api(unittest.TestCase):
 
         # get previous game/board
 
+        game_before = self.db.query(models.Game).filter(
+            models.Game.uuid == firstgame_uuid
+            ).first()
+
         response = self.client.post(
             f'/games/{firstgame_uuid}/move',
             headers={
@@ -697,13 +749,31 @@ class Test_Api(unittest.TestCase):
                 'Content-Type': 'application/json',
             },
             json={
-                "move": "b4b5",
+                "move": "d7d5",
             },
         )
 
         # get after game/board
+
+        game_after = self.db.query(models.Game).filter(
+            models.Game.uuid == firstgame_uuid
+            ).first()
+
         # test board is the expected one
+        print([snap.__dict__ for snap in game_after.snaps])
 
         print(response.json())
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'white')
+        # self.assertDictEqual(response.json(), '')
+
+        self.assertEqual(game_before.get_latest_snap().board, (
+            'RNBQKBNR'
+            'PPP_PPPP'
+            '________'
+            '___P____'
+            '___p____'
+            '________'
+            'ppp_pppp'
+            'rnbqkbnr'
+            ),
+        )

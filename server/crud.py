@@ -126,8 +126,64 @@ def get_snap(db: Session, user: schemas.User, gameUUID, move_number):
         print("Error: snap duplicate!")
 
     snap = query.first()
+    print(f"snap {snap.__dict__}")
+    print(snap.move)
 
     return snap
 
     # color = game.get_player_color(user.id)
     # snap.prepare_for_player(color)
+
+def create_snap_by_move(
+    db: Session,
+    user: schemas.User,
+    game: schemas.Game,
+    gameMove: schemas.GameMove
+):
+    game = get_game_by_uuid(db, game.uuid)
+
+    snapOptions = game.moveGame(gameMove.move)
+
+    snap = game.get_latest_snap()
+
+    # TODO list status strings somewhere
+    db_snap = models.GameSnap(
+        created_at=datetime.now(timezone.utc),
+        game_id=game.id,
+        move=gameMove.move,
+        board=snapOptions['board'],
+        taken=snapOptions['taken'],
+        castelable=snapOptions['castelable'],
+        move_number=snap.move_number + 1
+    )
+    db.add(db_snap)
+    db.commit()
+    db.refresh(db_snap)
+    return db_snap
+
+def create_snap_by_dict(
+    db: Session,
+    user: schemas.User,
+    board: str,
+    move: str,
+    taken: str,
+    castelable: str
+):
+    game = get_game_by_uuid(db, gameUUID)
+
+    last_snap = game.get_latest_snap()
+    move_num = last_snap.move_num + 1
+
+    db_snap = models.GameSnap(
+        game_id=game.id,
+        created_at=datetime.now(timezone.utc),
+        board=board,
+        move=move,
+        taken=taken,
+        castelable=castelable,
+        move_num=move_num
+    )
+    db.add(db_snap)
+    db.commit()
+    db.refresh(db_snap)
+    return db_snap
