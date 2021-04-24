@@ -3,7 +3,7 @@ from typing import Optional, Tuple, Set, List
 
 from sqlalchemy.orm import Session
 
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, status, Body
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from jose import JWTError, jwt
@@ -207,6 +207,7 @@ async def list_available_games(
         )
     return games
 
+#TODO should be patch
 # joines an existing game. error when game already started
 @app.get("/games/{gameUUID}/join")
 async def join_game(
@@ -224,6 +225,24 @@ async def join_game(
 
     game.set_player(current_user)
     return game
+
+# TODO set player ready (maybe not necessary since we're not timing)
+# @app.get("/games/{gameUUID}/join")
+# async def join_game(
+#     gameUUID: str,
+#     current_user: schemas.User = Depends(get_current_active_user),
+#     db: Session = Depends(get_db)
+# ):
+#     game = await get_game(gameUUID, current_user, db)
+#     if not game:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND,
+#             detail="game not found",
+#             headers={"WWW-Authenticate": "Bearer"},
+#         )
+
+#     game.set_player(current_user)
+#     return game
 
 # either creates a new game or joins an existing unstarted random game. Random games can not be joined via "join_game".
 @app.patch("/games")
@@ -253,12 +272,16 @@ async def query_turn(
     current_user: schemas.User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    pass
+    game = await get_game(gameUUID, current_user, db)
+    return game.turn
+
 
 @app.post("/games/{gameUUID}/move")
 async def post_move(
     gameUUID: str,
-    current_user: schemas.User = Depends(get_current_active_user)
+    move: dict = Body(...), # or pydantic or query parameter? Probably pydantic to make clear what a move is
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
 ):
     game = await get_game(gameUUID, current_user, db)
     if not game:
@@ -267,7 +290,10 @@ async def post_move(
             detail="game not found",
             headers={"Authorization": "Bearer"},
         )
-    return game
+
+    print(move)
+    snap = game.move(move)
+    return snap
 
 
 @app.get("/games/{gameUUID}/snap")

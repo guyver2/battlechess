@@ -158,7 +158,7 @@ class Test_Api(unittest.TestCase):
                 "board": "RNBQKBNRPPPPPPPP___________________________p____ppp_pppprnbqkbnr",
                 "taken": "",
                 "castelable": "",
-                "move_number": 0,
+                "move_number": 1,
                 "created_at": datetime(2021, 4, 5, tzinfo=timezone.utc),
             },
         ]
@@ -631,7 +631,7 @@ class Test_Api(unittest.TestCase):
                 'move': 'd2d4',
                 'taken': '',
                 'castelable': '',
-                'move_number': 0,
+                'move_number': 1,
                 'board': 'RNBQKBNRPPPPPPPP___________________________p____ppp_pppprnbqkbnr',
             }]
         )
@@ -660,6 +660,50 @@ class Test_Api(unittest.TestCase):
             'move': 'd2d4',
             'taken': '',
             'castelable': '',
-            'move_number': 0,
+            'move_number': 1,
             'board': 'RNBQKBNRPPPPPPPP___________________________p____ppp_pppprnbqkbnr',
         })
+
+    def test_getTurn(self):
+        token, _ = self.addFakeUsers(self.db)
+        self.addFakeGames(self.db, self.fakegamesdb())
+        firstgame_uuid = list(self.fakegamesdb().values())[0]["uuid"]
+        self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
+
+        response = self.client.get(
+            f'/games/{firstgame_uuid}/turn',
+            headers={
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json',
+            },
+        )
+
+        print(response.json())
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), 'white')
+
+    def test_move(self):
+        token, _ = self.addFakeUsers(self.db)
+        self.addFakeGames(self.db, self.fakegamesdb())
+        firstgame_uuid = list(self.fakegamesdb().values())[0]["uuid"]
+        self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
+
+        # get previous game/board
+
+        response = self.client.post(
+            f'/games/{firstgame_uuid}/move',
+            headers={
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json',
+            },
+            json={
+                "move": "b4b5",
+            },
+        )
+
+        # get after game/board
+        # test board is the expected one
+
+        print(response.json())
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), 'white')

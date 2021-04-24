@@ -85,6 +85,15 @@ class Game(Base):
     def is_finished(self):
         return self.status == "done"
 
+    def get_latest_snap(self):
+        if not self.snaps:
+            return None
+        return self.snaps[-1]
+
+    def move(self, move):
+        # TODO move
+        return self.get_latest_snap()
+
 class GameSnap(Base):
 
     __tablename__ = "gamesnap"
