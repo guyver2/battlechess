@@ -78,8 +78,7 @@ class Game(Base):
 
         # if all players are there, start
         if self.white_id and self.black_id:
-            self.status = "started"
-
+            self.start_game()
     def get_player_color(self, user_id):
         if user_id == self.white_id:
             return "white"
@@ -94,6 +93,10 @@ class Game(Base):
         if not self.snaps:
             return None
         return self.snaps[-1]
+
+    def start_game(self):
+        # TODO create first snap if it's not there
+        self.status = "started"
 
     def refresh_turn(self):
         if not self.snaps:
