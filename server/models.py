@@ -76,9 +76,9 @@ class Game(Base):
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-        # if all players are there, start
-        if self.white_id and self.black_id:
-            self.start_game()
+    def is_full(self):
+        return self.white_id and self.black_id
+
     def get_player_color(self, user_id):
         if user_id == self.white_id:
             return "white"
@@ -95,7 +95,6 @@ class Game(Base):
         return self.snaps[-1]
 
     def start_game(self):
-        # TODO create first snap if it's not there
         self.status = "started"
 
     def refresh_turn(self):

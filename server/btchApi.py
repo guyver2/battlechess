@@ -76,10 +76,21 @@ async def get_game(
     return game
 
 async def set_player(
-    gameUUID,
-    current_user: schemas.User = Depends(get_current_active_user)
+    game: models.Game,
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
 ):
-    try_set_player(gameUUID, current_user)
+    game.set_player(current_user)
+
+    # if all players are there, start
+    if game.is_full():
+        crud.create_default_snap(db, current_user, game)
+        game.start_game()
+
+    # if this is not here start_game doesn't change the state of the game
+    db.commit()
+
+    return game
 
 
 @app.get("/version")
@@ -179,10 +190,7 @@ def post_new_game(
     current_user: schemas.User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-
-
     return crud.create_game(db, current_user, new_game)
-
 
 @app.get("/games/{gameUUID}")
 def get_game_by_uuid(
@@ -223,7 +231,8 @@ async def join_game(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    game.set_player(current_user)
+    game = await set_player(game, current_user, db)
+
     return game
 
 # TODO set player ready (maybe not necessary since we're not timing)
@@ -253,7 +262,11 @@ async def join_random_game(
     game = crud.get_random_public_game_waiting(db, current_user)
     if not game:
         return {}
-    game.set_player(current_user)
+
+    game = await set_player(game, current_user, db)
+
+    db.refresh(game)
+
     return game
 
 # serialized board state

@@ -38,6 +38,29 @@ class Test_Models(unittest.TestCase):
         self.db.close()
         Base.metadata.drop_all(self.engine)
 
+    def fakeusersdb(self):
+        fake_users_db = {
+            "johndoe": {
+                "username": "johndoe",
+                "full_name": "John Doe",
+                "email": "johndoe@example.com",
+                "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
+                "disabled": False,
+                "avatar": None,
+                "created_at":  datetime(2021, 1, 1, tzinfo=timezone.utc),
+            },
+            "janedoe": {
+                "username": "janedoe",
+                "full_name": "Jane Doe",
+                "email": "janedoe@example.com",
+                "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
+                "disabled": False,
+                "avatar": None,
+                "created_at":  datetime(2021, 1, 1, tzinfo=timezone.utc),
+            }
+        }
+        return fake_users_db
+
     def fakesnap(self):
         snap = {
             "game_uuid": "lkml4a3.d3",
@@ -58,6 +81,31 @@ class Test_Models(unittest.TestCase):
             "created_at": datetime(2021, 4, 5, 0, tzinfo=timezone.utc),
         }
         return snap
+
+    def fakegame(self):
+        fake_game_db = {
+            "uuid": "lkml4a3.d3",
+            "owner": "johndoe",
+            "white": "johndoe",
+            "black": "janedoe",
+            "status": "started",
+            "public": False,
+            "turn": "black",
+            "created_at": datetime(2021, 1, 1, tzinfo=timezone.utc),
+        }
+        return fake_game_db
+
+    def addFakeUsers(self, db):
+        for username, user in self.fakeusersdb().items():
+            db_user = models.User(
+                username=user["username"],
+                full_name=user["full_name"],
+                email=user["email"],
+                hashed_password=user["hashed_password"]
+            )
+            db.add(db_user)
+            db.commit()
+        return db.query(models.User).all()
 
     def test__toBoard(self):
 
@@ -145,6 +193,28 @@ class Test_Models(unittest.TestCase):
 
         self.assertEqual(move,[6,3,4,3])
 
-    def test__Game__startGameCreatesSnapIfEmpty(self):
-        print("to be implemented?")
-        self.assertTrue(False)
+    # deprecated: default snap is created via api set_player
+    def _test__Game__startGameCreatesSnapIfEmpty(self):
+        users = self.addFakeUsers(self.db)
+        johndoe = users[0]
+        janedoe = users[1]
+        game = self.fakegame()
+        db_game = models.Game(
+                created_at=game["created_at"],
+                uuid=game["uuid"],
+                owner_id=johndoe.id,
+                white_id=johndoe.id,
+                black_id=janedoe.id,
+                status=game["status"],
+                last_move_time=None,
+                turn=game.get("turn", "white"),
+                public=game["public"]
+        )
+        self.db.add(db_game)
+        self.db.commit()
+        self.db.refresh(db_game)
+
+        db_game.start_game()
+
+        snaps = db_game.snaps
+        self.assertTrue(len(snaps) > 0)

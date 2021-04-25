@@ -22,3 +22,15 @@ def get_random_string(length=6):
 
 def handle2uuid(uuid):
     return HANDLEBASEURL + uuid
+
+def defaultBoard():
+    return (
+        'RNBQKBNR'
+        'PPPPPPPP'
+        '________'
+        '________'
+        '________'
+        '________'
+        'pppppppp'
+        'rnbqkbnr'
+    )
