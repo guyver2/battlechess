@@ -401,7 +401,8 @@ class Test_Api(unittest.TestCase):
             'public': False,
             'status': 'idle',
             'turn': 'white',
-            'white_id': None
+            'white_id': None,
+            'winner': None,
         })
 
     def test__get_game_by_uuid(self):
@@ -432,6 +433,7 @@ class Test_Api(unittest.TestCase):
             'status': 'waiting',
             'turn': 'white',
             'white_id': 1,
+            'winner': None,
         })
 
     # TODO test list random games before setting my player
@@ -466,6 +468,7 @@ class Test_Api(unittest.TestCase):
             'status': 'started',
             'turn': 'white',
             'white_id': mock.ANY,
+            'winner': None,
         })
         self.assertTrue(response.json()['black_id'] == oneUser.id or response.json()['white_id'] == oneUser.id)
 

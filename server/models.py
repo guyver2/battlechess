@@ -39,6 +39,7 @@ class Game(Base):
     turn = Column(String, default="white")
     last_move_time = Column(DateTime)
     public = Column(Boolean, default=True)
+    winner = Column(String, default=None)
 
     owner = relationship("User", backref="games", foreign_keys=[owner_id])
     white = relationship("User", backref="whites", foreign_keys=[white_id])
@@ -196,7 +197,9 @@ class GameSnap(Base):
 
     # TODO build a Board class from an instance
     def toBoard(self):
-        print('to be implemented')
         board = Board()
         board.reset()
+        enpassant = "" # TODO check last snap abcdefgh
+        winner = None # TODO better way to get for unit testing self.game.winner
+        board.updateFromElements(self.board, self.taken, self.castelable, enpassant, winner)
         return board
