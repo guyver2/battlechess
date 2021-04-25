@@ -145,7 +145,6 @@ def create_snap_by_move(
     snapOptions = game.moveGame(gameMove.move)
 
     snap = game.get_latest_snap()
-
     # TODO list status strings somewhere
     db_snap = models.GameSnap(
         created_at=datetime.now(timezone.utc),
@@ -159,6 +158,10 @@ def create_snap_by_move(
     db.add(db_snap)
     db.commit()
     db.refresh(db_snap)
+
+    # update turn
+    game.turn = db_snap.getNextTurn()
+
     return db_snap
 
 def create_snap_by_dict(

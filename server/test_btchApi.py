@@ -98,7 +98,7 @@ class Test_Api(unittest.TestCase):
                 "black": "janedoe",
                 "status": "started",
                 "public": False,
-                "turn": "white",
+                "turn": "black",
                 "created_at": datetime(2021, 1, 1, tzinfo=timezone.utc),
             },
             "da39a3ee5e": {
@@ -727,7 +727,7 @@ class Test_Api(unittest.TestCase):
 
         print(response.json())
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'white')
+        self.assertEqual(response.json(), 'black')
 
     def test_move(self):
         token, _ = self.addFakeUsers(self.db)
