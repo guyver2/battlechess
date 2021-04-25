@@ -144,3 +144,7 @@ class Test_Models(unittest.TestCase):
         move = snap.moveToCoordList("d2d4")
 
         self.assertEqual(move,[6,3,4,3])
+
+    def test__Game__startGameCreatesSnapIfEmpty(self):
+        print("to be implemented?")
+        self.assertTrue(False)
