@@ -7,7 +7,12 @@ from jose import JWTError, jwt
 
 from . import models, schemas
 
-from .utils import get_password_hash, verify_password, get_random_string
+from .utils import (
+    get_password_hash,
+    verify_password,
+    get_random_string,
+    defaultBoard
+)
 
 from .config import (
     SECRET_KEY, ALGORITHM,
@@ -164,9 +169,11 @@ def create_snap_by_move(
 
     return db_snap
 
+# TODO test
 def create_snap_by_dict(
     db: Session,
     user: schemas.User,
+    gameUUID: str,
     board: str,
     move: str,
     taken: str,
@@ -175,7 +182,7 @@ def create_snap_by_dict(
     game = get_game_by_uuid(db, gameUUID)
 
     last_snap = game.get_latest_snap()
-    move_num = last_snap.move_num + 1
+    move_number = last_snap.move_number + 1
 
     db_snap = models.GameSnap(
         game_id=game.id,
@@ -184,7 +191,25 @@ def create_snap_by_dict(
         move=move,
         taken=taken,
         castelable=castelable,
-        move_num=move_num
+        move_number=move_number
+    )
+    db.add(db_snap)
+    db.commit()
+    db.refresh(db_snap)
+    return db_snap
+
+def create_default_snap(db: Session,
+    user: schemas.User,
+    game: models.Game
+):
+    db_snap = models.GameSnap(
+        game_id=game.id,
+        created_at=datetime.now(timezone.utc),
+        board=defaultBoard(),
+        move="",
+        taken="",
+        castelable="QT_K_KT_qt_k_kt",
+        move_number=0
     )
     db.add(db_snap)
     db.commit()
