@@ -91,6 +91,7 @@ class Game(Base):
             return None
         return self.snaps[-1]
 
+    # TODO ensure that the turn color is guaranteed to be correct to the caller user's color
     # TODO should we create the snap here instead of returning
     # the snap options and delegating to the client?
     def moveGame(self, move):
@@ -113,28 +114,77 @@ class GameSnap(Base):
 
     game = relationship("Game", back_populates="snaps")
 
-    def moveSnap(self, move):
-        snapOptions = None
-        # TODO add game logic
-        # build board from model
-        # board.move(move)
-        if move == "d7d5":
-            snapOptions = {
-                "castelable" : "",
-                "taken" : "",
-                "board" : (
-                    'RNBQKBNR'
-                    'PPP_PPPP'
-                    '________'
-                    '___P____'
-                    '___p____'
-                    '________'
-                    'ppp_pppp'
-                    'rnbqkbnr'
-                ),
-            }
+    def toBoard(self):
+        pass
+
+    def getNextTurn(self):
+        colors = ['white', 'black']
+        return colors[self.move_number%2]
+
+    def snapOptionsFromBoard(self, board: Board, accepted_move):
+        snapOptions = {
+            "move" : accepted_move,
+            "castelable" : "",
+            "taken" : "",
+            "board" : (
+                'RNBQKBNR'
+                'PPP_PPPP'
+                '________'
+                '___P____'
+                '___p____'
+                '________'
+                'ppp_pppp'
+                'rnbqkbnr'
+            ),
+        }
         return snapOptions
 
-    # build a Board class from an instance
+    # TODO handle errors
+    # TODO could be static method, utils ...
+    def coordListToMove(self, coords):
+        abc = 'abcdefgh'
+        dig = '87654321'
+        return abc[coords[1]]+dig[coords[0]]+abc[coords[3]]+dig[coords[2]]
+
+    # TODO handle errors
+    def moveToCoordList(self, move):
+        dig = [None,7,6,5,4,3,2,1,0]
+        i = dig[int(move[1])]
+        j = ord(move[0]) - 97
+        ii = dig[int(move[3])]
+        jj = ord(move[2]) - 97
+        return [i, j, ii, jj]
+
+    def moveSnap(self, move):
+        # TODO sync with board
+        color = self.getNextTurn()
+
+        snapOptions = None
+        # build board from model
+        coordlist = self.moveToCoordList(move)
+        board = self.toBoard()
+        # run move
+        result, accepted_move_list = board.move(
+            coordlist[0],
+            coordlist[1],
+            coordlist[2],
+            coordlist[3],
+            color[0],
+        )
+        if not result:
+            # TODO better reason
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Movement invalid for some reason",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        accepted_move = self.coordListToMove(accepted_move_list)
+
+        return self.snapOptionsFromBoard(board, accepted_move)
+
+    # TODO build a Board class from an instance
     def toBoard(self):
-        return Board()
+        print('to be implemented')
+        board = Board()
+        board.reset()
+        return board

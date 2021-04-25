@@ -24,8 +24,8 @@ class Board(object):
         self.board = [['' for i in range(8)] for j in range(8)]
         self.board[0] = ['rb', 'nb', 'bb', 'qb', 'kb', 'bb', 'nb', 'rb']
         self.board[1] = ['pb', 'pb', 'pb', 'pb', 'pb', 'pb', 'pb', 'pb']
-        self.board[7] = ['rw', 'nw', 'bw', 'qw', 'kw', 'bw', 'nw', 'rw']
         self.board[6] = ['pw', 'pw', 'pw', 'pw', 'pw', 'pw', 'pw', 'pw']
+        self.board[7] = ['rw', 'nw', 'bw', 'qw', 'kw', 'bw', 'nw', 'rw']
 
     # make a deep copy of the board
     def copy(self):
@@ -353,8 +353,12 @@ class Board(object):
         return None
 
     def move(self, i, j, ii, jj, color=None):
+
         # are given position inside the board ?
         if not self.isIn(i, j) or not self.isIn(ii, jj):
+            return False, []
+        # is there a piece in the source square ?
+        if not self.board[i][j]:
             return False, []
         # the player is trying to move a piece from the other player
         if color and self.board[i][j][1] != color:

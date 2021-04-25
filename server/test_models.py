@@ -93,19 +93,54 @@ class Test_Models(unittest.TestCase):
         self.maxDiff=None
         board = Board()
         board.reset()
-        status, accepted_move = board.move(1,4,3,4)
-        print(f"new board {status} - {accepted_move}")
+        status, accepted_move_list = board.move(6,4,4,4)
+        print(f"new board {status} - {accepted_move_list}")
         print(board.toString())
         self.assertTrue(status)
+        self.assertListEqual(accepted_move_list, [6,4,4,4])
         self.assertEqual(board.toString(), (
             "rb_nb_bb_qb_kb_bb_nb_rb_"
-            "pb_pb_pb_pb__pb_pb_pb_"
-            "________"
-            "____pb____"
+            "pb_pb_pb_pb_pb_pb_pb_pb_"
             "________"
             "________"
-            "pw_pw_pw_pw_pw_pw_pw_pw_"
+            "____pw____"
+            "________"
+            "pw_pw_pw_pw__pw_pw_pw_"
             "rw_nw_bw_qw_kw_bw_nw_rw"
             "##kb_kw_rqb_rkb_rqw_rkw#4#n"
             )
         )
+
+    def test__GameSnap__coordListToMove(self):
+
+        fakesnap = self.fakesnap()
+        snap = models.GameSnap(
+            created_at=fakesnap["created_at"],
+            game_id=None,
+            board=fakesnap["board"],
+            move=fakesnap["move"],
+            taken=fakesnap["taken"],
+            castelable=fakesnap["castelable"],
+            move_number=fakesnap["move_number"],
+        )
+
+        move = snap.coordListToMove([6,3,4,3])
+        print(f'move {move}')
+        self.assertEqual(move,"d2d4")
+
+    def test__GameSnap__moveToCoordList(self):
+
+        fakesnap = self.fakesnap()
+        snap = models.GameSnap(
+            created_at=fakesnap["created_at"],
+            game_id=None,
+            board=fakesnap["board"],
+            move=fakesnap["move"],
+            taken=fakesnap["taken"],
+            castelable=fakesnap["castelable"],
+            move_number=fakesnap["move_number"],
+        )
+
+        move = snap.moveToCoordList("d2d4")
+
+        self.assertEqual(move,[6,3,4,3])
