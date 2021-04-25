@@ -76,6 +76,10 @@ class Game(Base):
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
+        # if all players are there, start
+        if self.white_id and self.black_id:
+            self.status = "started"
+
     def get_player_color(self, user_id):
         if user_id == self.white_id:
             return "white"
@@ -90,6 +94,12 @@ class Game(Base):
         if not self.snaps:
             return None
         return self.snaps[-1]
+
+    def refresh_turn(self):
+        if not self.snaps:
+            print("[warning] game had no snaps. turn is white.")
+            self.turn = 'white'
+        self.turn = self.snaps[-1].getNextTurn()
 
     # TODO ensure that the turn color is guaranteed to be correct to the caller user's color
     # TODO should we create the snap here instead of returning
