@@ -76,7 +76,7 @@ class Test_Models(unittest.TestCase):
                 'rnbqkbnr'
             ),
             "taken": "",
-            "castelable": "",
+            "castelable": "LSKlsk",
             "move_number": 0,
             "created_at": datetime(2021, 4, 5, 0, tzinfo=timezone.utc),
         }
@@ -132,7 +132,7 @@ class Test_Models(unittest.TestCase):
             "________"
             "pw_pw_pw_pw_pw_pw_pw_pw_"
             "rw_nw_bw_qw_kw_bw_nw_rw"
-            "##kb_kw_rqb_rkb_rqw_rkw#-1#n"
+            "##kb_kw_rkb_rkw_rqb_rqw#-1#n"
             )
         )
 
@@ -155,7 +155,7 @@ class Test_Models(unittest.TestCase):
             "________"
             "pw_pw_pw_pw__pw_pw_pw_"
             "rw_nw_bw_qw_kw_bw_nw_rw"
-            "##kb_kw_rqb_rkb_rqw_rkw#4#n"
+            "##kb_kw_rkb_rkw_rqb_rqw#4#n"
             )
         )
 

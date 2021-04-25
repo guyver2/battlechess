@@ -8,7 +8,7 @@ CASTLEQBPOS = [0, 2]
 CASTLEKBPOS = [0, 6]
 CASTLEQWPOS = [7, 2]
 CASTLEKWPOS = [7, 6]
-CASTLEABLE = ['kb', 'kw', 'rqb', 'rkb', 'rqw', 'rkw']
+CASTLEABLE = sorted(['kb', 'kw', 'rqb', 'rkb', 'rqw', 'rkw'])
 
 
 class Board(object):
@@ -517,6 +517,35 @@ class Board(object):
         self.castleable = list(board.castleable)
         self.enpassant = board.enpassant
         self.winner = board.winner
+
+    def dbpiece2boardpiece(self, piecechar):
+        color = 'b' if piecechar.isupper() else 'w'
+        piece = '' if piecechar == '_' else piecechar.lower() + color
+        return piece
+
+    def castle2boardpiece(self, castelablechar):
+        castle2piece = {
+            "L": 'rqb',
+            "S": 'rkb',
+            "K": 'kb',
+            "l": 'rqw',
+            "k": 'rkw',
+            "s": 'kw',
+        }
+        # Error
+        if castelablechar not in castle2piece:
+            print(f"castelablechar {castelablechar} unknown")
+            return None
+        return castle2piece[castelablechar]
+
+    # TODO check what winner str format is Board() expecting. winner "white" "black" "None"
+    def updateFromElements(self, board, taken, castleable, enpassant, winner):
+        for i, c in enumerate(board):
+            self.board[i//8][i % 8] = self.dbpiece2boardpiece(c)
+        self.taken = [self.dbpiece2board(c) for c in taken]
+        self.castleable = sorted([self.castle2boardpiece(c) for c in castleable])
+        self.enpassant = ord(enpassant) - 97 if enpassant else -1
+        self.winner = winner
 
 if __name__ == '__main__':
     board = Board()
