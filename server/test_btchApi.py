@@ -463,7 +463,7 @@ class Test_Api(unittest.TestCase):
             'id': mock.ANY,
             'owner_id': mock.ANY,
             'public': True,
-            'status': 'waiting',
+            'status': 'started',
             'turn': 'white',
             'white_id': mock.ANY,
         })
