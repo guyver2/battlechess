@@ -62,13 +62,10 @@ class Game(Base):
         if not self.white_id and not self.black_id:
             # TODO random
             self.white_id = user.id
-            print("setting white")
         elif not self.white_id:
             self.white_id = user.id
-            print("setting white")
         elif not self.black_id:
             self.black_id = user.id
-            print(f"setting black {self.white_id} {self.black_id}")
         else:
             #error player already set
             raise HTTPException(
@@ -135,21 +132,9 @@ class GameSnap(Base):
         return colors[self.move_number%2]
 
     def snapOptionsFromBoard(self, board: Board, accepted_move):
-        snapOptions = {
-            "move" : accepted_move,
-            "castelable" : "",
-            "taken" : "",
-            "board" : (
-                'RNBQKBNR'
-                'PPP_PPPP'
-                '________'
-                '___P____'
-                '___p____'
-                '________'
-                'ppp_pppp'
-                'rnbqkbnr'
-            ),
-        }
+        print("board.toElements() to be implemented")
+        snapOptions = board.toElements()
+        snapOptions["move"] = accepted_move
         return snapOptions
 
     # TODO handle errors
