@@ -22,7 +22,6 @@ from .config import (
 # TODO redo this. I hate myself for writing it.
 def create_game_uuid(db: Session):
     uuid = get_random_string()
-    print(uuid)
     # Check if it exists (and its idle?) Or we could add the id or something.
     for i in range(5):
         repeatedHandleGame = db.query(models.Game).filter(models.Game.uuid == uuid).first()
@@ -131,8 +130,6 @@ def get_snap(db: Session, user: schemas.User, gameUUID, move_number):
         print("Error: snap duplicate!")
 
     snap = query.first()
-    print(f"snap {snap.__dict__}")
-    print(snap.move)
 
     return snap
 
@@ -208,7 +205,7 @@ def create_default_snap(db: Session,
         board=defaultBoard(),
         move="",
         taken="",
-        castelable="QT_K_KT_qt_k_kt",
+        castelable=''.join(sorted("LKSlks")),
         move_number=0
     )
     db.add(db_snap)

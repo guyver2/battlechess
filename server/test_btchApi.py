@@ -66,6 +66,25 @@ class Test_Api(unittest.TestCase):
         finally:
             db.close()
 
+    def setUp(self):
+        # TODO setUp correctly with begin-rollback instead of create-drop
+        # create db, users, games...
+
+        # Base = declarative_base()
+
+        Base.metadata.create_all(bind=self.engine)
+
+        app.dependency_overrides[get_db] = self.override_get_db
+
+        self.client = TestClient(app)
+
+        self.db = self.TestingSessionLocal()
+
+    def tearDown(self):
+        # delete db
+        self.db.close()
+        Base.metadata.drop_all(self.engine)
+
     def fakeusersdb(self):
         fake_users_db = {
             "johndoe": {
@@ -236,25 +255,6 @@ class Test_Api(unittest.TestCase):
         return crud.create_access_token(
             data={"sub": username}, expires_delta=timedelta(minutes=3000)
         )
-
-    def setUp(self):
-        # TODO setUp correctly with begin-rollback instead of create-drop
-        # create db, users, games...
-
-        # Base = declarative_base()
-
-        Base.metadata.create_all(bind=self.engine)
-
-        app.dependency_overrides[get_db] = self.override_get_db
-
-        self.client = TestClient(app)
-
-        self.db = self.TestingSessionLocal()
-
-    def tearDown(self):
-        # delete db
-        self.db.close()
-        Base.metadata.drop_all(self.engine)
 
     def test__version(self):
         response = self.client.get("/version")
@@ -548,7 +548,6 @@ class Test_Api(unittest.TestCase):
         )
 
         game = self.db.query(models.Game).filter(models.Game.uuid == uuid).first()
-        print(game.__dict__)
 
         print(response.json())
         self.assertEqual(response.status_code, 200)
@@ -779,3 +778,129 @@ class Test_Api(unittest.TestCase):
             'rnbqkbnr'
             ),
         )
+
+    def send_move(self, game_uuid, move, token):
+        response = self.client.post(
+            f'/games/{game_uuid}/move',
+            headers={
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json',
+            },
+            json={
+                "move": move,
+            },
+        )
+        return response
+
+    def test__integrationTest__pastorscheckmate(self):
+
+        # create johndoe
+        # create janedoe
+
+        hashed_password = get_password_hash("secret")
+        response = self.client.post(
+            "/users/",
+            json={
+                "username": "johndoe",
+                "full_name": "John Le Dow",
+                "email": "john@doe.cat",
+                "hashed_password": hashed_password
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(
+            "/users/",
+            json={
+                "username": "janedoe",
+                "full_name": "Jane Le Dow",
+                "email": "jane@doe.cat",
+                "hashed_password": hashed_password
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        # authenticate
+        response = self.client.post(
+            "/token",
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            data={
+                "username": "johndoe",
+                "password": "secret",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        john_token = response.json()['access_token']
+
+        response = self.client.post(
+            "/token",
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            data={
+                "username": "janedoe",
+                "password": "secret",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        jane_token = response.json()['access_token']
+
+        # john create game
+
+        response = self.client.post(
+            '/games/',
+            headers={
+                'Authorization': 'Bearer ' + john_token,
+                'Content-Type': 'application/json',
+            },
+            json={
+                'public': False,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        game_uuid = response.json()['uuid']
+
+        # jane join game
+
+        response = self.client.get(
+            f'/games/{game_uuid}/join',
+            headers={
+                'Authorization': 'Bearer ' + john_token,
+                'Content-Type': 'application/json',
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(
+            f'/games/{game_uuid}/join',
+            headers={
+                'Authorization': 'Bearer ' + jane_token,
+                'Content-Type': 'application/json',
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        print(response.json())
+
+        # john send move
+        # jane send move
+
+        moves = ['f2f3', 'e7e5', 'g2g4', 'd8h5']
+
+        tokens = [john_token, jane_token]
+
+        for i,move in enumerate(moves):
+            response = self.send_move(game_uuid, move, tokens[i%2])
+            print(f'running move {move} response {response.json()}')
+            self.assertEqual(response.status_code, 200)
+
+        # checkmate
+
+        # TODO checkmate
+        pass

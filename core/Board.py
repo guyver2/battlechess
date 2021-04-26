@@ -547,6 +547,16 @@ class Board(object):
         self.enpassant = ord(enpassant) - 97 if enpassant else -1
         self.winner = winner
 
+    
+
+    def toElements(self):
+        elements = {
+            "castelable" : "LKSlks",
+            "taken" : "",
+            "board" : self.toString(),
+        }
+        return elements
+
 if __name__ == '__main__':
     board = Board()
 
