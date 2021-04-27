@@ -76,7 +76,7 @@ class Test_Models(unittest.TestCase):
                 'rnbqkbnr'
             ),
             "taken": "",
-            "castelable": "LSKlsk",
+            "castelable": sorted("LSKlsk"),
             "move_number": 0,
             "created_at": datetime(2021, 4, 5, 0, tzinfo=timezone.utc),
         }
@@ -141,8 +141,8 @@ class Test_Models(unittest.TestCase):
         self.maxDiff=None
         board = Board()
         board.reset()
-        status, accepted_move_list = board.move(6,4,4,4)
-        print(f"new board {status} - {accepted_move_list}")
+        status, accepted_move_list, msg = board.move(6,4,4,4)
+        print(f"new board {status} - {accepted_move_list} - {msg}")
         print(board.toString())
         self.assertTrue(status)
         self.assertListEqual(accepted_move_list, [6,4,4,4])

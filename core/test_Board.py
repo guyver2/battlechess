@@ -44,3 +44,33 @@ class Test_Board(unittest.TestCase):
         startStrUpdated = b.toString()
 
         self.assertEqual(startStrUpdated, expected)
+
+    def test__toElements__initialboard(self):
+        b = Board()
+        b.reset()
+
+        elements = b.toElements()
+
+        expected = {
+            'board':'RNBQKBNRPPPPPPPP________________________________pppppppprnbqkbnr',
+            'castelable':'KLSkls',
+            'taken':''
+        }
+
+        self.assertDictEqual(elements, expected)
+
+    def test__toElements__someboard(self):
+        b = Board()
+        b.reset()
+        b.castleable = sorted(['kb', 'kw', 'rkb'])
+        b.taken = ['bb', 'rb', 'rw', 'pw']
+
+        elements = b.toElements()
+
+        expected = {
+            'board':'RNBQKBNRPPPPPPPP________________________________pppppppprnbqkbnr',
+            'castelable':'KSk',
+            'taken':'BRrp'
+        }
+
+        self.assertDictEqual(elements, expected)

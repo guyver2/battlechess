@@ -163,7 +163,13 @@ def create_snap_by_move(
 
     # update turn
     game.turn = db_snap.getNextTurn()
+    winner = db_snap.winner()
+    if winner:
+        game.winner = winner
+        game.status = 'finished'
+        print(f'Game {game.uuid} {game.white_id} vs {game.black_id} won by {game.winner}')
 
+    db.commit()
     return db_snap
 
 # TODO test

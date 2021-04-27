@@ -131,8 +131,16 @@ class GameSnap(Base):
         colors = ['white', 'black']
         return colors[self.move_number%2]
 
+    # TODO we need forfeit as an option
+    # TODO does draw exist in battlechess?
+    def winner(self):
+        if 'K' in self.taken:
+            return 'white'
+        if 'k' in self.taken:
+            return 'black'
+        return None
+
     def snapOptionsFromBoard(self, board: Board, accepted_move):
-        print("board.toElements() to be implemented")
         snapOptions = board.toElements()
         snapOptions["move"] = accepted_move
         return snapOptions
@@ -162,7 +170,7 @@ class GameSnap(Base):
         coordlist = self.moveToCoordList(move)
         board = self.toBoard()
         # run move
-        result, accepted_move_list = board.move(
+        result, accepted_move_list, msg = board.move(
             coordlist[0],
             coordlist[1],
             coordlist[2],
@@ -173,7 +181,7 @@ class GameSnap(Base):
             # TODO better reason
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail="Movement invalid for some reason",
+                detail=f"Movement invalid for {msg}",
                 headers={"WWW-Authenticate": "Bearer"},
             )
         accepted_move = self.coordListToMove(accepted_move_list)

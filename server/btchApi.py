@@ -305,6 +305,13 @@ async def post_move(
             headers={"Authorization": "Bearer"},
         )
 
+    if game.status != "started":
+        raise HTTPException(
+            status_code=status.HTTP_412_PRECONDITION_FAILED,
+            detail="game is not started",
+            headers={"Authorization": "Bearer"},
+        )
+
     # snap = game.move(gameMove.move)
     # deprecated in favor of creating the snap directly in the model
     # crud.create_snap_by_dict()
