@@ -553,15 +553,22 @@ class Board(object):
         self.enpassant = ord(enpassant) - 97 if enpassant else -1
         self.winner = winner
 
-    def toElements(self):
+    def toElements(self, color=None):
 
         def bpiece(p):
             return '_' if not p else p[0] if p[1] == 'w' else p[0].upper()
 
+        if color:
+            boardString = self.toString(color)
+            pieces = boardString.split('#')[0].split('_')
+            apiboard = ''.join([bpiece(p) for p in pieces])
+        else:
+            apiboard = ''.join([bpiece(p) for r in self.board for p in r ])
+
         elements = {
             "castelable" : ''.join(sorted([self.boardcastle2api()[c] for c in self.castleable])),
             "taken" : ''.join([bpiece(p) for p in self.taken]),
-            "board" : ''.join([bpiece(p) for r in self.board for p in r ])
+            "board" : apiboard
         }
         return elements
 
