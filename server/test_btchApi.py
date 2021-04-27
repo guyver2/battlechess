@@ -891,7 +891,7 @@ class Test_Api(unittest.TestCase):
         # john send move
         # jane send move
 
-        moves = ['f2f3', 'e7e5', 'g2g4', 'd8h5']
+        moves = ['f2f3', 'e7e5', 'g2g4', 'd8h4', 'f3f4', 'h4e1']
 
         tokens = [john_token, jane_token]
 
@@ -902,5 +902,12 @@ class Test_Api(unittest.TestCase):
 
         # checkmate
 
-        # TODO checkmate
-        pass
+        response = self.client.get(
+            f'/games/{game_uuid}',
+            headers={
+                'Authorization': 'Bearer ' + jane_token,
+                'Content-Type': 'application/json',
+            },
+        )
+
+        self.assertEqual(response.json()['winner'], 'black')
