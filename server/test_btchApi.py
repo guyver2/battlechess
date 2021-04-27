@@ -792,7 +792,7 @@ class Test_Api(unittest.TestCase):
         )
         return response
 
-    def test__integrationTest__pastorscheckmate(self):
+    def test__integrationTest__foolscheckmate(self):
 
         # create johndoe
         # create janedoe
