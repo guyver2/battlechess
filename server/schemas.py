@@ -24,34 +24,36 @@ class GameSnap(GameSnapBase):
     move: str
     board: str
     taken: str
-    castelable: List[str]
+    castelable: str
     move_number: int
 
     def prepare_for_player(self, player_color: str):
+
+        print('non-board filtering to be implemented')
+        filteredSnap = self.copy()
         #remove other player board
         # TODO this removes everything, but pieces next to mine should be kept
         if player_color == 'black':
-            self.board = ''.join(ch if not ch.isupper() else '_'
-                                 for ch in self.board)
-            self.castelable = [
-                castle for castle in self.castelable if castle.isupper()
-            ]
+            filteredSnap.board = ''.join(ch if not ch.isupper() else '_' for ch in self.board)
+            filteredSnap.castelable = [castle for castle in self.castelable if castle.isupper()]
         elif player_color == 'white':
-            self.board = ''.join(ch if not ch.islower() else '_'
-                                 for ch in self.board)
-            self.castelable = [
-                castle for castle in self.castelable if castle.isupper()
-            ]
+            filteredSnap.board = ''.join(ch if not ch.islower() else '_' for ch in self.board)
+            filteredSnap.castelable = [castle for castle in self.castelable if castle.isupper()]
 
-        #remove other player castelable
-        self.castelable = self.castelable
+        #TODO remove other player castelable
+        filteredSnap.castelable = self.castelable
 
-        #remove other player move
-        self.move = self.move
+        #TODO remove other player move
+        filteredSnap.move = self.move
+
+        return filteredSnap
 
     class Config:
         orm_mode = True
 
+class FilteredGameSnap(GameSnap):
+    class Config:
+        orm_mode = False
 
 class GameMove(BaseModel):
     move: str

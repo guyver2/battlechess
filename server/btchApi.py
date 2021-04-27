@@ -315,8 +315,13 @@ async def post_move(
     # snap = game.move(gameMove.move)
     # deprecated in favor of creating the snap directly in the model
     # crud.create_snap_by_dict()
+
+    # TODO this does not feel like the best approach
     snap = crud.create_snap_by_move(db, current_user, game, gameMove)
-    return snap
+    schemasnap = schemas.GameSnap.from_orm(snap)
+    filteredsnap = schemas.FilteredGameSnap(**schemasnap.dict())
+    filteredsnap.prepare_for_player(game.get_player_color(current_user.id))
+    return filteredsnap
 
 
 @app.get("/games/{gameUUID}/snap")

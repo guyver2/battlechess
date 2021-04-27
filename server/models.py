@@ -87,6 +87,9 @@ class Game(Base):
     def is_finished(self):
         return self.status == "done"
 
+    def is_running(self):
+        return self.status == "started"
+
     def get_latest_snap(self):
         if not self.snaps:
             return None
@@ -124,10 +127,9 @@ class GameSnap(Base):
 
     game = relationship("Game", back_populates="snaps")
 
-    def toBoard(self):
-        pass
-
     def getNextTurn(self):
+        if not self.game.is_running():
+            return None
         colors = ['white', 'black']
         return colors[self.move_number%2]
 
@@ -196,3 +198,9 @@ class GameSnap(Base):
         winner = None # TODO better way to get for unit testing self.game.winner
         board.updateFromElements(self.board, self.taken, self.castelable, enpassant, winner)
         return board
+
+    # unused
+    def filtered(self, color=None):
+        board = self.toBoard()
+        elements = board.toElements(color)
+        return elements

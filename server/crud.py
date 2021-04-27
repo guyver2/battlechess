@@ -177,6 +177,15 @@ def create_snap_by_move(db: Session, user: schemas.User, game: schemas.Game,
             f'Game {game.uuid} {game.white_id} vs {game.black_id} won by {game.winner}'
         )
 
+    color=None
+    if game.black_id == user.id:
+        color = 'b'
+    if game.white_id == user.id:
+        color = 'w'
+
+    # deprecated in favor of pydantic prepare_for_player TODO pydantic elements
+    # elements = db_snap.filtered(color)
+
     db.commit()
     return db_snap
 
