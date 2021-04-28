@@ -8,11 +8,14 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
+
 class TokenData(BaseModel):
     username: Optional[str] = None
 
+
 class GameSnapBase(BaseModel):
     pass
+
 
 class GameSnap(GameSnapBase):
     id: int
@@ -28,11 +31,17 @@ class GameSnap(GameSnapBase):
         #remove other player board
         # TODO this removes everything, but pieces next to mine should be kept
         if player_color == 'black':
-            self.board = ''.join(ch if not ch.isupper() else '_' for ch in self.board)
-            self.castelable = [castle for castle in self.castelable if castle.isupper()]
+            self.board = ''.join(ch if not ch.isupper() else '_'
+                                 for ch in self.board)
+            self.castelable = [
+                castle for castle in self.castelable if castle.isupper()
+            ]
         elif player_color == 'white':
-            self.board = ''.join(ch if not ch.islower() else '_' for ch in self.board)
-            self.castelable = [castle for castle in self.castelable if castle.isupper()]
+            self.board = ''.join(ch if not ch.islower() else '_'
+                                 for ch in self.board)
+            self.castelable = [
+                castle for castle in self.castelable if castle.isupper()
+            ]
 
         #remove other player castelable
         self.castelable = self.castelable
@@ -43,8 +52,10 @@ class GameSnap(GameSnapBase):
     class Config:
         orm_mode = True
 
+
 class GameMove(BaseModel):
     move: str
+
 
 # TODO this could be refactored to a more on-pair with snap
 # currently unused in favor of GameMove
@@ -52,11 +63,14 @@ class GameSnapCreate(GameSnapBase):
     game_id: int
     move: str
 
+
 class GameBase(BaseModel):
     pass
 
+
 class GameCreate(GameBase):
     public: bool
+
 
 class Game(GameBase):
     id: int
@@ -72,6 +86,7 @@ class Game(GameBase):
     class Config:
         orm_mode = True
 
+
 class Move(BaseModel):
     origin: Tuple[int, int]
     destination: Tuple[int, int]
@@ -83,8 +98,10 @@ class UserBase(BaseModel):
     full_name: Optional[str] = None
     email: Optional[str] = None
 
+
 class UserCreate(UserBase):
-    hashed_password: str
+    plain_password: str
+
 
 class User(UserBase):
     id: int
