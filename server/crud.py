@@ -94,7 +94,7 @@ def create_game(db: Session, user: schemas.User,
     db_game = models.Game(owner_id=user.id,
                           created_at=datetime.now(timezone.utc),
                           uuid=uuid,
-                          status="idle",
+                          status="waiting",
                           turn="white",
                           public=gameOptions.public)
     db.add(db_game)
@@ -168,7 +168,6 @@ def create_snap_by_move(db: Session, user: schemas.User, game: schemas.Game,
     db.refresh(db_snap)
 
     # update turn
-    game.turn = db_snap.getNextTurn()
     winner = db_snap.winner()
     if winner:
         game.winner = winner
@@ -176,6 +175,8 @@ def create_snap_by_move(db: Session, user: schemas.User, game: schemas.Game,
         print(
             f'Game {game.uuid} {game.white_id} vs {game.black_id} won by {game.winner}'
         )
+
+    game.refresh_turn()
 
     color=None
     if game.black_id == user.id:

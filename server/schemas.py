@@ -42,7 +42,7 @@ class GameSnap(GameSnapBase):
         # hence, start after the first '_' of each row
         i = i+1
         c = extboard[j*10+i]
-        print(f"{j} {i} {c} {extboard}")
+        # print(f"{j} {i} {c} {extboard}")
         for j2 in [j-1, j, j+1]:
             for i2 in [i-1, i, i+1]:
                 c2 = extboard[j2*10+i2]
@@ -55,7 +55,7 @@ class GameSnap(GameSnapBase):
 
     def filterchar(self, color, c, extboard, j, i):
         if color == 'black':
-            return c if c == '_' or c.isupper() or self.hasEnemy(extboard, j, i) else 'x'
+            return c if c == '_' or c.isupper() or self.hasEnemy(extboard, j, i) else 'X'
         elif color == 'white':
             return c if c == '_' or c.islower() or self.hasEnemy(extboard, j, i) else 'x'
         else:
@@ -78,20 +78,19 @@ class GameSnap(GameSnapBase):
 
         #foreach enemy piece, check if theres a friendly piece around, delete if not
 
-        filteredSnap = self.copy() # TODO no need to copy, schema objects don't modify the db
+        # filteredSnap = self.copy() # TODO no need to copy, schema objects don't modify the db
 
         #remove other player board
-        filteredSnap.board = filteredSnap.filterBoard(player_color)
-        print(f"filtered board is {filteredSnap.board}")
+        self.board = self.filterBoard(player_color)
+        print(f"filtered board is {self.board}")
 
         if player_color == 'black':
-            filteredSnap.castelable = ''.join(c for c in self.castelable if c.isupper())
-            filteredSnap.move = self.move if not self.move_number%2 else None
+            self.castelable = ''.join(c for c in self.castelable if c.isupper())
+            self.move = self.move if not self.move_number%2 else None
         elif player_color == 'white':
-            filteredSnap.castelable = ''.join(c for c in self.castelable if c.islower())
-            filteredSnap.move = self.move if self.move_number%2 else None
+            self.castelable = ''.join(c for c in self.castelable if c.islower())
+            self.move = self.move if self.move_number%2 else None
 
-        return filteredSnap
 
     class Config:
         orm_mode = True
