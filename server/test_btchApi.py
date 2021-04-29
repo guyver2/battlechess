@@ -822,6 +822,40 @@ class Test_Api(unittest.TestCase):
              'rnbqkbnr'),
         )
 
+    def test__move__filtered(self):
+        _, _ = self.addFakeUsers(self.db)
+        #change to second player
+        token = self.getToken("janedoe")
+        self.addFakeGames(self.db, self.fakegamesdb())
+        firstgame_uuid = list(self.fakegamesdb().values())[0]["uuid"]
+        self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
+
+        response = self.client.post(
+            f'/games/{firstgame_uuid}/move',
+            headers={
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json',
+            },
+            json={
+                "move": "d7d5",
+            },
+        )
+
+        print(response.json())
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(
+            response.json()['board'],
+            ('RNBQKBNR'
+             'PPP_PPPP'
+             '________'
+             '___P____'
+             '___p____'
+             '________'
+             'xxx_xxxx'
+             'xxxxxxxx'),
+        )
+
     def send_move(self, game_uuid, move, token):
         response = self.client.post(
             f'/games/{game_uuid}/move',
