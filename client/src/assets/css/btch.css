@@ -1,0 +1,220 @@
+/* stylelint-disable selector-no-qualifying-type, property-no-vendor-prefix */
+
+:root {
+  --color-1: #01030e;
+  --color-2: #172735;
+  --color-3: #38556e;
+  --color-4: #84a4bf;
+  --color-5: #b6d0f2;
+  --color-0: #048eff;
+  font-family: sans-serif;
+}
+
+body {
+  padding-top: 40px;
+  padding-bottom: 40px;
+  background-color: var(--color-1);
+  height: 100%;
+}
+
+.color-1 {
+  background-color: var(--color-1);
+}
+.color-2 {
+  background-color: var(--color-2);
+}
+.color-3 {
+  background-color: var(--color-3);
+}
+.color-4 {
+  background-color: var(--color-4);
+}
+.color-5 {
+  background-color: var(--color-5);
+}
+
+.text-color-0 {
+  color: var(--color-0);
+}
+.text-color-1 {
+  color: var(--color-1);
+}
+.text-color-2 {
+  color: var(--color-2);
+}
+.text-color-3 {
+  color: var(--color-3);
+}
+.text-color-4 {
+  color: var(--color-4);
+}
+.text-color-5 {
+  color: var(--color-5);
+}
+
+.form-signin {
+  max-width: 330px;
+  padding: 15px;
+  margin: 0 auto;
+}
+.form-signin .form-signin-heading,
+.form-signin .checkbox {
+  margin-bottom: 10px;
+}
+.form-signin .checkbox {
+  font-weight: 400;
+}
+.form-signin .form-control {
+  position: relative;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  height: auto;
+  padding: 10px;
+  font-size: 16px;
+}
+.form-signin .form-control:focus {
+  z-index: 2;
+}
+.form-signin input[type="email"] {
+  margin-bottom: -1px;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.form-signin input[type="password"] {
+  margin-bottom: 10px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.board {
+  /* border: 10px solid red; */
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-columns: repeat(8, 1fr);
+  width: 90vmin;
+  height: 90vmin;
+  position: relative;
+}
+
+.boardCell {
+  font-family: sans-serif;
+  font-weight: bold;
+  position: relative;
+  padding-left: 0.2vmin;
+  height: 11.25vmin;
+  width: 11.25vmin;
+}
+
+.boardCell.black {
+  background: #ff8e65;
+  color: black;
+}
+
+.boardCell.white {
+  background: #ffcb9c;
+  color: black;
+}
+
+.boardCell img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 11.25vmin;
+  width: 11.25vmin;
+}
+
+.boardCell.selected {
+  background: rgb(168, 119, 119);
+}
+
+.boardCell.fog {
+  background: rgb(18, 24, 24);
+}
+
+.boardCell.fog img {
+  display: none;
+}
+
+.hidden {
+  display: none;
+}
+
+/* 12 columns grid */
+[class*="col-"] {
+  float: left;
+}
+.col-1 {
+  width: 8.333333%;
+}
+.col-2 {
+  width: 16.666666%;
+}
+.col-3 {
+  width: 25%;
+}
+.col-4 {
+  width: 33.333333%;
+}
+.col-5 {
+  width: 41.666666%;
+}
+.col-6 {
+  width: 50%;
+}
+.col-7 {
+  width: 58.333333%;
+}
+.col-8 {
+  width: 66.666666%;
+}
+.col-9 {
+  width: 75%;
+}
+.col-10 {
+  width: 83.333333%;
+}
+.col-11 {
+  width: 91.666666%;
+}
+.col-12 {
+  width: 100%;
+}
+
+/* 12 rows grid */
+.row-1 {
+  height: 8.333333%;
+}
+.row-2 {
+  height: 16.666666%;
+}
+.row-3 {
+  height: 25%;
+}
+.row-4 {
+  height: 33.333333%;
+}
+.row-5 {
+  height: 41.666666%;
+}
+.row-6 {
+  height: 50%;
+}
+.row-7 {
+  height: 58.333333%;
+}
+.row-8 {
+  height: 66.666666%;
+}
+.row-9 {
+  height: 75%;
+}
+.row-10 {
+  height: 83.333333%;
+}
+.row-11 {
+  height: 91.666666%;
+}
+.row-12 {
+  height: 100%;
+}
