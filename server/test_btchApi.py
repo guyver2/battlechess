@@ -412,7 +412,7 @@ class Test_Api(unittest.TestCase):
                 'last_move_time': None,
                 'owner_id': 1,
                 'public': False,
-                'status': 'idle',
+                'status': 'waiting',
                 'turn': 'white',
                 'white_id': None,
                 'winner': None,
@@ -884,6 +884,8 @@ class Test_Api(unittest.TestCase):
             },
         )
 
+        john_id = response.json()['id']
+
         self.assertEqual(response.status_code, 200)
 
         response = self.client.post(
@@ -895,6 +897,8 @@ class Test_Api(unittest.TestCase):
                 "plain_password": "secret"
             },
         )
+
+        jane_id = response.json()['id']
 
         self.assertEqual(response.status_code, 200)
 
@@ -940,7 +944,7 @@ class Test_Api(unittest.TestCase):
 
         game_uuid = response.json()['uuid']
 
-        # jane join game
+        # john and jane join game
 
         response = self.client.get(
             f'/games/{game_uuid}/join',
@@ -950,7 +954,23 @@ class Test_Api(unittest.TestCase):
             },
         )
 
+        # check if game started
+        response = self.client.get(
+            f'/games/{game_uuid}',
+            headers={
+                'Authorization': 'Bearer ' + jane_token,
+                'Content-Type': 'application/json',
+            },
+        )
+
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['status'], 'waiting')
+
+        white_id = response.json()['white_id']
+        black_id = response.json()['black_id']
+        jane_color = None if not white_id else 'white' if white_id == jane_id else 'black'
+        john_color = None if not white_id else 'white' if response.json(
+        )['white_id'] == john_id else 'black'
 
         response = self.client.get(
             f'/games/{game_uuid}/join',
@@ -973,8 +993,71 @@ class Test_Api(unittest.TestCase):
 
         for i, move in enumerate(moves):
             response = self.send_move(game_uuid, move, tokens[i % 2])
-            print(f'running move {move} response {response.json()}')
+            print(
+                f'ran move {move} by {jane_color if jane_token == tokens[i%2) else john_color]}'
+            )
             self.assertEqual(response.status_code, 200)
+
+            # they ask for game and turn
+
+            response = self.client.get(
+                f'/games/{game_uuid}/turn',
+                headers={
+                    'Authorization': 'Bearer ' + jane_token,
+                    'Content-Type': 'application/json',
+                },
+            )
+
+            self.assertEqual(response.status_code, 200)
+            jane_turn = response.json()
+            response = self.client.get(
+                f'/games/{game_uuid}/turn',
+                headers={
+                    'Authorization': 'Bearer ' + john_token,
+                    'Content-Type': 'application/json',
+                },
+            )
+
+            self.assertEqual(response.status_code, 200)
+            john_turn = response.json()
+
+            # TODO what happens after checkmate?
+            self.assertEqual(jane_turn, john_turn)
+
+            response = self.client.get(
+                f'/games/{game_uuid}/snap',
+                headers={
+                    'Authorization': 'Bearer ' + jane_token,
+                    'Content-Type': 'application/json',
+                },
+            )
+
+            # no winner
+            if john_turn or jane_turn:
+                #TODO note that this assert will fail if an enemy piece is seen
+                if jane_color == 'white':
+                    self.assertEqual(response.json()['board'],
+                                     response.json()['board'].lower())
+                else:
+                    print(f'jane color is {jane_color}')
+                    self.assertEqual(response.json()['board'],
+                                     response.json()['board'].upper())
+
+            response = self.client.get(
+                f'/games/{game_uuid}/snap',
+                headers={
+                    'Authorization': 'Bearer ' + john_token,
+                    'Content-Type': 'application/json',
+                },
+            )
+
+            if john_turn or jane_turn:
+                if john_color == 'white':
+                    self.assertEqual(response.json()['board'],
+                                     response.json()['board'].lower())
+                else:
+                    self.assertEqual(response.json()['board'],
+                                     response.json()['board'].upper())
 
         # checkmate
 
@@ -985,5 +1068,9 @@ class Test_Api(unittest.TestCase):
                 'Content-Type': 'application/json',
             },
         )
+
+        print("{} with {} won the game".format(
+            "janedoe" if jane_color == response.json()['winner'] else
+            "johndoe", jane_color))
 
         self.assertEqual(response.json()['winner'], 'black')
