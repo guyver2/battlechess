@@ -27,24 +27,69 @@ class GameSnap(GameSnapBase):
     castelable: str
     move_number: int
 
+    def extendboard(self, board):
+        return "_"*10 + "".join(["_" + board[j*8:(j+1)*8] + "_" for j in range(8)]) + "_"*10
+
+    def shrinkboard(self, extboard, inner=True):
+        if not inner:
+            return "".join([extboard[j*10+1:(j+1)*10-1] for j in range(1,9)])
+        else:
+            return "".join([extboard[j*10+1:(j+1)*10-1] for j in range(8)])
+
+
+    def hasEnemy(self, extboard, j, i):
+        # i+1 because coordinates are board coordinates not extended board coords
+        # hence, start after the first '_' of each row
+        i = i+1
+        c = extboard[j*10+i]
+        print(f"{j} {i} {c} {extboard}")
+        for j2 in [j-1, j, j+1]:
+            for i2 in [i-1, i, i+1]:
+                c2 = extboard[j2*10+i2]
+                if c2 == '_':
+                    continue
+                elif c.isupper() and c2.islower():
+                    return True
+                elif c.islower() and c2.isupper():
+                    return True
+
+    def filterchar(self, color, c, extboard, j, i):
+        if color == 'black':
+            return c if c == '_' or c.isupper() or self.hasEnemy(extboard, j, i) else 'x'
+        elif color == 'white':
+            return c if c == '_' or c.islower() or self.hasEnemy(extboard, j, i) else 'x'
+        else:
+            print(f"{color} is not a color")
+            return None
+
+    def filterBoard(self, color):
+        # extend the board to skip doing bound checking
+        extboard = self.extendboard(self.board)
+
+        #[(i,j,c) for j in range(1,9) for i,c in enumerate(foo[j*10+1:j*10+9])]
+
+        blist = [ self.filterchar(color, c, extboard, j, i) for j in range(8) for i,c in enumerate(extboard[(j+1)*10+1:(j+1)*10+9])]
+
+        fboard = "".join(blist)
+
+        return fboard
+
     def prepare_for_player(self, player_color: str):
 
-        print('non-board filtering to be implemented')
-        filteredSnap = self.copy()
+        #foreach enemy piece, check if theres a friendly piece around, delete if not
+
+        filteredSnap = self.copy() # TODO no need to copy, schema objects don't modify the db
+
         #remove other player board
-        # TODO this removes everything, but pieces next to mine should be kept
+        filteredSnap.board = filteredSnap.filterBoard(player_color)
+        print(f"filtered board is {filteredSnap.board}")
+
         if player_color == 'black':
-            filteredSnap.board = ''.join(ch if not ch.isupper() else '_' for ch in self.board)
-            filteredSnap.castelable = [castle for castle in self.castelable if castle.isupper()]
+            filteredSnap.castelable = ''.join(c for c in self.castelable if c.isupper())
+            filteredSnap.move = self.move if not self.move_number%2 else None
         elif player_color == 'white':
-            filteredSnap.board = ''.join(ch if not ch.islower() else '_' for ch in self.board)
-            filteredSnap.castelable = [castle for castle in self.castelable if castle.isupper()]
-
-        #TODO remove other player castelable
-        filteredSnap.castelable = self.castelable
-
-        #TODO remove other player move
-        filteredSnap.move = self.move
+            filteredSnap.castelable = ''.join(c for c in self.castelable if c.islower())
+            filteredSnap.move = self.move if self.move_number%2 else None
 
         return filteredSnap
 
