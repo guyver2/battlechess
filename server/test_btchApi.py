@@ -161,52 +161,49 @@ class Test_Api(unittest.TestCase):
         return fake_games_db
 
     def fakegamesnapsdb(self):
-        fake_games_snaps = [
-            {
-                "game_uuid":
-                "lkml4a3.d3",
-                "move":
-                "",
-                "board": ('RNBQKBNR'
-                          'PPPPPPPP'
-                          '________'
-                          '________'
-                          '________'
-                          '________'
-                          'pppppppp'
-                          'rnbqkbnr'),
-                "taken":
-                "",
-                "castelable":
-                "",
-                "move_number":
-                0,
-                "created_at":
-                datetime(2021, 4, 5, 0, tzinfo=timezone.utc),
-            },
-            {
-                "game_uuid":
-                "lkml4a3.d3",
-                "move":
-                "d2d4",
-                "board": ('RNBQKBNR'
-                          'PPPPPPPP'
-                          '________'
-                          '________'
-                          '___p____'
-                          '________'
-                          'ppp_pppp'
-                          'rnbqkbnr'),
-                "taken":
-                "",
-                "castelable":
-                "",
-                "move_number":
-                1,
-                "created_at":
-                datetime(2021, 4, 5, 10, tzinfo=timezone.utc),
-            },
-        ]
+        fake_games_snaps = [{
+            "game_uuid":
+            "lkml4a3.d3",
+            "move":
+            "",
+            "board": ('RNBQKBNR'
+                      'PPPPPPPP'
+                      '________'
+                      '________'
+                      '________'
+                      '________'
+                      'pppppppp'
+                      'rnbqkbnr'),
+            "taken":
+            "",
+            "castelable":
+            "",
+            "move_number":
+            0,
+            "created_at":
+            datetime(2021, 4, 5, 0, tzinfo=timezone.utc),
+        }, {
+            "game_uuid":
+            "lkml4a3.d3",
+            "move":
+            "d2d4",
+            "board": ('RNBQKBNR'
+                      'PPPPPPPP'
+                      '________'
+                      '________'
+                      '___p____'
+                      '________'
+                      'ppp_pppp'
+                      'rnbqkbnr'),
+            "taken":
+            "",
+            "castelable":
+            "",
+            "move_number":
+            1,
+            "created_at":
+            datetime(2021, 4, 5, 10, tzinfo=timezone.utc),
+        }]
         return fake_games_snaps
 
     def addFakeUsers(self, db):
@@ -450,6 +447,38 @@ class Test_Api(unittest.TestCase):
                 'winner': None,
             })
 
+    def test__get_me_games(self):
+        token, _ = self.addFakeUsers(self.db)
+        uuid = self.addFakeGames(self.db, self.fakegamesdb())
+
+        response = self.client.get(
+            f'/users/me/games/',
+            headers={
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json',
+            },
+        )
+
+        print(response.json())
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 3)
+        self.assertDictEqual(
+            response.json()[0], {
+                'black_id': 2,
+                'created_at': mock.ANY,
+                'uuid': mock.ANY,
+                'id': 1,
+                'last_move_time': None,
+                'owner_id': 1,
+                'snaps': [],
+                'public': False,
+                'last_move_time': None,
+                'status': 'started',
+                'turn': 'black',
+                'white_id': 1,
+                'winner': None,
+            })
+
     # TODO test list random games before setting my player
     def test__joinRandomGame(self):
         token, _ = self.addFakeUsers(self.db)
@@ -527,23 +556,29 @@ class Test_Api(unittest.TestCase):
         self.assertListEqual(response.json(), [{
             'id': 3,
             'uuid': mock.ANY,
-            'create_time': mock.ANY,
+            'created_at': mock.ANY,
             'owner_id': 2,
+            'last_move_time': None,
+            'public': True,
             'white_id': None,
             'black_id': 2,
             'status': 'waiting',
             'turn': 'white',
             'snaps': [],
+            'winner': None,
         }, {
             'black_id': None,
-            'create_time': mock.ANY,
+            'created_at': mock.ANY,
             'uuid': mock.ANY,
             'id': 4,
+            'last_move_time': None,
             'owner_id': 2,
+            'public': True,
             'status': 'waiting',
             'turn': 'white',
             'white_id': 2,
             'snaps': [],
+            'winner': None,
         }])
 
     def test__joinGame__playerAlreadyInGame(self):
@@ -748,14 +783,14 @@ class Test_Api(unittest.TestCase):
                 '',
                 'move_number':
                 1,
-                'board': ('RNBQKBNR'
-                          'PPPPPPPP'
+                'board': ('xxxxxxxx'
+                          'xxxxxxxx'
                           '________'
                           '________'
                           '___p____'
                           '________'
                           'ppp_pppp'
-                          'rnbqkbnr'),
+                          'rnbqkbnr')
             })
 
     def test_getTurn(self):
@@ -852,8 +887,8 @@ class Test_Api(unittest.TestCase):
              '___P____'
              '___p____'
              '________'
-             'xxx_xxxx'
-             'xxxxxxxx'),
+             'XXX_XXXX'
+             'XXXXXXXX'),
         )
 
     def send_move(self, game_uuid, move, token):
@@ -994,7 +1029,7 @@ class Test_Api(unittest.TestCase):
         for i, move in enumerate(moves):
             response = self.send_move(game_uuid, move, tokens[i % 2])
             print(
-                f'ran move {move} by {jane_color if jane_token == tokens[i%2) else john_color]}'
+                f'ran move {move} by {jane_color if jane_token == tokens[i%2] else john_color}'
             )
             self.assertEqual(response.status_code, 200)
 

@@ -124,17 +124,12 @@ async def read_users_me(
     return current_user
 
 
-@app.get("/users/me/games/")
+@app.get("/users/me/games/", response_model=List[schemas.Game])
 async def read_own_games(
         current_user: schemas.User = Depends(get_current_active_user),
         db: Session = Depends(get_db)):
-    games = crud.get_games_by_owner(db, current_user)
-    # TODO refactor this for db query result from .all()
-    return [
-        Game(**game) for gameName, game in games
-        if game['white'] == current_user.username
-        or game['black'] == current_user.username
-    ]
+    games = crud.get_games_by_player(db, current_user)
+    return games
 
 
 @app.get("/users/", response_model=List[schemas.User])

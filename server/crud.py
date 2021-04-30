@@ -107,6 +107,11 @@ def get_games_by_owner(db: Session, user: schemas.User):
     return db.query(models.Game).filter(models.Game.owner == user).all()
 
 
+def get_games_by_player(db: Session, user: schemas.User):
+    return db.query(models.Game).filter(
+        or_(models.Game.black == user, models.Game.white == user)).all()
+
+
 def get_game_by_uuid(db: Session, gameUUID):
     return db.query(models.Game).filter(models.Game.uuid == gameUUID).first()
 
