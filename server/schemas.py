@@ -121,13 +121,16 @@ class GameCreate(GameBase):
 class Game(GameBase):
     id: int
     uuid: str
-    create_time: Optional[datetime] = None
+    created_at: Optional[datetime] = None
+    last_move_time: Optional[datetime] = None,
     owner_id: int
     white_id: Optional[int] = None
     black_id: Optional[int] = None
     status: str
     turn: str
     snaps: List[GameSnap] = []
+    winner: Optional[str] = None
+    public: Optional[bool] = None
 
     class Config:
         orm_mode = True
