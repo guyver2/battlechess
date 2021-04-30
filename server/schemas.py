@@ -122,7 +122,7 @@ class Game(GameBase):
     id: int
     uuid: str
     created_at: Optional[datetime] = None
-    last_move_time: Optional[datetime] = None,
+    last_move_time: Optional[datetime] = None
     owner_id: int
     white_id: Optional[int] = None
     black_id: Optional[int] = None
