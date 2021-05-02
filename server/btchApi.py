@@ -10,10 +10,10 @@ from jose import JWTError, jwt
 from pydantic import BaseModel
 
 from .config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
-
 from . import crud, models, schemas
-
 from .btchApiDB import SessionLocal, engine
+
+PASSWORD_MIN_LENGTH = 3
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -159,14 +159,27 @@ def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
 
 @app.post("/users/")
 def create_user(new_user: schemas.UserCreate, db: Session = Depends(get_db)):
-    user = crud.get_user_by_username(db, new_user.username)
-    user_exists_exception = HTTPException(
-        status_code=status.HTTP_409_CONFLICT,
-        detail="username taken",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    if user:
-        raise user_exists_exception
+    if not(3 <= len(new_user.username) <= 15 and len(new_user.plain_password) >= PASSWORD_MIN_LENGTH):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"username should be of lenght (3-15) and password at least {PASSWORD_MIN_LENGTH} chars.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if new_user.email is None:
+        new_user.email = ""
+
+    if crud.get_user_by_username(db, new_user.username):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="username taken",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    elif crud.get_user_by_email(db, new_user.email):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="an account with this email already exists",
+            headers={"WWW-Authenticate": "Bearer"},
+            )
     else:
         db_user = crud.create_user(db, new_user)
         return crud.get_user_by_username(db, new_user.username)
