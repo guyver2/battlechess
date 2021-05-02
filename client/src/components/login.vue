@@ -15,9 +15,9 @@
                 <label for="inputUsername" class="text-color-5">username</label>
                 <input type="text" id="inputUsername" class="bcinput text-color-5" placeholder="username" required autofocus  v-model="username">
                 <label for="inputPassword" class="text-color-5">password</label>
-                <input type="password" id="inputPassword" class="form-control text-color-5" placeholder="password" required v-model="password">
+                <input type="password" id="inputPassword" class="form-control text-color-4" placeholder="password" required v-model="password">
                 <div class="text-color-5">
-                    <button type="button" class="button" v-on:click="login">Sign in</button>
+                    <button type="button" class="button" v-on:click="login">Sign in {{resolution}}</button>
                     <div class="signup">Or <a href="/register">Sign up</a>.</div>
                 </div>
             </form>
@@ -53,6 +53,7 @@ export default {
       board: null,
       selectedCell: null,
       errorMessage: '',
+      resolution: String(screen.width) + "x" + String(screen.height),
     }
   },
   mounted() {   
@@ -234,6 +235,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+
 .flexctn {
     display: flex;
     justify-content: center;
@@ -328,5 +330,22 @@ export default {
     color: var(--color-1);
     font-size: 1.5em;
 }
+
+
+
+/* on small screen */
+
+@media only screen and (hover: none) {
+    .loginContent {
+        width:100%;
+    }
+}
+
+@media only screen and (max-width: 1110px) {
+    .loginContent {
+        width:100%;
+    }
+}
+
 
 </style>

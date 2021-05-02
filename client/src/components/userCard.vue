@@ -110,6 +110,7 @@ export default {
 
 }
 
+
 @media only screen and (min-width: 1111px) {
     .large {
         display: inline;
