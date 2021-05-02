@@ -89,6 +89,15 @@ def create_game(db: Session, user: schemas.User,
         return False
 
     uuid = create_game_uuid(db)
+    owner_color = random.choice(["white", "black"])
+    if gameOptions.color in ["white", "black"]:
+        owner_color = gameOptions.color
+    black_id = None
+    white_id = None
+    if owner_color == "white":
+        white_id = user.id
+    else:
+        black_id = user.id
 
     # TODO list status strings somewhere
     db_game = models.Game(owner_id=user.id,
@@ -96,6 +105,8 @@ def create_game(db: Session, user: schemas.User,
                           uuid=uuid,
                           status="waiting",
                           turn="white",
+                          white_id=white_id,
+                          black_id=black_id,
                           public=gameOptions.public)
     db.add(db_game)
     db.commit()
@@ -183,7 +194,7 @@ def create_snap_by_move(db: Session, user: schemas.User, game: schemas.Game,
 
     game.refresh_turn()
 
-    color=None
+    color = None
     if game.black_id == user.id:
         color = 'b'
     if game.white_id == user.id:

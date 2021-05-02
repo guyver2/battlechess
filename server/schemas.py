@@ -116,6 +116,7 @@ class GameBase(BaseModel):
 
 class GameCreate(GameBase):
     public: bool
+    color: str = ""
 
 
 class Game(GameBase):

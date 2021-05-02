@@ -395,11 +395,13 @@ class Test_Api(unittest.TestCase):
             },
             json={
                 'public': False,
+                'color': 'white'
             },
         )
 
         print(response.json())
         self.assertEqual(response.status_code, 200)
+
         self.assertDictEqual(
             response.json(), {
                 'black_id': None,
@@ -411,7 +413,7 @@ class Test_Api(unittest.TestCase):
                 'public': False,
                 'status': 'waiting',
                 'turn': 'white',
-                'white_id': None,
+                'white_id': response.json()["owner_id"],
                 'winner': None,
             })
 
