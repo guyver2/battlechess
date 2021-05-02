@@ -147,6 +147,7 @@ class UserBase(BaseModel):
     username: str
     full_name: Optional[str] = None
     email: Optional[str] = None
+    avatar: Optional[str] = None
 
 
 class UserCreate(UserBase):

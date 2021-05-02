@@ -1,33 +1,34 @@
 <template>
-<div class="usercard large">
-    <div class="card-panel lighten-5 z-depth-1 color-2 text-color-5  light-border">
-        <div class="valign-wrapper">
+<div>
+    <div class="usercard large">
+        <div class="card-panel lighten-5 z-depth-1 color-2 text-color-5  light-border">
+            <div class="valign-wrapper">
+                <div class="avatar">
+                    <img :src="avatar" alt="" class="circle responsive-img">
+                </div>
+                <div class="userText">
+                    <span class="username-name">
+                        @{{username}}
+                    </span>
+                    <span class="username-name valign-wrapper">
+                        <i class="material-icons">emoji_events</i>{{victories}}/{{games}} games
+                    </span>
+                    <span class="username-name valign-wrapper">
+                        {{points}} points {{position}}/{{players}}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="usercard small">
+        <div class=" valign-wrapper">
             <div class="avatar">
                 <img :src="avatar" alt="" class="circle responsive-img">
             </div>
-            <div class="userText">
-                <span class="username-name">
-                    @{{username}}
-                </span>
-                <span class="username-name valign-wrapper">
-                    <i class="material-icons">emoji_events</i>{{victories}}/{{games}} games
-                </span>
-                <span class="username-name valign-wrapper">
-                    {{points}} points {{position}}/{{players}}
-                </span>
-            </div>
         </div>
     </div>
 </div>
-
-<div class="usercard small">
-    <div class=" valign-wrapper">
-        <div class="avatar">
-            <img :src="avatar" alt="" class="circle responsive-img">
-        </div>
-    </div>
-</div>
-
 </template>
 
 <script>
@@ -58,10 +59,10 @@ export default {
 
   methods: {
       async getUserInfo() {
-        const { username, error } = await utils.getUserInfo(this.$props.token);
-        this.username = username;
+        const result = await utils.getUserInfo(this.$props.token);
+        this.username = result.username;
         if (!this.username) {
-            this.$router.push({name:'login', params: {incomingError: error}});
+            this.$router.push({name:'login', params: {incomingError: result.error}});
         }
     },
   }

@@ -8,6 +8,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from jose import JWTError, jwt
 from pydantic import BaseModel
+from sqlalchemy.sql.functions import user
 
 from .config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 from . import crud, models, schemas
@@ -143,6 +144,15 @@ def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = crud.get_users(db, skip=skip, limit=limit)
     return [user.username for user in users]
 
+@app.get("/users/{userID}", response_model=schemas.User)
+def read__single_user(userID: str,current_user: schemas.User = Depends(get_current_active_user),
+               db: Session = Depends(get_db)):
+    try :
+        userID_int = int(userID)
+    except:
+        userID_int = -1
+    user = crud.get_user_by_id(db, userID_int)
+    return user
 
 # we might be playing more than one game, we no longer can use this as-is
 # @app.get("/users/active_game")

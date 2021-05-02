@@ -6,7 +6,7 @@
                 <div class="row-8 cell">SCORES</div>
             </div>
             <div class="row-12 col-11 cell">
-                <Games/>
+                <Games v-bind:token="token"/>
             </div>
 
     </div>

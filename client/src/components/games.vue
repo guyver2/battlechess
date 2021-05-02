@@ -20,8 +20,11 @@
     <div v-else class="gamesCol">
         <div class="gamesRow" v-for="game in games" v-bind:key="game">
             <div class="opponents">
-                <div class="whitePlayer">
-                    <div class="avatar"
+                <div v-if="game.white == null" class="whitePlayer">
+                    Not Set
+                </div>
+                <div v-else class="whitePlayer">
+                    <div  class="avatar"
                     v-bind:class="{ activeWhite: game.turn === 'white'}">
                         <img :src="game.white.avatar" alt="" class="circle gamePlayerImg">
                     </div>
@@ -32,7 +35,10 @@
                 <div class="versus">
                 Vs.
                 </div>
-                <div class="blackPlayer">
+                <div v-if="game.black == null" class="blackPlayer">
+                    Not Set
+                </div>
+                <div v-else class="blackPlayer">
                     <div class="paddedText">
                         {{game.black.username}}
                     </div>
@@ -67,6 +73,14 @@
                     <span v-else>Lost</span>
                 </div>
             </div>
+            <div v-if="currentList === 'open'" class="gameInfo">
+                <div class="valign-wrapper">
+                    <span class="bold"><i class="material-icons tiny">{{game.public?"lock_open":"lock"}}</i></span>{{game.public?"Public":"Private"}}
+                </div>
+                <div class="valign-wrapper">
+                    <span class="bold">#</span>{{game.hash}}
+                </div>
+            </div>
         </div>
     </div>
     
@@ -74,6 +88,8 @@
 </template>
 
 <script>
+import * as utils from '../assets/js/utils.js'
+/*
 const users = [
 {
     "username":"@Alerthcsa",
@@ -128,7 +144,7 @@ const users = [
     "avatar":"./img/avatar_13.jpeg",
 },
 ];
-
+*/
 const localUser = {
     "username": "@Antoine",
     "avatar": "./img/canti.png",
@@ -137,29 +153,7 @@ const localUser = {
 Array.prototype.sample = function(){
   return this[Math.floor(Math.random()*this.length)];
 };
-
-function diff_minutes(date) {
-  const now = new Date(); 
-  let diff =(now.getTime() - (new Date(date)).getTime()) / 1000;
-  diff /= 60;
-  return Math.abs(Math.round(diff));
- }
-
- function fancyDateText(date) {
-     const delta = diff_minutes(date);
-     if (delta < 5) {
-         return {text:"just now", tooltip:String(delta)+" minutes ago"};
-     } else if (delta < 60) {
-         return {text:"last hour", tooltip:String(delta)+" minutes ago"};
-     } else if (delta < 60*24) {
-         return {text:"last day", tooltip:date.toLocaleString()};
-     } else if (delta < 60*24*7) {
-         return {text:"last week", tooltip:date.toLocaleString()};
-     } else {
-         return {text:"long ago", tooltip:date.toLocaleString()};
-     }
- }
-
+/*
 function createGame(status="open") {
     var game = {}
     if (Math.floor(Math.random() * 2) == 0){
@@ -175,7 +169,7 @@ function createGame(status="open") {
     var d = new Date();
     d.setDate(d.getDate() - Math.floor(Math.random()*15));
     game.lastmove = d.toLocaleString();
-    game.lastmoveText = fancyDateText(d);
+    game.lastmoveText = utils.fancyDateText(d);
     return game;
 }
 
@@ -186,11 +180,12 @@ function sortGames(a, b) {
     if (keyA > keyB) return -1;
     return 0;
 }
-
+*/
 
 export default {
   name: 'Games',
   props:{
+      token: String,
   },
   data() {
       return {
@@ -201,20 +196,30 @@ export default {
           openGames: [],
           currentList: 'live',
       }
-  },
-  
+  },created(){
+      this.getGames();
+  },  
   mounted () {
-        for (let i=0; i< 5; i++) {
-            this.liveGames.push(createGame());
-        }
-        for (let i=0; i< 20; i++) {
-        this.finishedGames.push(createGame("over"));
-        }
-        this.liveGames.sort(sortGames);
-        this.finishedGames.sort(sortGames);
-        this.games = this.liveGames;
+        // for (let i=0; i< 5; i++) {
+        //     this.liveGames.push(createGame());
+        // }
+        // for (let i=0; i< 20; i++) {
+        // this.finishedGames.push(createGame("over"));
+        // }
+        // this.liveGames.sort(sortGames);
+        // this.finishedGames.sort(sortGames);
+        // this.games = this.liveGames;
   },
   methods: {
+    async getGames() {
+        const { liveGames, finishedGames, openGames, error } = await utils.getUserGames(this.$props.token);
+        this.liveGames = liveGames;
+        this.finishedGames = finishedGames;
+        this.openGames = openGames;
+        if (error) {
+            this.$router.push({name:'login', params: {incomingError: error}});
+        }
+    },
   showLive() {
       if (this.currentList != 'live'){
           this.currentList = 'live';
@@ -260,6 +265,7 @@ export default {
     display: flex;
     align-items: center;
     justify-content: flex-start;
+    color: var(--color-5);
 }
 
 .blackPlayer {
@@ -267,6 +273,7 @@ export default {
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    color: var(--color-5);
 }
 
 .versus {
