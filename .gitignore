@@ -6,5 +6,8 @@ BattleChess.sublime-*
 games
 obj
 build
-assets
+#assets
 bin
+.vscode
+sql_app.db
+test.db

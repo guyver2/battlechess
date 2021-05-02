@@ -8,7 +8,7 @@ CASTLEQBPOS = [0, 2]
 CASTLEKBPOS = [0, 6]
 CASTLEQWPOS = [7, 2]
 CASTLEKWPOS = [7, 6]
-CASTLEABLE = ['kb', 'kw', 'rqb', 'rkb', 'rqw', 'rkw']
+CASTLEABLE = sorted(['kb', 'kw', 'rqb', 'rkb', 'rqw', 'rkw'])
 
 
 class Board(object):
@@ -24,8 +24,8 @@ class Board(object):
         self.board = [['' for i in range(8)] for j in range(8)]
         self.board[0] = ['rb', 'nb', 'bb', 'qb', 'kb', 'bb', 'nb', 'rb']
         self.board[1] = ['pb', 'pb', 'pb', 'pb', 'pb', 'pb', 'pb', 'pb']
-        self.board[7] = ['rw', 'nw', 'bw', 'qw', 'kw', 'bw', 'nw', 'rw']
         self.board[6] = ['pw', 'pw', 'pw', 'pw', 'pw', 'pw', 'pw', 'pw']
+        self.board[7] = ['rw', 'nw', 'bw', 'qw', 'kw', 'bw', 'nw', 'rw']
 
     # make a deep copy of the board
     def copy(self):
@@ -353,25 +353,30 @@ class Board(object):
         return None
 
     def move(self, i, j, ii, jj, color=None):
+
         # are given position inside the board ?
         if not self.isIn(i, j) or not self.isIn(ii, jj):
-            return False, []
+            return False, [], f'{i}{j} or {ii} {jj} position outside the board'
+        # is there a piece in the source square ?
+        if not self.board[i][j]:
+            return False, [], f'{i}{j} is empty'
         # the player is trying to move a piece from the other player
         if color and self.board[i][j][1] != color:
-            return False, []
+            return False, [], '{}{} is not {}'.format(i,j,'white' if color == 'w' else 'black')
         if self.board[ii][jj] != '' and self.board[i][j][1] == self.board[ii][jj][1]:
             # same color
-            return False, []
+            return False, [], f'{ii}{jj} is occupied by your own {self.board[ii][jj]} piece'
         reach = self.getReachablePosition(i, j)  # actually possible destination (obstacles, ennemies)
         pos = self.getPossiblePosition(i, j)  # anything in the range of the piece
         if [ii, jj] not in pos:
-            return False, []
+            print(f'Possible positions {pos}')
+            return False, [], f'{ii}{jj} is not a {self.board[i][j]} possible position for some reason'
         elif [ii, jj] not in reach:
             res = self.getClosest(i, j, ii, jj, reach)
             if res:
                 ii, jj = res
             else:
-                return False, []
+                return False, [], f'{ii}{jj} is not reachable'
         if self.board[ii][jj] != '':
             self.taken.append(str(self.board[ii][jj]))
 
@@ -427,7 +432,7 @@ class Board(object):
         elif 'kw' in self.taken:
             self.winner = 'b'
 
-        return True, [i, j, ii, jj]
+        return True, [i, j, ii, jj], 'OK'
 
     # save the state of the board for a given player (or full state)
     def dump(self, color=None):
@@ -448,6 +453,7 @@ class Board(object):
                         boardCopy.board[i][j] = ''
         return boardCopy
 
+    # TODO refactor string representation of board
     # dump as a string to ease portability with other apps
     def toString(self, color=None):
         visibility = [[True for i in range(8)] for j in range(8)]
@@ -513,6 +519,58 @@ class Board(object):
         self.enpassant = board.enpassant
         self.winner = board.winner
 
+    def dbpiece2boardpiece(self, piecechar):
+        color = 'b' if piecechar.isupper() else 'w'
+        piece = '' if piecechar == '_' else piecechar.lower() + color
+        return piece
+
+    def apicastle2board(self):
+        return {
+            'L': 'rqb',
+            'S': 'rkb',
+            'K': 'kb',
+            'l': 'rqw',
+            's': 'rkw',
+            'k': 'kw',
+        }
+
+    def boardcastle2api(self):
+        return {
+            'rqb':'L',
+            'rkb':'S',
+            'kb' :'K',
+            'rqw':'l',
+            'rkw':'s',
+            'kw' :'k',
+        }
+
+    # TODO check what winner str format is Board() expecting. winner "white" "black" "None"
+    def updateFromElements(self, board, taken, castleable, enpassant, winner):
+        for i, c in enumerate(board):
+            self.board[i//8][i % 8] = self.dbpiece2boardpiece(c)
+        self.taken = [self.dbpiece2board(c) for c in taken]
+        self.castleable = sorted([self.apicastle2board()[c] for c in castleable])
+        self.enpassant = ord(enpassant) - 97 if enpassant else -1
+        self.winner = winner
+
+    def toElements(self, color=None):
+
+        def bpiece(p):
+            return '_' if not p else p[0] if p[1] == 'w' else p[0].upper()
+
+        if color:
+            boardString = self.toString(color)
+            pieces = boardString.split('#')[0].split('_')
+            apiboard = ''.join([bpiece(p) for p in pieces])
+        else:
+            apiboard = ''.join([bpiece(p) for r in self.board for p in r ])
+
+        elements = {
+            "castelable" : ''.join(sorted([self.boardcastle2api()[c] for c in self.castleable])),
+            "taken" : ''.join([bpiece(p) for p in self.taken]),
+            "board" : apiboard
+        }
+        return elements
 
 if __name__ == '__main__':
     board = Board()
