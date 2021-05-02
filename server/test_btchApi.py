@@ -974,6 +974,7 @@ class Test_Api(unittest.TestCase):
             },
             json={
                 'public': False,
+                'color': 'white',
             },
         )
 
@@ -983,13 +984,13 @@ class Test_Api(unittest.TestCase):
 
         # john and jane join game
 
-        response = self.client.get(
-            f'/games/{game_uuid}/join',
-            headers={
-                'Authorization': 'Bearer ' + john_token,
-                'Content-Type': 'application/json',
-            },
-        )
+        # response = self.client.get(
+        #     f'/games/{game_uuid}/join',
+        #     headers={
+        #         'Authorization': 'Bearer ' + john_token,
+        #         'Content-Type': 'application/json',
+        #     },
+        # )
 
         # check if game started
         response = self.client.get(
