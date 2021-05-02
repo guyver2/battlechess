@@ -5,9 +5,9 @@
                 <div class="userCard"><UserCard v-bind:token="token" avatar="./img/canti.png" games="53" victories="27" points="1257" position="17" players="153"/></div>
                 <div class="row-8 cell">SCORES</div>
             </div>
-                    <div class="row-12 cell">
-                        <Games/>
-                    </div>
+            <div class="row-12 col-11 cell">
+                <Games/>
+            </div>
 
     </div>
   </div>
@@ -47,6 +47,7 @@ export default {
 <style scoped>
 
 .home {
+    height: 100%;
     display: grid;
     grid-template-columns: 400px 650px;
     column-gap: 30px;
@@ -68,14 +69,16 @@ export default {
            -moz-box-sizing: border-box;
                 box-sizing: border-box;
         display: grid;
-        grid-template-columns: 75px 650px;
+        grid-template-columns: 10% 90%;
         column-gap: 0px;
+        height: 100%;
     }
 
     .userCard {
         margin: 2em 0 2em 0;
     }
 }
+
 
 
 .center {

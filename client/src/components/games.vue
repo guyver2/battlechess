@@ -17,26 +17,29 @@
         </div>
     </div>
 
-    <div v-else>
-        <div class="gamesCol" v-for="game in games" v-bind:key="game">
-        <div class="gamesRow">
-            <div class="valign-wrapper col-7">
-                <div class="avatar"
-                 v-bind:class="{ activeWhite: game.turn === 'white'}">
-                    <img :src="game.white.avatar" alt="" class="circle gamePlayerImg">
+    <div v-else class="gamesCol">
+        <div class="gamesRow" v-for="game in games" v-bind:key="game">
+            <div class="opponents">
+                <div class="whitePlayer">
+                    <div class="avatar"
+                    v-bind:class="{ activeWhite: game.turn === 'white'}">
+                        <img :src="game.white.avatar" alt="" class="circle gamePlayerImg">
+                    </div>
+                    <div class="paddedText"> 
+                        {{game.white.username}}
+                    </div>
                 </div>
-                <div class="paddedText col-4"> 
-                    {{game.white.username}}
-                </div>
-                <div class="paddedText bold col-1">
+                <div class="versus">
                 Vs.
                 </div>
-                <div class="paddedText push-right col-4">
-                    {{game.black.username}}
-                </div>
-                <div class="avatar"
-                 v-bind:class="{ activeBlack: game.turn === 'black'}">
-                    <img :src="game.black.avatar" alt="" class="circle gamePlayerImg">
+                <div class="blackPlayer">
+                    <div class="paddedText">
+                        {{game.black.username}}
+                    </div>
+                    <div class="avatar"
+                    v-bind:class="{ activeBlack: game.turn === 'black'}">
+                        <img :src="game.black.avatar" alt="" class="circle gamePlayerImg">
+                    </div>
                 </div>
             </div>
             <div class="col-1">  
@@ -64,7 +67,6 @@
                     <span v-else>Lost</span>
                 </div>
             </div>
-        </div>
         </div>
     </div>
     
@@ -244,6 +246,36 @@ export default {
 <style scoped>
 .gameCol {
     width: 100%;
+    height: 100%;
+}
+
+.opponents {
+    width: 75%;
+    display: flex;
+    align-items: center;
+}
+
+.whitePlayer {
+    width: 45%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.blackPlayer {
+    width: 45%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.versus {
+    width: 10%;
+    font-weight: 700;
+    color: var(--color-5);
+    font-family:sans-serif;
+    padding-left: 10px;
+    padding-right: 10px;
 }
 
 .username-name {
@@ -291,6 +323,11 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.avatar > img {
+    height: 38px;
+    width: 38px;
 }
 
 .paddedText {
@@ -438,5 +475,30 @@ export default {
     justify-content:center;
 }
 
+
+@media only screen and (max-width: 1110px) {
+    .gamesCol {
+        height: 100%;
+    }
+    .gamesRow {
+        height:20vh;
+    }
+    .avatar {
+        height: 5vh;
+        width: 5vh;
+    }
+
+    .opponents {
+        width: 50%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .blackPlayer {
+        justify-content: flex-end;
+        flex-direction: row-reverse;
+    }
+
+}
 
 </style>
