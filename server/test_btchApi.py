@@ -982,15 +982,7 @@ class Test_Api(unittest.TestCase):
 
         game_uuid = response.json()['uuid']
 
-        # john and jane join game
-
-        # response = self.client.get(
-        #     f'/games/{game_uuid}/join',
-        #     headers={
-        #         'Authorization': 'Bearer ' + john_token,
-        #         'Content-Type': 'application/json',
-        #     },
-        # )
+        # john already joined and jane joins game
 
         # check if game started
         response = self.client.get(

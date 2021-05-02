@@ -175,13 +175,6 @@ export async function getUserGames(token) {
                     g.black = null;
                 }
 
-                // const w_username = game.white_id == localUser.userId?localUser.username:"the other one";
-                // const b_username = game.black_id == localUser.userId?localUser.username:"the other one";
-                // const w_avatar = game.white_id == localUser.userId?localUser.avatar:null; 
-                // const b_avatar = game.black_id == localUser.userId?localUser.avatar:null;
-
-                // g.white = {username:'@'+w_username, avatar:w_avatar!=null?w_avatar:DEFAULT_AVATAR}
-                // g.black = {username:'@'+b_username, avatar:b_avatar!=null?b_avatar:DEFAULT_AVATAR}
                 g.moves = game.snaps.length;
                 g.status = game.status;
                 g.turn = game.turn;
@@ -206,20 +199,36 @@ export async function getUserGames(token) {
 }
 
 
+export async function createGame(token, color, publicPrivate) {
+    let error = null;
 
-// var game = {}
-//     if (Math.floor(Math.random() * 2) == 0){
-//         game.white = users.sample();
-//         game.black = localUser;
-//     } else {
-//         game.black = users.sample();
-//         game.white = localUser;
-//     }
-//     game.moves = Math.floor(Math.random() * 50);
-//     game.turn = (Math.floor(Math.random() * 2) == 0) ? "white":"black";
-//     game.status = status;
-//     var d = new Date();
-//     d.setDate(d.getDate() - Math.floor(Math.random()*15));
-//     game.lastmove = d.toLocaleString();
-//     game.lastmoveText = fancyDateText(d);
-//     return game;
+    const data = {
+        color: color,
+        public: publicPrivate === 'public',
+    };
+
+    const requestOptions = {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'accept': 'application/json',
+            'Authorization': 'Bearer '+token,
+         },
+        body: JSON.stringify(data),
+    };
+    console.log(requestOptions.body);
+    try {
+        const response = await fetch(API_URL+'/games/', requestOptions);
+        const data = await response.json();
+        console.log(data);
+        if (!response.ok) {
+            error = (data && data.message) || response.status;
+        } else {
+            console.log(data);
+        }
+    } catch(err) {
+        console.error('There was an error!', err);
+        error = String(err);
+    }
+    return error;
+}

@@ -5,8 +5,9 @@
         v-bind:class="{active: currentList=== 'live'}"><a href="#" @click="showLive">Live</a></li>
         <li class="tab finished"
         v-bind:class="{active: currentList=== 'finished'}"><a href="#" @click="showFinished">Finished</a></li>
-        <li class="tab right"
+        <li class="tab open"
         v-bind:class="{active: currentList=== 'open'}"><a href="#" @click="showOpen">Open</a></li>
+        <li class="tab right valign-wrapper"><a href="#" @click="showNewGameModal"><i class="material-icons">add</i></a></li>
     </ul>
 
     <div v-if="games.length === 0" class="gamesCol">
@@ -83,12 +84,18 @@
             </div>
         </div>
     </div>
-    
+    TOKEN {{token}}
+    <Modal
+      v-bind:token="token"
+      v-show="isModalVisible"
+      @close="closeModal"
+    />
 </div>
 </template>
 
 <script>
 import * as utils from '../assets/js/utils.js'
+import Modal from './modalNewGame.vue'
 /*
 const users = [
 {
@@ -187,6 +194,9 @@ export default {
   props:{
       token: String,
   },
+  components: {
+      Modal,
+  },
   data() {
       return {
           player: localUser,
@@ -195,6 +205,7 @@ export default {
           finishedGames: [],
           openGames: [],
           currentList: 'live',
+          isModalVisible: false,
       }
   },created(){
       this.getGames();
@@ -238,7 +249,14 @@ export default {
           this.games = this.openGames;
       }
   },
-  }
+  showNewGameModal() {
+        console.log("showing modal");
+        this.isModalVisible = true;
+  },
+  closeModal() {
+        this.isModalVisible = false;
+  },
+}
 
 
 
@@ -443,6 +461,11 @@ export default {
 }
 
 .finished {
+    border-radius: 0px 0px 0px 0px;
+    border-width: 1px 0 1px 0px;
+}
+
+.open {
     border-radius: 0px 3px 3px 0px;
     border-width: 1px 1px 1px 0px;
 }
@@ -451,6 +474,10 @@ export default {
     float:right;
     border-radius: 3px;
     border-width: 1px;
+}
+
+.right .material-icons {
+    line-height: 1.9;
 }
 
 .menu .tab a {
