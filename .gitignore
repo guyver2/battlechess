@@ -6,6 +6,7 @@ BattleChess.sublime-*
 games
 obj
 build
+env/
 #assets
 bin
 .vscode

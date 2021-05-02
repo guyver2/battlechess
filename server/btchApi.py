@@ -42,7 +42,7 @@ def get_db():
 
 
 def get_current_user(db: Session = Depends(get_db),
-                           token: str = Depends(oauth2_scheme)):
+                     token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -70,19 +70,17 @@ def get_current_active_user(
     return current_user
 
 
-def get_game(
-    gameUUID,
-    current_user: schemas.User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)):
+def get_game(gameUUID,
+             current_user: schemas.User = Depends(get_current_active_user),
+             db: Session = Depends(get_db)):
     # TODO check if public and owner/player
     game = crud.get_game_by_uuid(db, gameUUID)
     return game
 
 
-def set_player(
-    game: models.Game,
-    current_user: schemas.User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)):
+def set_player(game: models.Game,
+               current_user: schemas.User = Depends(get_current_active_user),
+               db: Session = Depends(get_db)):
     game.set_player(current_user)
 
     # if all players are there, start
@@ -102,9 +100,8 @@ def version():
 
 
 @app.post("/token", response_model=schemas.Token)
-def login_for_access_token(
-        form_data: OAuth2PasswordRequestForm = Depends(),
-        db: Session = Depends(get_db)):
+def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),
+                           db: Session = Depends(get_db)):
     user = crud.authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -197,22 +194,21 @@ def list_available_games(
         current_user: schemas.User = Depends(get_current_active_user),
         db: Session = Depends(get_db)):
     games = crud.get_public_game_by_status(db, current_user, "waiting")
-    if not games:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="no public games were found",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    # if not games:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_404_NOT_FOUND,
+    #         detail="no public games were found",
+    #         headers={"WWW-Authenticate": "Bearer"},
+    #     )
     return games
 
 
 #TODO should be patch
 # joines an existing game. error when game already started
 @app.get("/games/{gameUUID}/join")
-def join_game(
-    gameUUID: str,
-    current_user: schemas.User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)):
+def join_game(gameUUID: str,
+              current_user: schemas.User = Depends(get_current_active_user),
+              db: Session = Depends(get_db)):
     game = get_game(gameUUID, current_user, db)
     if not game:
         raise HTTPException(
@@ -263,19 +259,17 @@ def join_random_game(
 
 # serialized board state
 @app.get("/games/{gameUUID}/board")
-def query_board(
-    gameUUID: str,
-    current_user: schemas.User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)):
+def query_board(gameUUID: str,
+                current_user: schemas.User = Depends(get_current_active_user),
+                db: Session = Depends(get_db)):
     pass
 
 
 # who's turn is it (None means that the game is over)
 @app.get("/games/{gameUUID}/turn")
-def query_turn(
-    gameUUID: str,
-    current_user: schemas.User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)):
+def query_turn(gameUUID: str,
+               current_user: schemas.User = Depends(get_current_active_user),
+               db: Session = Depends(get_db)):
     game = get_game(gameUUID, current_user, db)
     return game.turn
 
@@ -314,10 +308,9 @@ def post_move(
 
 
 @app.get("/games/{gameUUID}/snap")
-def get_snap(
-    gameUUID: str,
-    current_user: schemas.User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)):
+def get_snap(gameUUID: str,
+             current_user: schemas.User = Depends(get_current_active_user),
+             db: Session = Depends(get_db)):
     game = get_game(gameUUID, current_user, db)
     if not game:
         raise HTTPException(
@@ -346,11 +339,10 @@ def get_snap(
 
 
 @app.get("/games/{gameUUID}/snap/{moveNum}")
-def get_snap(
-    gameUUID: str,
-    moveNum: int,
-    current_user: schemas.User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)):
+def get_snap(gameUUID: str,
+             moveNum: int,
+             current_user: schemas.User = Depends(get_current_active_user),
+             db: Session = Depends(get_db)):
     game = get_game(gameUUID, current_user, db)
     if not game:
         raise HTTPException(
@@ -369,10 +361,9 @@ def get_snap(
 
 
 @app.get("/games/{gameUUID}/snaps")
-def get_snaps(
-    gameUUID: str,
-    current_user: schemas.User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)):
+def get_snaps(gameUUID: str,
+              current_user: schemas.User = Depends(get_current_active_user),
+              db: Session = Depends(get_db)):
     game = get_game(gameUUID, current_user, db)
     if not game:
         raise HTTPException(
