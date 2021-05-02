@@ -145,13 +145,11 @@ def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return [user.username for user in users]
 
 @app.get("/users/{userID}", response_model=schemas.User)
-def read__single_user(userID: str,current_user: schemas.User = Depends(get_current_active_user),
-               db: Session = Depends(get_db)):
-    try :
-        userID_int = int(userID)
-    except:
-        userID_int = -1
-    user = crud.get_user_by_id(db, userID_int)
+def read__single_user(
+    userID: int,
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)):
+    user = crud.get_user_by_id(db, userID)
     return user
 
 # we might be playing more than one game, we no longer can use this as-is

@@ -378,6 +378,41 @@ class Test_Api(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertListEqual(response.json(), ["johndoe", "janedoe"])
 
+    def test__getUserById(self):
+        token, _ = self.addFakeUsers(self.db)
+
+        response = self.client.get(
+            "/users/1",
+            headers={"Authorization": "Bearer " + token},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(
+            response.json(), {
+                'username': 'johndoe',
+                'full_name': 'John Doe',
+                'email': 'johndoe@example.com',
+                'avatar': None,
+                'id': 1,
+                'status': 'active',
+                'games': [],
+                'whites': [],
+                'blacks': []
+            })
+
+    def test__getUserById__malformedId(self):
+        token, _ = self.addFakeUsers(self.db)
+
+        response = self.client.get(
+            "/users/abcd",
+            headers={"Authorization": "Bearer " + token},
+        )
+
+        self.assertEqual(response.status_code, 422)
+        print(response.json())
+        self.assertEqual(response.json()['detail'][0]['type'],
+                         'type_error.integer')
+
     def test__db_cleanup(self):
 
         users = self.db.query(models.User).all()
