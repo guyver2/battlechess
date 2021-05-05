@@ -49,30 +49,30 @@ import * as utils from '../assets/js/utils.js'
 
   export default {
     name: 'Modal',
-    props:{
-      token: String,
-  },
+    props: ['parrentCallback'],
   created() {
-      console.log("props", this.$props);
-      this.localToken = this.$props.token;
+      if (localStorage.token) {
+          this.token = localStorage.token;
+      }
   },
     data () {
         return {
             color: "random",
             publicPrivate: "private",
-            localToken: null,
+            token: null,
         };
     },
     methods: {
-      close() {
-        this.$emit('close');
+        close() {
+            this.$emit('close');
       },
       async confirm() {
-          console.log("token:", this.localToken);
-          let error = await utils.createGame(this.localToken, this.color, this.publicPrivate);
+          let error = await utils.createGame(this.token, this.color, this.publicPrivate);
           if (error) {
               console.log(error);
           }
+          await this.parrentCallback();
+          this.close();
       }
     },
   };

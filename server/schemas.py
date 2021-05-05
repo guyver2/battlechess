@@ -157,9 +157,9 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     status: str
-    games: List[Game] = []
-    whites: List[Game] = []
-    blacks: List[Game] = []
+    # games: List[Game] = []
+    # whites: List[Game] = []
+    # blacks: List[Game] = []
 
     class Config:
         orm_mode = True

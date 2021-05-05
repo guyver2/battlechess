@@ -37,7 +37,6 @@ import * as utils from '../assets/js/utils.js'
 export default {
   name: 'UserCard',
   props:{
-      token: String,
       avatar: String,
       victories: Number,
       games: Number,
@@ -46,6 +45,9 @@ export default {
       players: Number,
   },
   created(){
+      if (localStorage.token) {
+          this.token = localStorage.token;
+      }
       this.getUserInfo();
   },
 
@@ -59,7 +61,7 @@ export default {
 
   methods: {
       async getUserInfo() {
-        const result = await utils.getUserInfo(this.$props.token);
+        const result = await utils.getUserInfo(this.token);
         this.username = result.username;
         if (!this.username) {
             this.$router.push({name:'login', params: {incomingError: result.error}});

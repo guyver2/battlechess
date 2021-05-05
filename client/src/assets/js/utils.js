@@ -4,7 +4,6 @@ const DEFAULT_AVATAR = './img/avatar_09.jpeg';
 export async function login(username, password) {
     let errorMessage = null;
     let token = null;
-    console.log("login in with ", username, password);
     const data = new URLSearchParams();
     data.append("username", username);
     data.append("password", password);
@@ -36,7 +35,6 @@ export async function login(username, password) {
 export async function register(username, email, password) {
     let errorMessage = null;
     let token = null;
-    console.log("user creation with ", username, email, password);
     const data = {
         username: username,
         email: email,
@@ -82,11 +80,10 @@ export async function getUserInfo(token, userID=null) {
             'Authorization': 'Bearer '+token,
         }
     }
-    const endpoint = userID?'/users/'+String(userID):'/users/me';
+    const endpoint = userID?'/users/u/'+String(userID):'/users/me';
     try {
         const response = await fetch(API_URL+endpoint, requestOptions);
         const data = await response.json();
-        console.log(data);
         if (!response.ok) {
             error = (data && data.message) || response.status;
         } else {
@@ -110,7 +107,7 @@ function diff_minutes(date) {
 
  export function fancyDateText(date) {
      if (date == null){
-         return {text:"unknown", tooltip:"unknown"};
+         return {text:"None", tooltip:"no moves yet"};
      }
      const delta = diff_minutes(date);
      if (delta < 5) {
@@ -131,7 +128,7 @@ export async function getUserGames(token) {
     const localUser = await getUserInfo(token);
     let liveGames = [];
     let finishedGames = [];
-    let openGames = [];
+    let myOpenGames = [];
     let error = null;
     const requestOptions = {
         method: 'GET',
@@ -143,7 +140,80 @@ export async function getUserGames(token) {
     try {
         const response = await fetch(API_URL+'/users/me/games', requestOptions);
         const data = await response.json();
-        console.log(data);
+        if (!response.ok) {
+            error = (data && data.message) || response.status;
+        } else {
+            for (let game of data) {
+                let g = {}
+                if (game.white_id != null){
+                    if (game.white_id == localUser.userId) {
+                        g.white = localUser;
+                    } else {
+                        const tmp = await getUserInfo(token, game.white_id);
+                        g.white = tmp;
+                    }
+                    if(g.white.avatar == null) {
+                        g.white.avatar = DEFAULT_AVATAR;
+                    }
+                } else {
+                    g.white = null;
+                }
+                if (game.black_id != null){
+                    if (game.black_id == localUser.userId) {
+                        g.black = localUser;
+                    } else {
+                        g.black = await getUserInfo(token, game.black_id);
+                    }
+                    if(g.black.avatar == null) {
+                        g.black.avatar = DEFAULT_AVATAR;
+                    }
+                } else {
+                    g.black = null;
+                }
+                g.moves = game.snaps.length-1;
+                g.status = game.status;
+                g.turn = game.turn;
+                g.lastmove = game.last_move_time;
+                g.lastmoveText = fancyDateText(g.lastmove);
+                g.public = game.public;
+                g.hash = game.uuid;
+                g.canJoin = false;
+
+                if(game.status === "waiting") {
+                    myOpenGames.push(g);
+                } else if (game.status === "started") {
+                    liveGames.push(g);
+                } else if (game.status === "finished") {
+                    finishedGames.push(g);
+                }
+            }
+        }
+    } catch(err) {
+        console.error('There was an error!', err);
+        error = String(err);
+    }
+    return {liveGames, finishedGames, myOpenGames, error};
+}
+
+
+export async function getOpenGames(token) {
+    const localUser = await getUserInfo(token);
+    let openGames = [];
+    let error = null;
+    const data = { status: "waiting" };
+    const requestOptions = {
+        method: 'GET',
+        headers: { 
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': 'Bearer '+token,
+        },
+    }
+    let url = new URL(API_URL+'/games')
+    url.search = new URLSearchParams(data).toString();
+
+    try {
+        const response = await fetch(url, requestOptions);
+        const data = await response.json();
         if (!response.ok) {
             error = (data && data.message) || response.status;
         } else {
@@ -175,28 +245,49 @@ export async function getUserGames(token) {
                     g.black = null;
                 }
 
-                g.moves = game.snaps.length;
+                g.moves = game.snaps.length-1;
                 g.status = game.status;
                 g.turn = game.turn;
                 g.lastmove = game.last_move_time;
+                g.lastmoveText = fancyDateText(g.lastmove);
                 g.public = game.public;
                 g.hash = game.uuid;
-
-                if(game.status === "waiting") {
-                    openGames.push(g);
-                } else if (game.status === "started") {
-                    liveGames.push(g);
-                } else if (game.status === "finished") {
-                    finishedGames.push(g);
-                }
+                g.canJoin = true;
+                openGames.push(g);
             }
         }
     } catch(err) {
         console.error('There was an error!', err);
         error = String(err);
     }
-    return {liveGames, finishedGames, openGames, error};
+
+    return { openGames, error};
 }
+
+
+export async function joinGame(token, hash) {
+    let error = null;
+    const requestOptions = {
+        method: 'GET',
+        headers: { 
+            'Authorization': 'Bearer '+token,
+        },
+    }
+    let url = API_URL+'/games/'+hash+'/join';
+
+    try {
+        const response = await fetch(url, requestOptions);
+        const data = await response.json();
+        if (!response.ok) {
+            error = (data && data.message) || response.status;
+        }
+    } catch(err) {
+        console.error('There was an error joining a game!', err);
+        error = String(err);
+    }
+    return { error };
+}
+
 
 
 export async function createGame(token, color, publicPrivate) {
@@ -216,15 +307,11 @@ export async function createGame(token, color, publicPrivate) {
          },
         body: JSON.stringify(data),
     };
-    console.log(requestOptions.body);
     try {
         const response = await fetch(API_URL+'/games/', requestOptions);
         const data = await response.json();
-        console.log(data);
         if (!response.ok) {
             error = (data && data.message) || response.status;
-        } else {
-            console.log(data);
         }
     } catch(err) {
         console.error('There was an error!', err);

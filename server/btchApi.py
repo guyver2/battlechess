@@ -212,15 +212,10 @@ def get_game_by_uuid(
 # lists available games
 @app.get("/games", response_model=List[schemas.Game])
 def list_available_games(
+        status_filter: str="waiting",
         current_user: schemas.User = Depends(get_current_active_user),
         db: Session = Depends(get_db)):
-    games = crud.get_public_game_by_status(db, current_user, "waiting")
-    # if not games:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_404_NOT_FOUND,
-    #         detail="no public games were found",
-    #         headers={"WWW-Authenticate": "Bearer"},
-    #     )
+    games = crud.get_public_game_by_status(db, current_user, status_filter)
     return games
 
 

@@ -10,6 +10,7 @@
         <li class="tab right valign-wrapper"><a href="#" @click="showNewGameModal"><i class="material-icons">add</i></a></li>
     </ul>
 
+    <!-- <div v-if="(currentList!='open' && games.length === 0) || (currentList=='open' && (games.length+myOpenGames.length) === 0)" class="gamesCol"> -->
     <div v-if="games.length === 0" class="gamesCol">
         <div class="gamesRow">
             <div class="valign-wrapper col-12 text-color-5 push-center">
@@ -19,7 +20,10 @@
     </div>
 
     <div v-else class="gamesCol">
-        <div class="gamesRow" v-for="game in games" v-bind:key="game">
+        <div class="gamesRow" v-for="game in games"
+             v-bind:class="{ canjoin: game.canJoin }" 
+             v-bind:key="game"
+             @click="join(game)">
             <div class="opponents">
                 <div v-if="game.white == null" class="whitePlayer">
                     Not Set
@@ -54,17 +58,17 @@
             <div v-if="currentList === 'live'" class="gameInfo">
                 <div>
                     <span class="bold">{{game.moves}}</span> moves
-                </div>
-                    <div>
-                        Last move: 
-                        <span class="tooltip">
-                            {{game.lastmoveText.text}}
-                            <span class="tooltiptext">
-                                {{game.lastmoveText.tooltip}}
-                            </span>
+                </div>         
+                <div>
+                    Last move: 
+                    <span class="tooltip">
+                        {{game.lastmoveText.text}}
+                        <span class="tooltiptext">
+                            {{game.lastmoveText.tooltip}}
                         </span>
-                    </div>
-                </div>
+                    </span>
+                </div>       
+            </div>
             <div v-if="currentList === 'finished'" class="gameInfo">
                 <div>
                     <span class="bold">{{game.moves}}</span> moves
@@ -84,11 +88,10 @@
             </div>
         </div>
     </div>
-    TOKEN {{token}}
     <Modal
-      v-bind:token="token"
       v-show="isModalVisible"
       @close="closeModal"
+      :parrentCallback="getGames"
     />
 </div>
 </template>
@@ -96,62 +99,7 @@
 <script>
 import * as utils from '../assets/js/utils.js'
 import Modal from './modalNewGame.vue'
-/*
-const users = [
-{
-    "username":"@Alerthcsa",
-    "avatar":"./img/avatar_01.jpeg",
-},
-{
-    "username":"@Anthent",
-    "avatar":"./img/avatar_02.jpeg",
-},
-{
-    "username":"@Baldervi",
-    "avatar":"./img/avatar_03.jpeg",
-},
-{
-    "username":"@Bencock",
-    "avatar":"./img/avatar_04.jpeg",
-},
-{
-    "username":"@Benthard",
-    "avatar":"./img/avatar_05.jpeg",
-},
-{
-    "username":"@BorgSomber",
-    "avatar":"./img/avatar_06.jpeg",
-},
-{
-    "username":"@Conciom",
-    "avatar":"./img/avatar_07.jpeg",
-}, 
-{
-    "username":"@Eyesas",
-    "avatar":"./img/avatar_08.jpeg",
-},
-{
-    "username":"@Minadisu",
-    "avatar":"./img/avatar_09.jpeg",
-},
-{
-    "username":"@Cribbin",
-    "avatar":"./img/avatar_10.jpeg",
-},
-{
-    "username":"@Paramti",
-    "avatar":"./img/avatar_11.jpeg",
-},
-{
-    "username":"@Peopen",
-    "avatar":"./img/avatar_12.jpeg",
-},
-{
-    "username":"@SaberGhoul",
-    "avatar":"./img/avatar_13.jpeg",
-},
-];
-*/
+
 const localUser = {
     "username": "@Antoine",
     "avatar": "./img/canti.png",
@@ -160,77 +108,72 @@ const localUser = {
 Array.prototype.sample = function(){
   return this[Math.floor(Math.random()*this.length)];
 };
-/*
-function createGame(status="open") {
-    var game = {}
-    if (Math.floor(Math.random() * 2) == 0){
-        game.white = users.sample();
-        game.black = localUser;
-    } else {
-        game.black = users.sample();
-        game.white = localUser;
-    }
-    game.moves = Math.floor(Math.random() * 50);
-    game.turn = (Math.floor(Math.random() * 2) == 0) ? "white":"black";
-    game.status = status;
-    var d = new Date();
-    d.setDate(d.getDate() - Math.floor(Math.random()*15));
-    game.lastmove = d.toLocaleString();
-    game.lastmoveText = utils.fancyDateText(d);
-    return game;
-}
-
-function sortGames(a, b) {
-    const keyA = new Date(a.lastmove);
-    const keyB = new Date(b.lastmove);
-    if (keyA < keyB) return 1;
-    if (keyA > keyB) return -1;
-    return 0;
-}
-*/
 
 export default {
   name: 'Games',
-  props:{
-      token: String,
-  },
   components: {
       Modal,
   },
   data() {
       return {
+          token: '',
           player: localUser,
           games: [],
           liveGames: [],
           finishedGames: [],
           openGames: [],
+          myOpenGames: [],
           currentList: 'live',
           isModalVisible: false,
+          canjoin: false,
       }
-  },created(){
+  },
+  created(){
+       if (localStorage.token) {
+          this.token = localStorage.token;
+      }
       this.getGames();
-  },  
+      },  
   mounted () {
-        // for (let i=0; i< 5; i++) {
-        //     this.liveGames.push(createGame());
-        // }
-        // for (let i=0; i< 20; i++) {
-        // this.finishedGames.push(createGame("over"));
-        // }
-        // this.liveGames.sort(sortGames);
-        // this.finishedGames.sort(sortGames);
-        // this.games = this.liveGames;
+         
   },
   methods: {
     async getGames() {
-        const { liveGames, finishedGames, openGames, error } = await utils.getUserGames(this.$props.token);
+        const { liveGames, finishedGames, myOpenGames, error } = await utils.getUserGames(this.token);
+        console.log("livegames:", liveGames);
+        const { openGames , error2 } = await utils.getOpenGames(this.token);
         this.liveGames = liveGames;
         this.finishedGames = finishedGames;
+        this.myOpenGames = myOpenGames;
         this.openGames = openGames;
-        if (error) {
-            this.$router.push({name:'login', params: {incomingError: error}});
+        if (error || error2) {
+            this.$router.push({name:'login', params: {incomingError: error + " " + error2 }});
+        } else {
+            switch (this.currentList) {
+                case 'live':
+                    this.games = this.liveGames;
+                    break;
+                case 'finished':
+                    this.games = this.finishedGames;
+                    break;
+                case 'open':
+                    this.games = this.myOpenGames.concat(this.openGames);
+                    break;
+                default:
+                    break;
+            }
         }
+
     },
+  async join(game) {
+      if (game.canJoin) {
+          console.log("joining #", game.hash);
+          const { error } = await utils.joinGame(this.token, game.hash);
+          if (error) {
+              console.log("error joining a game", error);
+          }
+      }
+  },
   showLive() {
       if (this.currentList != 'live'){
           this.currentList = 'live';
@@ -241,12 +184,13 @@ export default {
       if (this.currentList != 'finished'){
           this.currentList = 'finished';
           this.games = this.finishedGames;
+          console.log(this.games);
       }
   },
   showOpen() {
       if (this.currentList != 'open'){
           this.currentList = 'open'
-          this.games = this.openGames;
+          this.games = this.myOpenGames.concat(this.openGames);
       }
   },
   showNewGameModal() {
@@ -267,6 +211,10 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.canjoin {
+   cursor: pointer; 
+}
+
 .gameCol {
     width: 100%;
     height: 100%;

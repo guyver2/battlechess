@@ -382,7 +382,7 @@ class Test_Api(unittest.TestCase):
         token, _ = self.addFakeUsers(self.db)
 
         response = self.client.get(
-            "/users/1",
+            "/users/u/1",
             headers={"Authorization": "Bearer " + token},
         )
 
@@ -395,16 +395,13 @@ class Test_Api(unittest.TestCase):
                 'avatar': None,
                 'id': 1,
                 'status': 'active',
-                'games': [],
-                'whites': [],
-                'blacks': []
             })
 
     def test__getUserById__malformedId(self):
         token, _ = self.addFakeUsers(self.db)
 
         response = self.client.get(
-            "/users/abcd",
+            "/users/u/abcd",
             headers={"Authorization": "Bearer " + token},
         )
 
