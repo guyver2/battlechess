@@ -140,7 +140,6 @@ export default {
   methods: {
     async getGames() {
         const { liveGames, finishedGames, myOpenGames, error } = await utils.getUserGames(this.token);
-        console.log("livegames:", liveGames);
         const { openGames , error2 } = await utils.getOpenGames(this.token);
         this.liveGames = liveGames;
         this.finishedGames = finishedGames;
@@ -167,7 +166,6 @@ export default {
     },
   async join(game) {
       if (game.canJoin) {
-          console.log("joining #", game.hash);
           const { error } = await utils.joinGame(this.token, game.hash);
           if (error) {
               console.log("error joining a game", error);
@@ -184,7 +182,6 @@ export default {
       if (this.currentList != 'finished'){
           this.currentList = 'finished';
           this.games = this.finishedGames;
-          console.log(this.games);
       }
   },
   showOpen() {
@@ -194,7 +191,6 @@ export default {
       }
   },
   showNewGameModal() {
-        console.log("showing modal");
         this.isModalVisible = true;
   },
   closeModal() {

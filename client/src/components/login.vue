@@ -64,7 +64,8 @@ export default {
         this.token = token;
         this.errorMessage = errorMessage;
         if (this.token) {
-            this.$router.push({name:'home', params: {token: this.token}});
+            localStorage.token = this.token;
+            this.$router.push({name:'home'});
         }
     },
 

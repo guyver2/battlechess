@@ -34,9 +34,7 @@ export default {
       if (localStorage.token) {
           this.token = localStorage.token;
       }
-      console.log(this.token);
       if (this.token == null) {
-          console.log("invalid token", this.token);
           this.$router.push({name:'login', params: {}});
       }
   },
