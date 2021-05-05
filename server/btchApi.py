@@ -144,7 +144,7 @@ def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = crud.get_users(db, skip=skip, limit=limit)
     return [user.username for user in users]
 
-@app.get("/users/{userID}", response_model=schemas.User)
+@app.get("/users/u/{userID}", response_model=schemas.User)
 def read__single_user(
     userID: int,
     current_user: schemas.User = Depends(get_current_active_user),
