@@ -21,9 +21,9 @@
 
     <div v-else class="gamesCol">
         <div class="gamesRow" v-for="game in games"
-             v-bind:class="{ canjoin: game.canJoin }" 
+             v-bind:class="{ canjoin: game.canJoin || currentList === 'live' }" 
              v-bind:key="game"
-             @click="join(game)">
+             @click="clicked(game)">
             <div class="opponents">
                 <div v-if="game.white == null" class="whitePlayer">
                     Not Set
@@ -164,6 +164,19 @@ export default {
         }
 
     },
+
+  async clicked(game) {
+      if (this.currentList === 'open'){
+          this.join(game);
+      } else if (this.currentList === 'live') {
+          this.play(game);
+      }
+  },
+
+  play(game) {
+      this.$router.push({name:'game', params: {game:game.hash}});
+  },
+
   async join(game) {
       if (game.canJoin) {
           const { error } = await utils.joinGame(this.token, game.hash);
