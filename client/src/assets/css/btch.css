@@ -7,6 +7,13 @@
   --color-4: #84a4bf;
   --color-5: #b6d0f2;
   --color-0: #048eff;
+
+  --color-1-d: #000000;
+  --color-2-d: #070d12;
+  /* --color-3-d: #2f485d; */
+  --color-4-d: #252e36;
+  /* --color-5-d: #9bbfed; */
+  /* --color-0-d: #; */
   font-family: sans-serif;
 }
 
@@ -87,35 +94,7 @@ body {
   border-top-right-radius: 0;
 }
 
-.board {
-  /* border: 10px solid red; */
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  grid-template-columns: repeat(8, 1fr);
-  width: 90vmin;
-  height: 90vmin;
-  position: relative;
-}
-
-.boardCell {
-  font-family: sans-serif;
-  font-weight: bold;
-  position: relative;
-  padding-left: 0.2vmin;
-  height: 11.25vmin;
-  width: 11.25vmin;
-}
-
-.boardCell.black {
-  background: #ff8e65;
-  color: black;
-}
-
-.boardCell.white {
-  background: #ffcb9c;
-  color: black;
-}
-
+/* no idea why this specific one has to be in the main css theme and not simply the component style */
 .boardCell img {
   position: absolute;
   top: 0;
@@ -123,15 +102,7 @@ body {
   height: 11.25vmin;
   width: 11.25vmin;
 }
-
-.boardCell.selected {
-  background: rgb(168, 119, 119);
-}
-
-.boardCell.fog {
-  background: rgb(18, 24, 24);
-}
-
+/* same comment as above for ".boardCell img" */
 .boardCell.fog img {
   display: none;
 }

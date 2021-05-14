@@ -22,11 +22,15 @@ export default {
     props: {
         game: String,
     },
+    mounted() {
+        this.drawBoard();
+    },
+
     data () {
         return {
             data:{
                     "gameID": "sdhsahda5551",
-                    "board":"RNBQKBNRPPPPPPPP________________________________pppppppprnbkqbnr",
+                    "board":"RNBQKBNRPPPPPPPP________________________________pppppppprnbqkbnr",
                     "taken":[],
                     "castelable":[],
                     "turn":"w",
@@ -67,7 +71,7 @@ export default {
                 target.appendChild(origin.getElementsByTagName('img')[0]);
                 this.selectedCell = null;
             }
-            //this.drawFog();
+            this.drawFog();
         },
         
         drawBoard() {
@@ -78,7 +82,8 @@ export default {
                 this.board[cellid] = element;
                 if (element != "_") {
                     let img = document.createElement("img");
-                    img.src = "img/" + element + ".svg";
+                    img.classList.add("imgaeInCell")
+                    img.src = "./img/pieces/" + element + ".svg";
                     cell.appendChild(img);
                 }
             });
@@ -143,17 +148,33 @@ export default {
   width: 11.25vmin;
 }
 
-.blackCell {
-  background: var(--color-2);/*#ff8e65;*/
-  color: var(--color-5);
-}
 
 .whiteCell {
-  background: var(--color-5);/*#ffcb9c; */
+  background: var(--color-5);
   color: var(--color-2);
 }
 
-.boardCell > img {
+.whiteCell.fog {
+  background: var(--color-4-d);
+  color: var(--color-1);
+}
+
+.blackCell {
+    background: var(--color-2);
+    color: var(--color-5);
+}
+
+.blackCell.fog {
+  background: var(--color-2-d);
+}
+
+.selected {
+  background: var(--color-0);/*rgb(168, 119, 119);*/
+}
+
+
+/* these two definitions have no effect, see the same definition in btch.css */
+.boardCell img {
   position: absolute;
   top: 0;
   left: 0;
@@ -161,15 +182,8 @@ export default {
   width: 11.25vmin;
 }
 
-.boardCell .selected {
-  background: rgb(168, 119, 119);
-}
-
-.boardCell .fog {
-  background: var(--color-0);
-}
-
-.boardCell .fog img {
+.boardCell.fog img {
   display: none;
 }
+
 </style>
