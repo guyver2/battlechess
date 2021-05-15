@@ -3,8 +3,6 @@ import unittest.mock as mock
 
 from core.Board import Board
 
-
-
 class Test_Board(unittest.TestCase):
 
     def setUp(self):
