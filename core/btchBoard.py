@@ -25,6 +25,13 @@ class BtchBoard():
         self.board[11] = [None]*12
         # yapf: enable
 
+    def empty(self):
+        self.board = [[None, None, *['' for j in range(8)], None, None] for i in range(0, 12)]
+        self.board[0] = [None] * 12
+        self.board[1] = [None] * 12
+        self.board[10] = [None] * 12
+        self.board[11] = [None] * 12
+
     def isOk(self, i, j):
         return self.board[i][j] != None
 
@@ -118,34 +125,76 @@ class BtchBoard():
             return []
 
         if c.lower() == 'p':
-            moves = self.pawnMoves(color, i, j)
+            moves = [self.pawnMoves(color, i, j)]
         elif c.lower() == 'r':
-            moves = self.rookMoves(color, i, j)
+            moves = [self.rookMoves(color, i, j)]
         elif c.lower() == 'n':
-            moves = self.knightMoves(color, i, j)
+            moves = [self.knightMoves(color, i, j)]
         elif c.lower() == 'b':
-            moves = self.bishopMoves(color, i, j)
+            moves = [self.bishopMoves(color, i, j)]
         elif c.lower() == 'q':
-            moves = self.queenMoves(color, i, j)
+            moves = [self.queenMoves(color, i, j)]
         elif c.lower() == 'k':
-            moves = self.kingMoves(color, i, j)
+            moves = [self.kingMoves(color, i, j)]
 
         return moves
+
+    def isFree(self, i, j):
+        return self.board[i][j] == ''
+
+    @classmethod
+    def isEnemy(cls, color, piece):
+        return True if piece and (piece.isupper() and color == 'white' \
+                    or piece.islower() and color == 'black') else False
+
+    def vectorMove(self, color, i, j, v):
+        x, y = i, j
+        while True:
+            x, y = x + v[0], y + v[1]
+            if self.isFree(x, y):
+                yield (x, y)
+            elif self.isEnemy(color, self.board[x][y]):
+                yield (x, y)
+                break
+            else:
+                break
+
+    def rookMoves(self, color, i, j):
+        v = (1, 0)
+        yield from self.vectorMove(color, i, j, v)
+        v = (0, 1)
+        yield from self.vectorMove(color, i, j, v)
+        v = (-1, 0)
+        yield from self.vectorMove(color, i, j, v)
+        v = (0, -1)
+        yield from self.vectorMove(color, i, j, v)
+
+    def bishopMoves(self, color, i, j):
+        v = (1, 1)
+        yield from self.vectorMove(color, i, j, v)
+        v = (-1, 1)
+        yield from self.vectorMove(color, i, j, v)
+        v = (1, -1)
+        yield from self.vectorMove(color, i, j, v)
+        v = (-1, -1)
+        yield from self.vectorMove(color, i, j, v)
+
+    def queenMoves(self, color, i, j):
+        yield from self.rookMoves(color, i, j)
+        yield from self.bishopMoves(color, i, j)
+
+    def kingMoves(self, color, i, j):
+        for dx in range(-1, 1):
+            for dy in range(-1, 1):
+                x, y = i + dx, j + dy
+                if self.isFree(x, y):
+                    yield (x, y)
+                else:
+                    if self.isEnemy(color, self.board[x][y]):
+                        yield (x, y)
 
     def pawnMoves(self, color, i, j):
         pass
 
-    def rookMoves(self, color, i, j):
-        pass
-
-    def bishopMoves(self, color, i, j):
-        pass
-
     def knightMoves(self, color, i, j):
-        pass
-
-    def queenMoves(self, color, i, j):
-        pass
-
-    def kingMoves(self, color, i, j):
         pass
