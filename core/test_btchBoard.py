@@ -12,19 +12,22 @@ class Test_BtchBoard(unittest.TestCase):
     def tearDown(self):
         pass
 
+    def startboardStr(self):
+        return ('RNBQKBNR'
+                'PPPPPPPP'
+                '________'
+                '________'
+                '________'
+                '________'
+                'pppppppp'
+                'rnbqkbnr')
+
     def fakeElements(self):
         elements = {
-            'board': ('RNBQKBNR'
-                      'PPPPPPPP'
-                      '________'
-                      '________'
-                      '________'
-                      '________'
-                      'pppppppp'
-                      'rnbqkbnr'),
+            'board': self.startboardStr(),
             'taken': '',
             'castleable': 'LSKlsk',
-            'enpassant': '',
+            'enpassant': None,
             'winner': None,
         }
 
@@ -33,6 +36,11 @@ class Test_BtchBoard(unittest.TestCase):
     def squares2ascii(self, squares):
         return "\n".join(
             "".join('x' if (i, j) in squares else '_' for j in range(0, 12)) for i in range(0, 12))
+
+    def test__factory(self):
+        btchBoard = BtchBoard.factory(self.startboardStr())
+
+        self.assertEqual(btchBoard.toElements(), self.fakeElements())
 
     def test__isEnemy(self):
 
@@ -94,5 +102,54 @@ class Test_BtchBoard(unittest.TestCase):
 
         self.assertListEqual(moves, expected)
 
+    def test__moves__manyMoves(self):
+        pass
+
+    def test__moves__enpassant(self):
+        pass
+
     def test__moves__notMovingForbidden(self):
         pass
+
+    #check that an impossible move is possible if fogged enemies
+    def test__moves__unknownInfo(self):
+        pass
+
+    def test__filter__startPosition(self):
+        color = 'white'
+        b = BtchBoard()
+        b.filter(color)
+
+        expectedBoardStr = ('________'
+                            '________'
+                            '________'
+                            '________'
+                            '________'
+                            '________'
+                            'pppppppp'
+                            'rnbqkbnr')
+
+        expected = BtchBoard.factory(expectedBoardStr)
+        expected.castleable = 'lsk'
+
+        self.assertDictEqual(b.toElements(), expected.toElements())
+
+    def test__moves__fog(self):
+        boardStr = ('________'
+                    '________'
+                    '________'
+                    '________'
+                    '________'
+                    '________'
+                    'ppppppp_'
+                    'rnbqkbnr')
+
+        b = BtchBoard.factory(boardStr)
+
+        print('fog {} '.format(b.toElements()))
+
+        moves = b.possibleMoves('white', 9, 9)
+
+        expectedMoves = sorted([(i, 9) for i in range(2, 9)])
+
+        self.assertListEqual(moves, expectedMoves)
