@@ -15,6 +15,7 @@ from .btchApi import app, get_db
 
 from .btchApiDB import SessionLocal, Base, BtchDBContextManager
 from . import crud, models
+from .schemas import GameStatus
 from .utils import get_password_hash, verify_password
 
 # TODO we might want to use a Test db context manager with
@@ -114,7 +115,7 @@ class Test_Api(unittest.TestCase):
                 "owner": "johndoe",
                 "white": "johndoe",
                 "black": "janedoe",
-                "status": "started",
+                "status": GameStatus.STARTED,
                 "public": False,
                 "turn": "black",
                 "created_at": datetime(2021, 1, 1, tzinfo=timezone.utc),
@@ -124,7 +125,7 @@ class Test_Api(unittest.TestCase):
                 "owner": "janedoe",
                 "white": "johndoe",
                 "black": "janedoe",
-                "status": "ended",
+                "status": GameStatus.OVER,
                 "public": False,
                 "winner": "johndoe",
                 "created_at": datetime(2021, 3, 12, tzinfo=timezone.utc),
@@ -134,7 +135,7 @@ class Test_Api(unittest.TestCase):
                 "owner": "janedoe",
                 "white": None,
                 "black": "janedoe",
-                "status": "waiting",
+                "status": GameStatus.WAITING,
                 "public": True,
                 "winner": None,
                 "created_at": datetime(2021, 3, 12, tzinfo=timezone.utc),
@@ -144,7 +145,7 @@ class Test_Api(unittest.TestCase):
                 "owner": "janedoe",
                 "white": "janedoe",
                 "black": None,
-                "status": "waiting",
+                "status": GameStatus.WAITING,
                 "public": True,
                 "created_at": datetime(2021, 4, 5, tzinfo=timezone.utc),
             },
@@ -153,7 +154,7 @@ class Test_Api(unittest.TestCase):
                 "owner": "johndoe",
                 "white": "johndoe",
                 "black": None,
-                "status": "waiting",
+                "status": GameStatus.WAITING,
                 "public": False,
                 "created_at": datetime(2021, 4, 5, tzinfo=timezone.utc),
             }
@@ -237,6 +238,7 @@ class Test_Api(unittest.TestCase):
                 public=game["public"])
             db.add(db_game)
             db.commit()
+            print(f"adding game between {white.id if white is not None else None} and {black.id if black is not None else None}")
         return uuid
 
     def addFakeGameSnaps(self, db, fakegamesnaps):
@@ -443,7 +445,7 @@ class Test_Api(unittest.TestCase):
                 'last_move_time': None,
                 'owner_id': 1,
                 'public': False,
-                'status': 'waiting',
+                'status': GameStatus.WAITING,
                 'turn': 'white',
                 'white_id': response.json()["owner_id"],
                 'winner': None,
@@ -475,7 +477,7 @@ class Test_Api(unittest.TestCase):
                 'owner_id': 1,
                 'last_move_time': None,
                 'public': False,
-                'status': 'waiting',
+                'status': GameStatus.WAITING,
                 'turn': 'white',
                 'white_id': 1,
                 'winner': None,
@@ -504,7 +506,6 @@ class Test_Api(unittest.TestCase):
                 'id': 1,
                 'last_move_time': None,
                 'owner_id': 1,
-                'snaps': [],
                 'public': False,
                 'last_move_time': None,
                 'status': 'started',
@@ -596,9 +597,8 @@ class Test_Api(unittest.TestCase):
             'public': True,
             'white_id': None,
             'black_id': 2,
-            'status': 'waiting',
+            'status': GameStatus.WAITING,
             'turn': 'white',
-            'snaps': [],
             'winner': None,
         }, {
             'black_id': None,
@@ -608,10 +608,9 @@ class Test_Api(unittest.TestCase):
             'last_move_time': None,
             'owner_id': 2,
             'public': True,
-            'status': 'waiting',
+            'status': GameStatus.WAITING,
             'turn': 'white',
             'white_id': 2,
-            'snaps': [],
             'winner': None,
         }])
 
@@ -652,7 +651,7 @@ class Test_Api(unittest.TestCase):
                 'last_move_time': None,
                 'owner_id': game.owner_id,
                 'public': False,
-                'status': 'waiting',
+                'status': GameStatus.WAITING,
                 'turn': 'white',
                 'white_id': game.white_id,
             })
@@ -682,6 +681,8 @@ class Test_Api(unittest.TestCase):
         token, _ = self.addFakeUsers(self.db)
         self.addFakeGames(self.db, self.fakegamesdb())
         firstgame_uuid = list(self.fakegamesdb().values())[0]["uuid"]
+        firstgame_white_player = list(self.fakegamesdb().values())[0]["white"]
+        token = self.getToken(firstgame_white_player)
         self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
 
         response = self.client.get(
@@ -703,15 +704,15 @@ class Test_Api(unittest.TestCase):
                 'id':
                 1,
                 'move':
-                '',
+                None,
                 'taken':
                 '',
                 'castelable':
                 '',
                 'move_number':
                 0,
-                'board': ('RNBQKBNR'
-                          'PPPPPPPP'
+                'board': ('xxxxxxxx'
+                          'xxxxxxxx'
                           '________'
                           '________'
                           '________'
@@ -744,16 +745,15 @@ class Test_Api(unittest.TestCase):
             mock.ANY,
             'id':
             1,
-            'move':
-            '',
+            'move': None,
             'taken':
             '',
             'castelable':
             '',
             'move_number':
             0,
-            'board': ('RNBQKBNR'
-                      'PPPPPPPP'
+            'board': ('xxxxxxxx'
+                      'xxxxxxxx'
                       '________'
                       '________'
                       '________'
@@ -775,8 +775,8 @@ class Test_Api(unittest.TestCase):
             '',
             'move_number':
             1,
-            'board': ('RNBQKBNR'
-                      'PPPPPPPP'
+            'board': ('xxxxxxxx'
+                      'xxxxxxxx'
                       '________'
                       '________'
                       '___p____'
@@ -1026,7 +1026,7 @@ class Test_Api(unittest.TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()['status'], 'waiting')
+        self.assertEqual(response.json()['status'], GameStatus.WAITING)
 
         white_id = response.json()['white_id']
         black_id = response.json()['black_id']

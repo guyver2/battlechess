@@ -12,6 +12,7 @@ from sqlalchemy.sql.functions import user
 
 from .config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 from . import crud, models, schemas
+from .schemas import Game, GameStatus 
 from .btchApiDB import SessionLocal, engine
 
 PASSWORD_MIN_LENGTH = 3
@@ -212,7 +213,7 @@ def get_game_by_uuid(
 # lists available games
 @app.get("/games", response_model=List[schemas.Game])
 def list_available_games(
-        status_filter: str="waiting",
+        status_filter: str=GameStatus.WAITING,
         current_user: schemas.User = Depends(get_current_active_user),
         db: Session = Depends(get_db)):
     games = crud.get_public_game_by_status(db, current_user, status_filter)
@@ -305,16 +306,12 @@ def post_move(
             headers={"Authorization": "Bearer"},
         )
 
-    if game.status != "started":
+    if game.status != GameStatus.STARTED:
         raise HTTPException(
             status_code=status.HTTP_412_PRECONDITION_FAILED,
             detail="game is not started",
             headers={"Authorization": "Bearer"},
         )
-
-    # snap = game.move(gameMove.move)
-    # deprecated in favor of creating the snap directly in the model
-    # crud.create_snap_by_dict()
 
     # It looks like modifying the pydantic model does not change the db model
     snap = crud.create_snap_by_move(db, current_user, game, gameMove)
@@ -328,6 +325,9 @@ def get_snap(gameUUID: str,
              current_user: schemas.User = Depends(get_current_active_user),
              db: Session = Depends(get_db)):
     game = get_game(gameUUID, current_user, db)
+    # user not allowed to query that game snap for now
+    if (game.status != GameStatus.OVER) and (current_user.id not in [game.white_id, game.black_id]):
+        game = None
     if not game:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -343,7 +343,7 @@ def get_snap(gameUUID: str,
             headers={"Authorization": "Bearer"},
         )
 
-    if game.status != "started" or not game.black_id or not game.white_id:
+    if game.status != GameStatus.STARTED or not game.black_id or not game.white_id:
         return snap
 
     player_color = "black" if current_user.id == game.black_id else "white"
@@ -360,6 +360,10 @@ def get_snap(gameUUID: str,
              current_user: schemas.User = Depends(get_current_active_user),
              db: Session = Depends(get_db)):
     game = get_game(gameUUID, current_user, db)
+    print(game)
+    # user not allowed to query that game snap for now
+    if (game.status != GameStatus.OVER) and (current_user.id not in [game.white_id, game.black_id]):
+        game = None
     if not game:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -373,7 +377,11 @@ def get_snap(gameUUID: str,
             detail="snap not found",
             headers={"Authorization": "Bearer"},
         )
-    return snap
+
+    player_color = "black" if current_user.id == game.black_id else "white"
+    snap4player = schemas.GameSnap.from_orm(snap)
+    snap4player.prepare_for_player(player_color)
+    return snap4player
 
 
 @app.get("/games/{gameUUID}/snaps")
@@ -381,6 +389,9 @@ def get_snaps(gameUUID: str,
               current_user: schemas.User = Depends(get_current_active_user),
               db: Session = Depends(get_db)):
     game = get_game(gameUUID, current_user, db)
+    # user not allowed to query that game snap for now
+    if (game.status != GameStatus.OVER) and (current_user.id not in [game.white_id, game.black_id]):
+        game = None
     if not game:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -388,7 +399,12 @@ def get_snaps(gameUUID: str,
             headers={"Authorization": "Bearer"},
         )
 
-    # print(game.__dict__)
-    # for snap in db.query(models.GameSnap).all():
-    #     print(snap.__dict__)
-    return game.snaps
+    player_color = "black" if current_user.id == game.black_id else "white"
+    result = []
+    for snap in game.snaps:
+
+        snap4player = schemas.GameSnap.from_orm(snap)
+        snap4player.prepare_for_player(player_color)
+        result.append(snap4player)
+    return result
+    

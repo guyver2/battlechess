@@ -4,6 +4,7 @@ from fastapi import HTTPException, status
 
 from .btchApiDB import Base
 from core.Board import Board
+from .schemas import GameStatus
 
 class User(Base):
 
@@ -35,7 +36,7 @@ class Game(Base):
     owner_id = Column(Integer, ForeignKey("user.id"))
     white_id = Column(Integer, ForeignKey("user.id"))
     black_id = Column(Integer, ForeignKey("user.id"))
-    status = Column(String, default="waiting")
+    status = Column(String, default=GameStatus.WAITING)
     turn = Column(String, default="white")
     last_move_time = Column(DateTime)
     public = Column(Boolean, default=True)
@@ -85,10 +86,10 @@ class Game(Base):
         return None
 
     def is_finished(self):
-        return self.status == "done"
+        return self.status == GameStatus.OVER
 
     def is_running(self):
-        return self.status == "started"
+        return self.status == GameStatus.STARTED
 
     def get_latest_snap(self):
         if not self.snaps:
@@ -96,7 +97,7 @@ class Game(Base):
         return self.snaps[-1]
 
     def start_game(self):
-        self.status = "started"
+        self.status = GameStatus.STARTED
 
     def refresh_turn(self):
         if not self.snaps:

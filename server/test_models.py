@@ -1,3 +1,4 @@
+from server.schemas import GameStatus
 import unittest
 
 from sqlalchemy import create_engine
@@ -8,6 +9,7 @@ from datetime import datetime, timedelta, timezone
 
 from . import models
 from .btchApiDB import SessionLocal, Base, BtchDBContextManager
+from .schemas import GameStatus
 from core.Board import Board
 
 class Test_Models(unittest.TestCase):
@@ -88,7 +90,7 @@ class Test_Models(unittest.TestCase):
             "owner": "johndoe",
             "white": "johndoe",
             "black": "janedoe",
-            "status": "started",
+            "status": GameStatus.STARTED,
             "public": False,
             "turn": "black",
             "created_at": datetime(2021, 1, 1, tzinfo=timezone.utc),

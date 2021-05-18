@@ -3,6 +3,12 @@ from datetime import datetime, time, timedelta
 # from uuid import UUID # represented as string
 from pydantic import BaseModel
 
+class GameStatus():
+    WAITING = "waiting"
+    STARTED = "started"
+    OVER = "over"
+
+
 
 class Token(BaseModel):
     access_token: str
@@ -54,6 +60,7 @@ class GameSnap(GameSnapBase):
                     return True
 
     def filterchar(self, color, c, extboard, j, i):
+        # TODO replace Xs with _ when function has been tested enough.
         if color == 'black':
             return c if c == '_' or c.isupper() or self.hasEnemy(extboard, j, i) else 'X'
         elif color == 'white':
@@ -129,7 +136,6 @@ class Game(GameBase):
     black_id: Optional[int] = None
     status: str
     turn: str
-    snaps: List[GameSnap] = []
     winner: Optional[str] = None
     public: Optional[bool] = None
 
