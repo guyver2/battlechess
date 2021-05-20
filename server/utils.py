@@ -34,3 +34,14 @@ def defaultBoard():
         'pppppppp'
         'rnbqkbnr'
     )
+
+
+def extij2ad(i, j):
+    square = chr(j - 2 + 97) + str(8 - (i - 2))
+    return square
+
+
+def ad2extij(square):
+    i = 8 - int(square[1]) + 2
+    j = ord(square[0]) - ord('a') + 2
+    return (i, j)

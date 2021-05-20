@@ -102,6 +102,15 @@ class Test_BtchBoard(unittest.TestCase):
 
         self.assertListEqual(moves, expected)
 
+    def test__moves__pawn(self):
+        b = BtchBoard()
+
+        moves = sorted(sq for sq in b.pawnMoves('white', 8, 6))
+
+        expected = [(6, 6), (7, 6)]
+
+        self.assertListEqual(moves, expected)
+
     def test__moves__manyMoves(self):
         pass
 

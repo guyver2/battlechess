@@ -60,12 +60,26 @@ class BtchBoard():
             b.board[i // 8 + 2][i % 8 + 2] = c if c != '_' else ''
         return b
 
+    @classmethod
+    def factoryFromElements(cls, board: str, taken: str, castleable: str, enpassant: int):
+        b = BtchBoard()
+        for i, c in enumerate(board):
+            b.board[i // 8 + 2][i % 8 + 2] = c if c != '_' else ''
+        b.taken = taken
+        b.castleable = castleable
+        b.enpassant = enpassant
+        return b
+
     def boardToStr(self):
 
         def bpiece(p):
             return '_' if not p else p
 
         return ''.join([bpiece(self.board[i][j]) for i in range(2, 10) for j in range(2, 10)])
+
+    def prettyBoard(self):
+        boardstr = self.boardToStr()
+        return '\n'.join([boardstr[index:index + 8] for index in range(0, len(boardstr), 8)])
 
     def toElements(self):
 
@@ -171,7 +185,14 @@ class BtchBoard():
 
     def possibleMoves(self, color, i, j):
         c = self.board[i][j]
+        if not self.isIn(i, j):
+            print("{} {} out of board bounds [2,10]".format(i, j))
+            return list()
+        if not c:
+            print("No piece at {} {} \n{}".format(i, j, self.prettyBoard()))
+            return list()
         if self.getColor(c) != color:
+            print("{} it's not your piece {}!".format(c, color))
             return list()
 
         moves = list()
@@ -261,24 +282,26 @@ class BtchBoard():
                 if self.isFree(i + di, j + dj) or self.isEnemy(color, self.board[i + di][j + dj])]
 
     def pawnMoves(self, color, i, j):
-        di = -1 if self.isWhite(color) else 1
+        di = -1 if self.isWhite(color) else +1
 
         # move forward
         if self.isFree(i + di, j):
             yield (i + di, j)
 
-        # kill
-        if self.isEnemy(i + di, j - 1):
-            yield (i + di, j - 1)
+        # 2-square move
+        if i == (8 if self.isWhite(color) else 3) \
+                   and self.isFree(i + di, j) and self.isFree(i + 2*di, j):
+            yield (i + 2  *  di, j)
 
-        if self.isEnemy(i + di, j + 1):
-            yield (i + di, j + 1)
+        # kill
+        if self.isEnemy(color, self.board[i + di][j - 1]):
+            yield (i + di, j - 1)
 
         # enpassant
         enpassantrow = 7 if self.isWhite(color) else 5
         if i == enpassantrow:
-            if self.isEnemy(i, j - 1) and j - 1 in self.enpassant:
+            if self.isEnemy(color, self.board[i][j - 1]) and j - 1 in self.enpassant:
                 yield (i, j - 1)
 
-            if self.isEnemy(i, j + 1) and j + 1 in self.enpassant:
+            if self.isEnemy(color, self.board[i][j + 1]) and j + 1 in self.enpassant:
                 yield (i, j + 1)

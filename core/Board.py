@@ -549,7 +549,7 @@ class Board(object):
             self.board[i//8][i % 8] = self.dbpiece2boardpiece(c)
         self.taken = [self.dbpiece2board(c) for c in taken]
         self.castleable = sorted([self.apicastle2board()[c] for c in castleable])
-        self.enpassant = ord(enpassant) - 97 if enpassant else -1
+        self.enpassant = ord(enpassant) - ord('a') if enpassant else -1
         self.winner = winner
 
     def toElements(self, color=None):
