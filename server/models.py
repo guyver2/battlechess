@@ -220,6 +220,8 @@ class GameSnap(Base):
 
     def getPossibleMoves(self, square, color):
         board = self.toBtchBoard()
+        board.filter(color)
+
         # btchboard coordinates are extended [0,12]
         i, j = ad2extij(square)
         print(f'{square} --- {i}{j} wants to move')
