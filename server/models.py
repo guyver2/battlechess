@@ -188,7 +188,7 @@ class GameSnap(Base):
             # TODO better reason
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail=f"Movement invalid for {msg}",
+                detail=f"Movement invalid because {msg}",
                 headers={"WWW-Authenticate": "Bearer"},
             )
         accepted_move = self.coordListToMove(accepted_move_list)

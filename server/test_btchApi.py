@@ -925,6 +925,39 @@ class Test_Api(unittest.TestCase):
              'XXXXXXXX'),
         )
 
+    def test__move__fogTest(self):
+        _, _ = self.addFakeUsers(self.db)
+        #change to second player
+        jane_token = self.getToken("janedoe")
+        john_token = self.getToken("johndoe")
+        self.addFakeGames(self.db, self.fakegamesdb())
+        firstgame_uuid = list(self.fakegamesdb().values())[0]["uuid"]
+        self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
+
+        tokens = [jane_token, john_token]
+        moves = ['e7e6', 'g2g4', 'd8h4', 'f2f4', 'a7a6']
+
+        print(tokens)
+
+        for i, move in enumerate(moves):
+            print("move {} for {}".format(move, tokens[i % 2]))
+            response = self.send_move(firstgame_uuid, move, tokens[i % 2])
+            print(response.json())
+            self.assertEqual(response.status_code, 200)
+            self.prettyBoard(response.json()['board'])
+
+        self.assertEqual(
+            response.json()['board'],
+            ('RNB_KBNR'
+             '_PPP_PPP'
+             'P___P___'
+             '________'
+             '___X_XpQ'
+             '________'
+             'XXX_X__X'
+             'XXXXXXXX'),
+        )
+
     def test__possibleMoves__pawnMove(self):
         _, _ = self.addFakeUsers(self.db)
         #change to second player
@@ -963,6 +996,63 @@ class Test_Api(unittest.TestCase):
             },
         )
         return response
+
+    def prettyBoard(self, boardStr):
+        print('    abcdefgh')
+        print('    01234567')
+        for i in range(8):
+            print('{} - {} - {}'.format(i, boardStr[8 * i:8 * i + 8], 8 - i))
+
+    def test__move__filtered_pawn(self):
+        _, _ = self.addFakeUsers(self.db)
+        #change to second player
+        jane_token = self.getToken("janedoe")
+        john_token = self.getToken("johndoe")
+        self.addFakeGames(self.db, self.fakegamesdb())
+        firstgame_uuid = list(self.fakegamesdb().values())[0]["uuid"]
+        self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
+
+        tokens = [jane_token, john_token]
+        moves = ['e7e5', 'd4e5', 'h7h6', 'e5e6']
+
+        response = self.send_move(firstgame_uuid, moves[0], tokens[0 % 2])
+        print(response.json())
+        self.prettyBoard(response.json()['board'])
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(
+            response.json()['board'],
+            ('RNBQKBNR'
+             'PPPP_PPP'
+             '________'
+             '____P___'
+             '___p____'
+             '________'
+             'XXX_XXXX'
+             'XXXXXXXX'),
+        )
+
+        response = self.send_move(firstgame_uuid, moves[1], tokens[1 % 2])
+        print(response.json())
+        self.prettyBoard(response.json()['board'])
+        self.assertEqual(response.status_code, 200)
+
+        response = self.send_move(firstgame_uuid, moves[2], tokens[2 % 2])
+        print(response.json())
+        self.prettyBoard(response.json()['board'])
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(
+            response.json()['board'],
+            ('RNBQKBNR'
+             'PPPP_PP_'
+             '_______P'
+             '____X___'
+             '________'
+             '________'
+             'XXX_XXXX'
+             'XXXXXXXX'),
+        )
 
     def test__integrationTest__foolscheckmate(self):
 
@@ -1060,6 +1150,8 @@ class Test_Api(unittest.TestCase):
         john_color = None if not white_id else 'white' if response.json(
         )['white_id'] == john_id else 'black'
 
+        print(f'jane color is {jane_color}')
+
         response = self.client.get(
             f'/games/{game_uuid}/join',
             headers={
@@ -1076,6 +1168,21 @@ class Test_Api(unittest.TestCase):
         # jane send move
 
         moves = ['f2f3', 'e7e5', 'g2g4', 'd8h4', 'f3f4', 'h4e1']
+
+        boards = [
+            ('xxxxxxxxxxxxxxxx_____________________________p__ppppp_pprnbqkbnr',
+             'RNBQKBNRPPPPPPPP_____________________________X__XXXXX_XXXXXXXXXX'),
+            ('xxxxxxxxxxxx_xxx____________x________________p__ppppp_pprnbqkbnr',
+             'RNBQKBNRPPPP_PPP____________P________________X__XXXXX_XXXXXXXXXX'),
+            ('xxxxxxxxxxxx_xxx____________x_________p______p__ppppp__prnbqkbnr',
+             'RNBQKBNRPPPP_PPP____________P_________X______X__XXXXX__XXXXXXXXX'),
+            ('xxx_xxxxxxxx_xxx____________x_________pQ_____p__ppppp__prnbqkbnr',
+             'RNB_KBNRPPPP_PPP____________P_________pQ_____X__XXXXX__XXXXXXXXX'),
+            ('xxx_xxxxxxxx_xxx____________P________ppQ________ppppp__prnbqkbnr',
+             'RNB_KBNRPPPP_PPP____________P________ppQ________XXXXX__XXXXXXXXX'),
+            ('xxx_xxxxxxxx_xxx____________P________ppQ_____p__ppppp__prnbqkbnr',
+             'RNB_KBNRPPPP_PPP____________P________pX______X__pppXX__XXXXqQbXX'),
+        ]
 
         tokens = [john_token, jane_token]
 
@@ -1120,16 +1227,15 @@ class Test_Api(unittest.TestCase):
                 },
             )
 
+            print(self.prettyBoard(response.json()['board']))
+
             # no winner
             if john_turn or jane_turn:
                 #TODO note that this assert will fail if an enemy piece is seen
                 if jane_color == 'white':
-                    self.assertEqual(response.json()['board'],
-                                     response.json()['board'].lower())
+                    self.assertEqual(response.json()['board'], boards[i][0])
                 else:
-                    print(f'jane color is {jane_color}')
-                    self.assertEqual(response.json()['board'],
-                                     response.json()['board'].upper())
+                    self.assertEqual(response.json()['board'], boards[i][1])
 
             response = self.client.get(
                 f'/games/{game_uuid}/snap',
@@ -1141,11 +1247,9 @@ class Test_Api(unittest.TestCase):
 
             if john_turn or jane_turn:
                 if john_color == 'white':
-                    self.assertEqual(response.json()['board'],
-                                     response.json()['board'].lower())
+                    self.assertEqual(response.json()['board'], boards[i][0])
                 else:
-                    self.assertEqual(response.json()['board'],
-                                     response.json()['board'].upper())
+                    self.assertEqual(response.json()['board'], boards[i][1])
 
         # checkmate
 

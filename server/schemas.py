@@ -43,15 +43,15 @@ class GameSnap(GameSnapBase):
         else:
             return "".join([extboard[j * 10 + 1:(j + 1) * 10 - 1] for j in range(8)])
 
-    def hasEnemy(self, extboard, j, i):
-        # i+1 because coordinates are board coordinates not extended board coords
-        # hence, start after the first '_' of each row
-        i = i + 1
-        c = extboard[j * 10 + i]
+    # i,j extended board coordinates
+    def hasEnemy(self, extboard, i, j):
+        c = extboard[i * 10 + j]
+        # import pdb
+        # pdb.set_trace()
         # print(f"{j} {i} {c} {extboard}")
         for j2 in [j - 1, j, j + 1]:
             for i2 in [i - 1, i, i + 1]:
-                c2 = extboard[j2 * 10 + i2]
+                c2 = extboard[i2 * 10 + j2]
                 if c2 == '_':
                     continue
                 elif c.isupper() and c2.islower():
@@ -59,12 +59,12 @@ class GameSnap(GameSnapBase):
                 elif c.islower() and c2.isupper():
                     return True
 
-    def filterchar(self, color, c, extboard, j, i):
+    def filterchar(self, color, c, extboard, i, j):
         # TODO replace Xs with _ when function has been tested enough.
         if color == 'black':
-            return c if c == '_' or c.isupper() or self.hasEnemy(extboard, j, i) else 'X'
+            return c if c == '_' or c.isupper() or self.hasEnemy(extboard, i, j) else 'X'
         elif color == 'white':
-            return c if c == '_' or c.islower() or self.hasEnemy(extboard, j, i) else 'x'
+            return c if c == '_' or c.islower() or self.hasEnemy(extboard, i, j) else 'x'
         else:
             print(f"{color} is not a color")
             return None
@@ -75,10 +75,16 @@ class GameSnap(GameSnapBase):
 
         #[(i,j,c) for j in range(1,9) for i,c in enumerate(foo[j*10+1:j*10+9])]
 
+        print(''.join([
+            self.filterchar(color, extboard[i * 10 + j], extboard, i, j)
+            for i in range(1, 9)
+            for j in range(1, 9)
+        ]))
+
         blist = [
-            self.filterchar(color, c, extboard, j, i)
-            for j in range(8)
-            for i, c in enumerate(extboard[(j + 1) * 10 + 1:(j + 1) * 10 + 9])
+            self.filterchar(color, extboard[i * 10 + j], extboard, i, j)
+            for i in range(1, 9)
+            for j in range(1, 9)
         ]
 
         fboard = "".join(blist)
