@@ -350,3 +350,94 @@ export async function getGameSnaps(token, gameId) {
 
     return { snaps, error };
 }
+
+export async function getGame(token, gameId) {
+    let error = null;
+    let game = null;
+    const requestOptions = {
+        method: 'GET',
+        headers: { 
+            'accept': 'application/json',
+            'Authorization': 'Bearer '+token,
+        },
+    }
+    let url = `${API_URL}/games/${gameId}`;
+    try {
+        const response = await fetch(url, requestOptions);
+        const data = await response.json();
+        if (!response.ok) {
+            error = (data && data.message) || response.status;
+        } else {
+            game = data
+        }
+    } catch(err) {
+        console.error('There was an error!', err);
+        error = String(err);
+    }
+
+    return { game, error };
+}
+
+
+export async function getPossibleMoves(token, gameId, start) {
+    let error = null;
+    let moves = [];
+    const requestOptions = {
+        method: 'GET',
+        headers: { 
+            'accept': 'application/json',
+            'Authorization': 'Bearer '+token,
+        },
+    }
+    let url = `${API_URL}/games/${gameId}/moves/${start}`;
+    try {
+        const response = await fetch(url, requestOptions);
+        const data = await response.json();
+        if (!response.ok) {
+            error = (data && data.message) || response.status;
+        } else {
+            for (let move of data) {
+                moves.push(move);
+            }
+        }
+    } catch(err) {
+        console.error('There was an error!', err);
+        error = String(err);
+    }
+
+    return { moves, error };
+}
+
+
+export async function move(token, gameId, source, target) {
+    let error = null;
+    let snap = null;
+    const data = {
+        move: source+target,
+    };
+
+    const requestOptions = {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'accept': 'application/json',
+            'Authorization': 'Bearer '+token,
+         },
+        body: JSON.stringify(data),
+    };
+    let url = `${API_URL}/games/${gameId}/move`;
+    try {
+        const response = await fetch(url, requestOptions);
+        const data = await response.json();
+        if (!response.ok) {
+            error = (data && data.message) || response.status;
+        } else {
+            snap = data;
+        }
+    } catch(err) {
+        console.error('There was an error making a move', source, "to", target, " : ", err);
+        error = String(err);
+    }
+
+    return { snap, error };
+}

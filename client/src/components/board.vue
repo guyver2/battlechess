@@ -7,7 +7,7 @@
         :class="{ 'blackCell': ((index-1)%8)%2 != (Math.floor((index-1)/8))%2,
                 'whiteCell': ((index-1)%8)%2 === (Math.floor((index-1)/8))%2 }"
         v-on:click="selectCell($event)"> 
-        {{"ABCDEFGH"[Math.floor(((index-1)/8))]}}{{8-(index-1)%8}} 
+        {{"ABCDEFGH"[Math.floor(((index-1)%8))]}}{{Math.ceil(8-(index-1)/8)}} 
         </div>            
     </div>
 </template>
@@ -18,7 +18,8 @@ import * as utils from '../assets/js/utils.js'
 export default {
 
     created(){
-       if (localStorage.token) {
+    
+      if (localStorage.token) {
           this.token = localStorage.token;
       } else {
         this.$router.push({name:'login', params: {incomingError: "invalid credentials"}});
@@ -28,7 +29,7 @@ export default {
       } else {
           this.$router.push({name:'home', params: {incomingError: "invalid game id"}});
       }
-      this.getSnaps();
+      this.init();
       },  
 
     mounted() {
@@ -39,12 +40,44 @@ export default {
             gameID: String,
             snaps: Array,
             data: Map,
+            color: String,
+            // data:{
+            //         "gameID": "sdhsahda5551",
+            //         "board":"RNBQKBNRPPPPPPPP________________________________pppppppprnbqkbnr",
+            //         "taken":[],
+            //         "castelable":[],
+            //         "turn":"w",
+            //         "status":"started",
+            //         "players": {
+            //             "white": {"username": "john doe", "userid":"1212151"},
+            //             "black": "mary moe",
+            //             }
+            //         },
             board:{},
             selectedCell:null,
+            possibleMoves:[],
         }
     },
 
     methods: {
+        
+        async init() {
+            await this.getGameInfo();
+            await this.getSnaps();
+            this.drawBoard();
+        },
+
+        async getGameInfo() {
+           const {game, error} = await utils.getGame(this.token, this.gameID);
+          if(error) {
+              console.log("error while getting game info", error);
+              this.$router.push({name:'home', params: {incomingError: "error while fetching game status"}});
+          }
+          this.game = game;
+          this.color = game.white_id == localStorage.userId? "white":"black";
+          console.log(this.color);
+          console.log(game);
+        },
 
         async getSnaps() {
            const {snaps, error} = await utils.getGameSnaps(this.token, this.gameID);
@@ -55,25 +88,64 @@ export default {
           console.log(snaps);
           this.snaps = snaps;
           this.data = this.snaps[0];
-          this.drawBoard();
         },
 
-        selectCell(event) {
+        isSelectable(cell) {
+           if (cell in this.board) {
+               let content = this.board[cell];
+                if (this.color === "white") {
+                    return "prnbqk".indexOf(content) != -1;
+                } else {
+                    return "PRNBQK".indexOf(content) != -1;
+                }
+               }
+           return false;
+        },
+
+        index2board(cell){
+            const idx = parseInt(cell.substring(1,3));
+            return "abcdefgh"[Math.floor(((idx)%8))] + String(Math.ceil(8-(idx)/8));
+        },
+
+        async selectCell(event) {
+            // remove selected class
             for (let idx = 0; idx < 64; idx++) {
                 let cellid = "c"+String(idx)
                 let cell = this.$refs[cellid];
                 cell.classList.remove("selected");
             }
             let targetId = event.currentTarget.id;
-            if (this.selectedCell == null || this.selectedCell === targetId){
-                if (targetId in this.board){
-                    let cell = this.$refs[targetId];
-                    cell.classList.add("selected")
-                    this.selectedCell = targetId;
+            console.log("selecting ", targetId);
+            console.log(this.board);
+            let previousSelected = this.selectedCell != null;
+            if(this.isSelectable(targetId)) {
+                let cell = this.$refs[targetId];
+                cell.classList.add("selected")
+                this.selectedCell = targetId;
+                console.log(this.selectedCell);
+                let source = this.index2board(this.selectedCell);
+                const {moves, error} = await utils.getPossibleMoves(this.token, this.gameID, source);
+                if (error) {
+                    console.log(error);
                 }
-            } else {
+                this.possibleMoves = moves;
+                console.log(this.possibleMoves);
+            } else if(previousSelected) {
                 let origin = this.$refs[this.selectedCell];
                 let target = this.$refs[targetId];
+                console.log(origin.id, typeof(origin.id));
+                console.log(target.id, typeof(target.id));
+                origin = this.index2board(origin.id);
+                target = this.index2board(target.id);
+                const {snap, error} = await utils.move(this.token, this.gameID, origin, target);
+                if(error == null) {
+                    this.data = snap;
+                    this.drawBoard();
+                } else {
+                    console.log(error);
+                }
+
+                /*
                 Array.from(target.getElementsByTagName('img')).forEach((element) => {
                     target.removeChild(element);
                 });
@@ -81,7 +153,8 @@ export default {
                 delete this.board[this.selectedCell];
                 console.log("moving piece from " + origin + " to " + target);
                 target.appendChild(origin.getElementsByTagName('img')[0]);
-                this.selectedCell = null;
+                */
+               this.selectedCell = null;
             }
             this.drawFog();
         },
@@ -92,7 +165,7 @@ export default {
                 let cellid = "c"+String(idx)
                 let cell = this.$refs[cellid];
                 this.board[cellid] = element;
-                if (element != "_") {
+                if (element != "_" && element != "x" && element != "X") {
                     let img = document.createElement("img");
                     img.classList.add("imgaeInCell")
                     img.src = "./img/pieces/" + element + ".svg";
@@ -108,7 +181,6 @@ export default {
                 let cell = this.$refs[cellid];
                 cell.classList.remove("fog");
             }
-            const myColor = this.data.players.white === this.username ? "white":"black";
             const pieces = {"white":"rnbkqp", "black": "RNBKQP"};
             for(let i=0; i<64; i++){
                 let neighbors = [-9, -8, -7, -1, 0, 1, 7, 8, 9];
@@ -121,7 +193,7 @@ export default {
                 neighbors.forEach(n => {
                     const cellid = i + n;
                     if (cellid < 64 && cellid >= 0) {
-                        if (pieces[myColor].includes(this.board["c"+String(cellid)])) {
+                        if (pieces[this.color].includes(this.board["c"+String(cellid)])) {
                             fog = false;
                         }
                     }
