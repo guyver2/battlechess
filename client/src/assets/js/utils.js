@@ -170,7 +170,6 @@ export async function getUserGames(token) {
                 } else {
                     g.black = null;
                 }
-                g.moves = game.snaps.length-1;
                 g.status = game.status;
                 g.turn = game.turn;
                 g.lastmove = game.last_move_time;
@@ -245,7 +244,6 @@ export async function getOpenGames(token) {
                     g.black = null;
                 }
 
-                g.moves = game.snaps.length-1;
                 g.status = game.status;
                 g.turn = game.turn;
                 g.lastmove = game.last_move_time;
@@ -318,4 +316,37 @@ export async function createGame(token, color, publicPrivate) {
         error = String(err);
     }
     return error;
+}
+
+
+
+export async function getGameSnaps(token, gameId) {
+    let error = null;
+    let snaps = [];
+    const requestOptions = {
+        method: 'GET',
+        headers: { 
+            'accept': 'application/json',
+            'Authorization': 'Bearer '+token,
+        },
+    }
+    let url = `${API_URL}/games/${gameId}/snaps`;
+    try {
+        const response = await fetch(url, requestOptions);
+        const data = await response.json();
+        if (!response.ok) {
+            error = (data && data.message) || response.status;
+        } else {
+            for (let snap of data) {
+                // console.log(snap);
+                snaps.push(snap);
+            }
+        }
+    } catch(err) {
+        console.error('There was an error!', err);
+        error = String(err);
+    }
+    snaps.reverse();
+
+    return { snaps, error };
 }

@@ -65,7 +65,13 @@ export default {
         this.errorMessage = errorMessage;
         if (this.token) {
             localStorage.token = this.token;
-            this.$router.push({name:'home'});
+             const {username, userId, avatar, error} = await utils.getUserInfo(this.token);
+            if (!error) {
+                localStorage.username = username;
+                localStorage.userId = userId;
+                localStorage.userAvatar = avatar;
+                this.$router.push({name:'home'});
+            }
         }
     },
 

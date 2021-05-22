@@ -16,6 +16,8 @@
 <script>
 import UserCard from '@/components/userCard.vue';
 import Games from '@/components/games.vue';
+
+
 export default {
     name: 'Home',
   components: {
@@ -24,7 +26,6 @@ export default {
   },
   data() {
       return {
-          msg: "hello",
           token: String,
       }
   },
@@ -37,6 +38,8 @@ export default {
       if (this.token == null) {
           this.$router.push({name:'login', params: {}});
       }
+  },
+  methods: {
   },
 }
 </script>

@@ -57,9 +57,6 @@
             </div>
             <div v-if="currentList === 'live'" class="gameInfo">
                 <div>
-                    <span class="bold">{{game.moves}}</span> moves
-                </div>         
-                <div>
                     Last move: 
                     <span class="tooltip">
                         {{game.lastmoveText.text}}
@@ -70,9 +67,6 @@
                 </div>       
             </div>
             <div v-if="currentList === 'finished'" class="gameInfo">
-                <div>
-                    <span class="bold">{{game.moves}}</span> moves
-                </div>
                 <div>
                     <span v-if="game[game.turn].username === player.username" class="valign-wrapper">Won<i class="material-icons tiny">emoji_events</i></span>
                     <span v-else>Lost</span>
@@ -174,7 +168,8 @@ export default {
   },
 
   play(game) {
-      this.$router.push({name:'game', params: {game:game.hash}});
+      localStorage.activeGame = game.hash;
+      this.$router.push({name:'game'});
   },
 
   async join(game) {

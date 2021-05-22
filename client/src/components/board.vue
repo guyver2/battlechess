@@ -13,39 +13,51 @@
 </template>
 
 <script>
-/*import * as utils from '../assets/js/utils.js'*/
+import * as utils from '../assets/js/utils.js'
 
 export default {
 
+    created(){
+       if (localStorage.token) {
+          this.token = localStorage.token;
+      } else {
+        this.$router.push({name:'login', params: {incomingError: "invalid credentials"}});
+      }
+      if (localStorage.activeGame) {
+          this.gameID = localStorage.activeGame;
+      } else {
+          this.$router.push({name:'home', params: {incomingError: "invalid game id"}});
+      }
+      this.getSnaps();
+      },  
 
-
-    props: {
-        game: String,
-    },
     mounted() {
-        this.drawBoard();
     },
 
     data () {
         return {
-            data:{
-                    "gameID": "sdhsahda5551",
-                    "board":"RNBQKBNRPPPPPPPP________________________________pppppppprnbqkbnr",
-                    "taken":[],
-                    "castleable":[],
-                    "turn":"w",
-                    "status":"started",
-                    "players": {
-                        "white": {"username": "john doe", "userid":"1212151"},
-                        "black": "mary moe",
-                        }
-                    },
+            gameID: String,
+            snaps: Array,
+            data: Map,
             board:{},
             selectedCell:null,
         }
     },
 
     methods: {
+
+        async getSnaps() {
+           const {snaps, error} = await utils.getGameSnaps(this.token, this.gameID);
+          if(error) {
+              console.log("error while getting snaps", error);
+              this.$router.push({name:'home', params: {incomingError: "error while fetching game status"}});
+          }
+          console.log(snaps);
+          this.snaps = snaps;
+          this.data = this.snaps[0];
+          this.drawBoard();
+        },
+
         selectCell(event) {
             for (let idx = 0; idx < 64; idx++) {
                 let cellid = "c"+String(idx)
@@ -105,7 +117,6 @@ export default {
                 } else if (i%8 == 7){
                     neighbors = [-9, -8, -1, 0, 7, 8];
                 }
-                console.log(i, i%8, neighbors);
                 let fog = true;
                 neighbors.forEach(n => {
                     const cellid = i + n;
@@ -118,7 +129,6 @@ export default {
                 if (fog) {
                     let cell = this.$refs["c"+String(i)];
                     cell.classList.add("fog");
-                    console.log("fog in c" + String(i));
                 }
             }
         },
@@ -151,16 +161,16 @@ export default {
 
 .whiteCell {
   background: var(--color-5);
-  color: var(--color-2);
-}
-
-.whiteCell.fog {
-  background: var(--color-4-d);
   color: var(--color-1);
 }
 
+.whiteCell.fog {
+  background: var(--color-3-d);
+  color: var(--color-5);
+}
+
 .blackCell {
-    background: var(--color-2);
+    background: var(--color-3);
     color: var(--color-5);
 }
 
