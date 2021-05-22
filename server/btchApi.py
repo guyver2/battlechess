@@ -320,6 +320,46 @@ def post_move(
     return schemasnap
 
 
+# TODO List[str] might throw ValidationError: <unprintable ValidationError object>
+# due to
+@app.get("/games/{gameUUID}/moves/{square}", response_model=List[str])
+def get_moves(gameUUID: str,
+              square: str,
+              current_user: schemas.User = Depends(get_current_active_user),
+              db: Session = Depends(get_db)):
+    game = get_game(gameUUID, current_user, db)
+    if not game:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="game not found",
+            headers={"Authorization": "Bearer"},
+        )
+
+    if game.status != "started":
+        raise HTTPException(
+            status_code=status.HTTP_412_PRECONDITION_FAILED,
+            detail="game is not started",
+            headers={"Authorization": "Bearer"},
+        )
+
+    # TODO pydantic square validation possible?
+    if len(square) != 2 or square < 'a1' or 'h8' < square:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="square is not of format ['a1', 'h8'] ",
+            headers={"Authorization": "Bearer"},
+        )
+
+    snap = game.snaps[-1]
+    color = game.get_player_color(current_user.id)
+    moves = snap.getPossibleMoves(square, color)
+
+    # TODO remove this if we're happy with a weird validation error message
+    if moves:
+        assert type(moves[0]) == str
+    return moves
+
+
 @app.get("/games/{gameUUID}/snap")
 def get_snap(gameUUID: str,
              current_user: schemas.User = Depends(get_current_active_user),

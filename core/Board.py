@@ -179,9 +179,8 @@ class Board(object):
                 pos.append([i+1, j+1])
             if self.isFree(i+1, j-1, 'b') == 2:
                 pos.append([i+1, j-1])
-            if i == 1 and self.isFree(i + 2, j) == 1 and self.isFree(i + 1,
-                                                                     j) == 1:
-
+            if i == 1 and self.isFree(i + 2, j) == 1 \
+                      and self.isFree(i + 1, j) == 1:
                 pos.append([i+2, j])
             if self.enpassant != -1 and i == 4 and (j == self.enpassant-1 or j == self.enpassant+1):
                 pos.append([i+1, self.enpassant])
@@ -536,12 +535,12 @@ class Board(object):
 
     def boardcastle2api(self):
         return {
-            'rqb':'L',
-            'rkb':'S',
-            'kb' :'K',
-            'rqw':'l',
-            'rkw':'s',
-            'kw' :'k',
+            'rqb': 'L',
+            'rkb': 'S',
+            'kb': 'K',
+            'rqw': 'l',
+            'rkw': 's',
+            'kw': 'k',
         }
 
     # TODO check what winner str format is Board() expecting. winner "white" "black" "None"
@@ -550,7 +549,7 @@ class Board(object):
             self.board[i//8][i % 8] = self.dbpiece2boardpiece(c)
         self.taken = [self.dbpiece2board(c) for c in taken]
         self.castleable = sorted([self.apicastle2board()[c] for c in castleable])
-        self.enpassant = ord(enpassant) - 97 if enpassant else -1
+        self.enpassant = ord(enpassant) - ord('a') if enpassant else -1
         self.winner = winner
 
     def toElements(self, color=None):

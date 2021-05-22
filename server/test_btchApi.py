@@ -925,6 +925,32 @@ class Test_Api(unittest.TestCase):
              'XXXXXXXX'),
         )
 
+    def test__possibleMoves__pawnMove(self):
+        _, _ = self.addFakeUsers(self.db)
+        #change to second player
+        token = self.getToken("janedoe")
+        self.addFakeGames(self.db, self.fakegamesdb())
+        firstgame_uuid = list(self.fakegamesdb().values())[0]["uuid"]
+        self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
+
+        square = 'd7'
+
+        response = self.client.get(
+            f'/games/{firstgame_uuid}/moves/{square}',
+            headers={
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json',
+            },
+        )
+
+        print("response: {}".format(response.json()))
+        self.assertEqual(response.status_code, 200)
+
+        self.assertListEqual(
+            response.json(),
+            ['d6', 'd5'],
+        )
+
     def send_move(self, game_uuid, move, token):
         response = self.client.post(
             f'/games/{game_uuid}/move',

@@ -3,8 +3,12 @@ from sqlalchemy.orm import relationship
 from fastapi import HTTPException, status
 
 from .btchApiDB import Base
-from core.Board import Board
 from .schemas import GameStatus
+from core.Board import Board
+from core.btchBoard import BtchBoard
+
+from .utils import ad2extij, extij2ad
+
 
 class User(Base):
 
@@ -195,13 +199,31 @@ class GameSnap(Base):
     def toBoard(self):
         board = Board()
         board.reset()
-        enpassant = "" # TODO check last snap abcdefgh
+        enpassantColumn = self.enpassantColumn()
+        enpassant = chr(enpassantColumn) if enpassantColumn is not None else None
         winner = None # TODO better way to get for unit testing self.game.winner
         board.updateFromElements(self.board, self.taken, self.castelable, enpassant, winner)
         return board
+
+    def toBtchBoard(self) -> BtchBoard:
+        return BtchBoard.factoryFromElements(self.board, self.taken, self.castelable,
+                                             self.enpassantColumn())
+
+    def enpassantColumn(self):
+        return self.move[0] - ord('a') if self.move and self.move[1] in [4, 5] else None
 
     # unused
     def filtered(self, color=None):
         board = self.toBoard()
         elements = board.toElements(color)
         return elements
+
+    def getPossibleMoves(self, square, color):
+        board = self.toBtchBoard()
+        board.filter(color)
+
+        # btchboard coordinates are extended [0,12]
+        i, j = ad2extij(square)
+        print(f'{square} --- {i}{j} wants to move')
+        ijmoves = board.possibleMoves(color, i, j)
+        return [extij2ad(i, j) for i, j in ijmoves]
