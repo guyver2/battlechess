@@ -127,7 +127,7 @@ class GameSnap(Base):
     board = Column(String)
     move = Column(String)
     taken = Column(String)
-    castelable = Column(String)
+    castleable = Column(String)
     move_number = Column(Integer)
 
     game = relationship("Game", back_populates="snaps")
@@ -202,11 +202,11 @@ class GameSnap(Base):
         enpassantColumn = self.enpassantColumn()
         enpassant = chr(enpassantColumn) if enpassantColumn is not None else None
         winner = None # TODO better way to get for unit testing self.game.winner
-        board.updateFromElements(self.board, self.taken, self.castelable, enpassant, winner)
+        board.updateFromElements(self.board, self.taken, self.castleable, enpassant, winner)
         return board
 
     def toBtchBoard(self) -> BtchBoard:
-        return BtchBoard.factoryFromElements(self.board, self.taken, self.castelable,
+        return BtchBoard.factoryFromElements(self.board, self.taken, self.castleable,
                                              self.enpassantColumn())
 
     def enpassantColumn(self):

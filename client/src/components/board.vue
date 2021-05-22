@@ -32,7 +32,7 @@ export default {
                     "gameID": "sdhsahda5551",
                     "board":"RNBQKBNRPPPPPPPP________________________________pppppppprnbqkbnr",
                     "taken":[],
-                    "castelable":[],
+                    "castleable":[],
                     "turn":"w",
                     "status":"started",
                     "players": {
@@ -43,7 +43,7 @@ export default {
             board:{},
             selectedCell:null,
         }
-    }, 
+    },
 
     methods: {
         selectCell(event) {
@@ -73,7 +73,7 @@ export default {
             }
             this.drawFog();
         },
-        
+
         drawBoard() {
             this.board = {};
             [...this.data.board].forEach((element, idx) => {
@@ -113,7 +113,7 @@ export default {
                         if (pieces[myColor].includes(this.board["c"+String(cellid)])) {
                             fog = false;
                         }
-                    } 
+                    }
                 });
                 if (fog) {
                     let cell = this.$refs["c"+String(i)];
@@ -123,7 +123,7 @@ export default {
             }
         },
     },
-    
+
 }
 </script>
 

@@ -267,11 +267,11 @@ class BtchBoard():
         #castles
         k, l, s = 'KLS' if self.isBlack(color) else 'kls'
         r = 2 if self.isBlack(color) else 9
-        if k in self.castelable:
-            if l in self.castelable:
+        if k in self.castleable:
+            if l in self.castleable:
                 if self.isFree(r, 5) and self.isFree(r, 4) and self.isFree(r, 3):
                     yield (r, 4)
-            if s in self.castelable:
+            if s in self.castleable:
                 if self.isFree(r, 7) and self.isFree(r, 8):
                     yield (r, 8)
 

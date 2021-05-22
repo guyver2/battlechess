@@ -67,18 +67,16 @@ class Test_Models(unittest.TestCase):
         snap = {
             "game_uuid": "lkml4a3.d3",
             "move": "",
-            "board": (
-                'RNBQKBNR'
-                'PPPPPPPP'
-                '________'
-                '________'
-                '________'
-                '________'
-                'pppppppp'
-                'rnbqkbnr'
-            ),
+            "board": ('RNBQKBNR'
+                      'PPPPPPPP'
+                      '________'
+                      '________'
+                      '________'
+                      '________'
+                      'pppppppp'
+                      'rnbqkbnr'),
             "taken": "",
-            "castelable": sorted("LSKlsk"),
+            "castleable": sorted("LSKlsk"),
             "move_number": 0,
             "created_at": datetime(2021, 4, 5, 0, tzinfo=timezone.utc),
         }
@@ -119,7 +117,7 @@ class Test_Models(unittest.TestCase):
             board=snap["board"],
             move=snap["move"],
             taken=snap["taken"],
-            castelable=snap["castelable"],
+            castleable=snap["castleable"],
             move_number=snap["move_number"],
         )
 
@@ -170,7 +168,7 @@ class Test_Models(unittest.TestCase):
             board=fakesnap["board"],
             move=fakesnap["move"],
             taken=fakesnap["taken"],
-            castelable=fakesnap["castelable"],
+            castleable=fakesnap["castleable"],
             move_number=fakesnap["move_number"],
         )
 
@@ -187,7 +185,7 @@ class Test_Models(unittest.TestCase):
             board=fakesnap["board"],
             move=fakesnap["move"],
             taken=fakesnap["taken"],
-            castelable=fakesnap["castelable"],
+            castleable=fakesnap["castleable"],
             move_number=fakesnap["move_number"],
         )
 

@@ -13,20 +13,18 @@ class Test_Board(unittest.TestCase):
 
     def fakeElements(self):
         elements = {
-            'board' : (
-                'RNBQKBNR'
-                'PPPPPPPP'
-                '________'
-                '________'
-                '________'
-                '________'
-                'pppppppp'
-                'rnbqkbnr'
-            ),
-            'taken' :'',
-            'castleable' : 'LSKlsk',
-            'enpassant' : '',
-            'winner' : None,
+            'board': ('RNBQKBNR'
+                      'PPPPPPPP'
+                      '________'
+                      '________'
+                      '________'
+                      '________'
+                      'pppppppp'
+                      'rnbqkbnr'),
+            'taken': '',
+            'castleable': 'LSKlsk',
+            'enpassant': '',
+            'winner': None,
         }
 
         return elements
@@ -50,9 +48,9 @@ class Test_Board(unittest.TestCase):
         elements = b.toElements()
 
         expected = {
-            'board':'RNBQKBNRPPPPPPPP________________________________pppppppprnbqkbnr',
-            'castelable':'KLSkls',
-            'taken':''
+            'board': 'RNBQKBNRPPPPPPPP________________________________pppppppprnbqkbnr',
+            'castleable': 'KLSkls',
+            'taken': ''
         }
 
         self.assertDictEqual(elements, expected)
@@ -66,9 +64,9 @@ class Test_Board(unittest.TestCase):
         elements = b.toElements()
 
         expected = {
-            'board':'RNBQKBNRPPPPPPPP________________________________pppppppprnbqkbnr',
-            'castelable':'KSk',
-            'taken':'BRrp'
+            'board': 'RNBQKBNRPPPPPPPP________________________________pppppppprnbqkbnr',
+            'castleable': 'KSk',
+            'taken': 'BRrp'
         }
 
         self.assertDictEqual(elements, expected)
@@ -91,9 +89,9 @@ class Test_Board(unittest.TestCase):
         elements = b.toElements()
 
         expected = {
-            'board':'RN_QK_N_PPPp_PPP_______________________________Bppp_p_pp_nbqkbnr',
-            'castelable':'KSk',
-            'taken':'BRrpP'
+            'board': 'RN_QK_N_PPPp_PPP_______________________________Bppp_p_pp_nbqkbnr',
+            'castleable': 'KSk',
+            'taken': 'BRrpP'
         }
 
         self.assertDictEqual(elements, expected)
@@ -117,9 +115,9 @@ class Test_Board(unittest.TestCase):
         elements = b.toElements('w')
 
         expected = {
-            'board':'___QK_____Pp___________________________________Bppp_p_pp_nbqkbnr',
-            'castelable':'KSk',
-            'taken':'BRrpP'
+            'board': '___QK_____Pp___________________________________Bppp_p_pp_nbqkbnr',
+            'castleable': 'KSk',
+            'taken': 'BRrpP'
         }
 
         self.assertDictEqual(elements, expected)

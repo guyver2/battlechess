@@ -177,7 +177,7 @@ class Test_Api(unittest.TestCase):
                       'rnbqkbnr'),
             "taken":
             "",
-            "castelable":
+            "castleable":
             "",
             "move_number":
             0,
@@ -198,7 +198,7 @@ class Test_Api(unittest.TestCase):
                       'rnbqkbnr'),
             "taken":
             "",
-            "castelable":
+            "castleable":
             "",
             "move_number":
             1,
@@ -254,7 +254,7 @@ class Test_Api(unittest.TestCase):
                 board=snap["board"],
                 move=snap["move"],
                 taken=snap["taken"],
-                castelable=snap["castelable"],
+                castleable=snap["castleable"],
                 move_number=snap["move_number"],
             )
             db.add(db_snap)
@@ -707,7 +707,7 @@ class Test_Api(unittest.TestCase):
                 None,
                 'taken':
                 '',
-                'castelable':
+                'castleable':
                 '',
                 'move_number':
                 0,
@@ -748,7 +748,7 @@ class Test_Api(unittest.TestCase):
             'move': None,
             'taken':
             '',
-            'castelable':
+            'castleable':
             '',
             'move_number':
             0,
@@ -771,7 +771,7 @@ class Test_Api(unittest.TestCase):
             'd2d4',
             'taken':
             '',
-            'castelable':
+            'castleable':
             '',
             'move_number':
             1,
@@ -813,7 +813,7 @@ class Test_Api(unittest.TestCase):
                 'd2d4',
                 'taken':
                 '',
-                'castelable':
+                'castleable':
                 '',
                 'move_number':
                 1,

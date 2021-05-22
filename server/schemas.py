@@ -3,11 +3,11 @@ from datetime import datetime, time, timedelta
 # from uuid import UUID # represented as string
 from pydantic import BaseModel
 
+
 class GameStatus():
     WAITING = "waiting"
     STARTED = "started"
     OVER = "over"
-
 
 
 class Token(BaseModel):
@@ -30,28 +30,28 @@ class GameSnap(GameSnapBase):
     move: str
     board: str
     taken: str
-    castelable: str
+    castleable: str
     move_number: int
 
     def extendboard(self, board):
-        return "_"*10 + "".join(["_" + board[j*8:(j+1)*8] + "_" for j in range(8)]) + "_"*10
+        return "_" * 10 + "".join(["_" + board[j * 8:(j + 1) * 8] + "_" for j in range(8)
+                                  ]) + "_" * 10
 
     def shrinkboard(self, extboard, inner=True):
         if not inner:
-            return "".join([extboard[j*10+1:(j+1)*10-1] for j in range(1,9)])
+            return "".join([extboard[j * 10 + 1:(j + 1) * 10 - 1] for j in range(1, 9)])
         else:
-            return "".join([extboard[j*10+1:(j+1)*10-1] for j in range(8)])
-
+            return "".join([extboard[j * 10 + 1:(j + 1) * 10 - 1] for j in range(8)])
 
     def hasEnemy(self, extboard, j, i):
         # i+1 because coordinates are board coordinates not extended board coords
         # hence, start after the first '_' of each row
-        i = i+1
-        c = extboard[j*10+i]
+        i = i + 1
+        c = extboard[j * 10 + i]
         # print(f"{j} {i} {c} {extboard}")
-        for j2 in [j-1, j, j+1]:
-            for i2 in [i-1, i, i+1]:
-                c2 = extboard[j2*10+i2]
+        for j2 in [j - 1, j, j + 1]:
+            for i2 in [i - 1, i, i + 1]:
+                c2 = extboard[j2 * 10 + i2]
                 if c2 == '_':
                     continue
                 elif c.isupper() and c2.islower():
@@ -75,7 +75,11 @@ class GameSnap(GameSnapBase):
 
         #[(i,j,c) for j in range(1,9) for i,c in enumerate(foo[j*10+1:j*10+9])]
 
-        blist = [ self.filterchar(color, c, extboard, j, i) for j in range(8) for i,c in enumerate(extboard[(j+1)*10+1:(j+1)*10+9])]
+        blist = [
+            self.filterchar(color, c, extboard, j, i)
+            for j in range(8)
+            for i, c in enumerate(extboard[(j + 1) * 10 + 1:(j + 1) * 10 + 9])
+        ]
 
         fboard = "".join(blist)
 
@@ -92,19 +96,21 @@ class GameSnap(GameSnapBase):
         print(f"filtered board is {self.board}")
 
         if player_color == 'black':
-            self.castelable = ''.join(c for c in self.castelable if c.isupper())
-            self.move = self.move if not self.move_number%2 else None
+            self.castleable = ''.join(c for c in self.castleable if c.isupper())
+            self.move = self.move if not self.move_number % 2 else None
         elif player_color == 'white':
-            self.castelable = ''.join(c for c in self.castelable if c.islower())
-            self.move = self.move if self.move_number%2 else None
-
+            self.castleable = ''.join(c for c in self.castleable if c.islower())
+            self.move = self.move if self.move_number % 2 else None
 
     class Config:
         orm_mode = True
 
+
 class FilteredGameSnap(GameSnap):
+
     class Config:
         orm_mode = False
+
 
 class GameMove(BaseModel):
     move: str
@@ -163,6 +169,7 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     status: str
+
     # games: List[Game] = []
     # whites: List[Game] = []
     # blacks: List[Game] = []

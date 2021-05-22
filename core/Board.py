@@ -547,7 +547,7 @@ class Board(object):
     def updateFromElements(self, board, taken, castleable, enpassant, winner):
         for i, c in enumerate(board):
             self.board[i//8][i % 8] = self.dbpiece2boardpiece(c)
-        self.taken = [self.dbpiece2board(c) for c in taken]
+        self.taken = [self.dbpiece2boardpiece(c) for c in taken]
         self.castleable = sorted([self.apicastle2board()[c] for c in castleable])
         self.enpassant = ord(enpassant) - ord('a') if enpassant else -1
         self.winner = winner
@@ -565,7 +565,7 @@ class Board(object):
             apiboard = ''.join([bpiece(p) for r in self.board for p in r ])
 
         elements = {
-            "castelable" : ''.join(sorted([self.boardcastle2api()[c] for c in self.castleable])),
+            "castleable" : ''.join(sorted([self.boardcastle2api()[c] for c in self.castleable])),
             "taken" : ''.join([bpiece(p) for p in self.taken]),
             "board" : apiboard
         }
