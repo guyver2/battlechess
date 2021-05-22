@@ -925,39 +925,6 @@ class Test_Api(unittest.TestCase):
              'XXXXXXXX'),
         )
 
-    def test__move__fogTest(self):
-        _, _ = self.addFakeUsers(self.db)
-        #change to second player
-        jane_token = self.getToken("janedoe")
-        john_token = self.getToken("johndoe")
-        self.addFakeGames(self.db, self.fakegamesdb())
-        firstgame_uuid = list(self.fakegamesdb().values())[0]["uuid"]
-        self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
-
-        tokens = [jane_token, john_token]
-        moves = ['e7e6', 'g2g4', 'd8h4', 'f2f4', 'a7a6']
-
-        print(tokens)
-
-        for i, move in enumerate(moves):
-            print("move {} for {}".format(move, tokens[i % 2]))
-            response = self.send_move(firstgame_uuid, move, tokens[i % 2])
-            print(response.json())
-            self.assertEqual(response.status_code, 200)
-            self.prettyBoard(response.json()['board'])
-
-        self.assertEqual(
-            response.json()['board'],
-            ('RNB_KBNR'
-             '_PPP_PPP'
-             'P___P___'
-             '________'
-             '___X_XpQ'
-             '________'
-             'XXX_X__X'
-             'XXXXXXXX'),
-        )
-
     def test__possibleMoves__pawnMove(self):
         _, _ = self.addFakeUsers(self.db)
         #change to second player
@@ -1051,6 +1018,41 @@ class Test_Api(unittest.TestCase):
              '________'
              '________'
              'XXX_XXXX'
+             'XXXXXXXX'),
+        )
+
+    # use this method as reference to reproduce any game moves
+    # TODO use a virgin game instead of the firstgame_uuid
+    def test__move__fogTest(self):
+        _, _ = self.addFakeUsers(self.db)
+        #change to second player
+        jane_token = self.getToken("janedoe")
+        john_token = self.getToken("johndoe")
+        self.addFakeGames(self.db, self.fakegamesdb())
+        firstgame_uuid = list(self.fakegamesdb().values())[0]["uuid"]
+        self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
+
+        tokens = [jane_token, john_token]
+        moves = ['e7e6', 'g2g4', 'd8h4', 'f2f4', 'a7a6']
+
+        print(tokens)
+
+        for i, move in enumerate(moves):
+            print("move {} for {}".format(move, tokens[i % 2]))
+            response = self.send_move(firstgame_uuid, move, tokens[i % 2])
+            print(response.json())
+            self.assertEqual(response.status_code, 200)
+            self.prettyBoard(response.json()['board'])
+
+        self.assertEqual(
+            response.json()['board'],
+            ('RNB_KBNR'
+             '_PPP_PPP'
+             'P___P___'
+             '________'
+             '___X_XpQ'
+             '________'
+             'XXX_X__X'
              'XXXXXXXX'),
         )
 
