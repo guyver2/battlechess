@@ -47,16 +47,15 @@ from .utils import get_password_hash, verify_password
 
 
 class Test_Api(unittest.TestCase):
+
     @classmethod
     def setUpClass(cls):
         SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 
-        cls.engine = create_engine(SQLALCHEMY_DATABASE_URL,
-                                   connect_args={"check_same_thread": False})
+        cls.engine = create_engine(
+            SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
 
-        cls.TestingSessionLocal = sessionmaker(autocommit=False,
-                                               autoflush=False,
-                                               bind=cls.engine)
+        cls.TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=cls.engine)
 
     @classmethod
     def override_get_db(cls):
@@ -128,6 +127,7 @@ class Test_Api(unittest.TestCase):
                 "status": GameStatus.OVER,
                 "public": False,
                 "winner": "johndoe",
+                "turn": None,
                 "created_at": datetime(2021, 3, 12, tzinfo=timezone.utc),
             },
             "da40a3ee5e": {
@@ -163,10 +163,8 @@ class Test_Api(unittest.TestCase):
 
     def fakegamesnapsdb(self):
         fake_games_snaps = [{
-            "game_uuid":
-            "lkml4a3.d3",
-            "move":
-            "",
+            "game_uuid": "lkml4a3.d3",
+            "move": "",
             "board": ('RNBQKBNR'
                       'PPPPPPPP'
                       '________'
@@ -175,19 +173,13 @@ class Test_Api(unittest.TestCase):
                       '________'
                       'pppppppp'
                       'rnbqkbnr'),
-            "taken":
-            "",
-            "castleable":
-            "",
-            "move_number":
-            0,
-            "created_at":
-            datetime(2021, 4, 5, 0, tzinfo=timezone.utc),
+            "taken": "",
+            "castleable": "",
+            "move_number": 0,
+            "created_at": datetime(2021, 4, 5, 0, tzinfo=timezone.utc),
         }, {
-            "game_uuid":
-            "lkml4a3.d3",
-            "move":
-            "d2d4",
+            "game_uuid": "lkml4a3.d3",
+            "move": "d2d4",
             "board": ('RNBQKBNR'
                       'PPPPPPPP'
                       '________'
@@ -196,23 +188,20 @@ class Test_Api(unittest.TestCase):
                       '________'
                       'ppp_pppp'
                       'rnbqkbnr'),
-            "taken":
-            "",
-            "castleable":
-            "",
-            "move_number":
-            1,
-            "created_at":
-            datetime(2021, 4, 5, 10, tzinfo=timezone.utc),
+            "taken": "",
+            "castleable": "",
+            "move_number": 1,
+            "created_at": datetime(2021, 4, 5, 10, tzinfo=timezone.utc),
         }]
         return fake_games_snaps
 
     def addFakeUsers(self, db):
         for username, user in self.fakeusersdb().items():
-            db_user = models.User(username=user["username"],
-                                  full_name=user["full_name"],
-                                  email=user["email"],
-                                  hashed_password=user["hashed_password"])
+            db_user = models.User(
+                username=user["username"],
+                full_name=user["full_name"],
+                email=user["email"],
+                hashed_password=user["hashed_password"])
             db.add(db_user)
             db.commit()
         firstusername, _ = self.fakeusersdb().keys()
@@ -220,12 +209,9 @@ class Test_Api(unittest.TestCase):
 
     def addFakeGames(self, db, fakegamesdb):
         for uuid, game in fakegamesdb.items():
-            owner = db.query(models.User).filter(
-                models.User.username == game['owner']).first()
-            white = db.query(models.User).filter(
-                models.User.username == game['white']).first()
-            black = db.query(models.User).filter(
-                models.User.username == game['black']).first()
+            owner = db.query(models.User).filter(models.User.username == game['owner']).first()
+            white = db.query(models.User).filter(models.User.username == game['white']).first()
+            black = db.query(models.User).filter(models.User.username == game['black']).first()
             db_game = models.Game(
                 created_at=game["created_at"],
                 uuid=game["uuid"],
@@ -234,11 +220,18 @@ class Test_Api(unittest.TestCase):
                 black_id=black.id if black is not None else None,
                 status=game["status"],
                 last_move_time=None,
-                turn=game.get("turn", "white"),
+                turn=game.get("turn", None),
                 public=game["public"])
+            print(db_game.__dict__)
             db.add(db_game)
             db.commit()
-            print(f"adding game between {white.id if white is not None else None} and {black.id if black is not None else None}")
+            # force None turn since db defaults to white on creation
+            if "turn" in game and game["turn"] == None:
+                db_game.turn = None
+                db.commit()
+            print(
+                f"adding game between {white.id if white is not None else None} and {black.id if black is not None else None}"
+            )
         return uuid
 
     def addFakeGameSnaps(self, db, fakegamesnaps):
@@ -261,8 +254,8 @@ class Test_Api(unittest.TestCase):
             db.commit()
 
     def getToken(self, username):
-        return crud.create_access_token(data={"sub": username},
-                                        expires_delta=timedelta(minutes=3000))
+        return crud.create_access_token(
+            data={"sub": username}, expires_delta=timedelta(minutes=3000))
 
     def test__version(self):
         response = self.client.get("/version")
@@ -286,8 +279,7 @@ class Test_Api(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(response.json())
         response_dict = response.json()
-        self.assertTrue(
-            verify_password("secret", response_dict["hashed_password"]))
+        self.assertTrue(verify_password("secret", response_dict["hashed_password"]))
         response_dict.pop("hashed_password", None)
         self.assertDictEqual(
             response_dict, {
@@ -328,8 +320,7 @@ class Test_Api(unittest.TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertListEqual(list(response.json().keys()),
-                             ['access_token', 'token_type'])
+        self.assertListEqual(list(response.json().keys()), ['access_token', 'token_type'])
 
     def test__createUser__persistence(self):
         response = self.client.post(
@@ -409,8 +400,7 @@ class Test_Api(unittest.TestCase):
 
         self.assertEqual(response.status_code, 422)
         print(response.json())
-        self.assertEqual(response.json()['detail'][0]['type'],
-                         'type_error.integer')
+        self.assertEqual(response.json()['detail'][0]['type'], 'type_error.integer')
 
     def test__db_cleanup(self):
 
@@ -514,6 +504,28 @@ class Test_Api(unittest.TestCase):
                 'winner': None,
             })
 
+    def test__getGames__finishedGame(self):
+        _, _ = self.addFakeUsers(self.db)
+        #change to second player
+        jane_token = self.getToken("janedoe")
+        john_token = self.getToken("johndoe")
+        self.addFakeGames(self.db, self.fakegamesdb())
+        self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
+
+        response = self.client.get(
+            '/users/me/games',
+            headers={
+                'Authorization': 'Bearer ' + jane_token,
+                'Content-Type': 'application/json',
+            },
+        )
+        print(response.json())
+        self.assertEqual(response.status_code, 200)
+        games = response.json()
+        self.assertEqual(len(games), 4)
+        finishedgame = [g for g in games if g['status'] == GameStatus.OVER][0]
+        self.assertIsNone(finishedgame['turn'])
+
     # TODO test list random games before setting my player
     def test__joinRandomGame(self):
         token, _ = self.addFakeUsers(self.db)
@@ -534,8 +546,8 @@ class Test_Api(unittest.TestCase):
         print(response.json())
         self.assertEqual(response.status_code, 200)
         self.assertNotEqual(response.json(), {})
-        self.assertTrue(response.json()['white_id'] == oneUser.id
-                        or response.json()['black_id'] == oneUser.id)
+        self.assertTrue(response.json()['white_id'] == oneUser.id or
+                        response.json()['black_id'] == oneUser.id)
         self.assertDictEqual(
             response.json(), {
                 'black_id': mock.ANY,
@@ -550,8 +562,8 @@ class Test_Api(unittest.TestCase):
                 'white_id': mock.ANY,
                 'winner': None,
             })
-        self.assertTrue(response.json()['black_id'] == oneUser.id
-                        or response.json()['white_id'] == oneUser.id)
+        self.assertTrue(response.json()['black_id'] == oneUser.id or
+                        response.json()['white_id'] == oneUser.id)
 
     # TODO deprecated, client chooses game and joins a random one
     def test__joinRandomGame__noneAvailable(self):
@@ -622,8 +634,7 @@ class Test_Api(unittest.TestCase):
 
         user = crud.get_user_by_username(self.db, username)
 
-        game_before = self.db.query(
-            models.Game).filter(models.Game.uuid == uuid).first()
+        game_before = self.db.query(models.Game).filter(models.Game.uuid == uuid).first()
 
         response = self.client.get(
             f'/games/{uuid}/join',
@@ -633,8 +644,7 @@ class Test_Api(unittest.TestCase):
             },
         )
 
-        game = self.db.query(
-            models.Game).filter(models.Game.uuid == uuid).first()
+        game = self.db.query(models.Game).filter(models.Game.uuid == uuid).first()
 
         print(response.json())
         self.assertEqual(response.status_code, 200)
@@ -662,8 +672,7 @@ class Test_Api(unittest.TestCase):
 
         user = crud.get_user_by_username(self.db, username)
 
-        game_before = self.db.query(
-            models.Game).filter(models.Game.uuid == uuid).first()
+        game_before = self.db.query(models.Game).filter(models.Game.uuid == uuid).first()
 
         response = self.client.get(
             f'/games/{uuid}/join',
@@ -674,8 +683,7 @@ class Test_Api(unittest.TestCase):
         )
 
         self.assertEqual(response.status_code, 409)
-        self.assertDictEqual(response.json(),
-                             {'detail': 'Player is already in this game'})
+        self.assertDictEqual(response.json(), {'detail': 'Player is already in this game'})
 
     def test__getsnap__byNum(self):
         token, _ = self.addFakeUsers(self.db)
@@ -695,22 +703,16 @@ class Test_Api(unittest.TestCase):
 
         print(response.json())
         self.assertEqual(response.status_code, 200)
+        #yapf: disable
         self.assertDictEqual(
             response.json(), {
-                'game_id':
-                1,
-                'created_at':
-                mock.ANY,
-                'id':
-                1,
-                'move':
-                None,
-                'taken':
-                '',
-                'castleable':
-                '',
-                'move_number':
-                0,
+                'game_id': 1,
+                'created_at': mock.ANY,
+                'id': 1,
+                'move': None,
+                'taken': '',
+                'castleable': '',
+                'move_number': 0,
                 'board': ('xxxxxxxx'
                           'xxxxxxxx'
                           '________'
@@ -720,6 +722,7 @@ class Test_Api(unittest.TestCase):
                           'pppppppp'
                           'rnbqkbnr'),
             })
+        #yapf: enable
 
     def test__getsnaps(self):
         self.maxDiff = None
@@ -738,20 +741,15 @@ class Test_Api(unittest.TestCase):
 
         print(response.json())
         self.assertEqual(response.status_code, 200)
+        #yapf: disable
         self.assertListEqual(response.json(), [{
-            'game_id':
-            1,
-            'created_at':
-            mock.ANY,
-            'id':
-            1,
+            'game_id': 1,
+            'created_at': mock.ANY,
+            'id': 1,
             'move': None,
-            'taken':
-            '',
-            'castleable':
-            '',
-            'move_number':
-            0,
+            'taken': '',
+            'castleable': '',
+            'move_number': 0,
             'board': ('xxxxxxxx'
                       'xxxxxxxx'
                       '________'
@@ -761,20 +759,13 @@ class Test_Api(unittest.TestCase):
                       'pppppppp'
                       'rnbqkbnr'),
         }, {
-            'game_id':
-            1,
-            'created_at':
-            mock.ANY,
-            'id':
-            2,
-            'move':
-            'd2d4',
-            'taken':
-            '',
-            'castleable':
-            '',
-            'move_number':
-            1,
+            'game_id': 1,
+            'created_at': mock.ANY,
+            'id': 2,
+            'move': 'd2d4',
+            'taken': '',
+            'castleable': '',
+            'move_number': 1,
             'board': ('xxxxxxxx'
                       'xxxxxxxx'
                       '________'
@@ -784,6 +775,7 @@ class Test_Api(unittest.TestCase):
                       'ppp_pppp'
                       'rnbqkbnr'),
         }])
+        #yapf: enable
 
     def test__getsnap__latest(self):
         token, _ = self.addFakeUsers(self.db)
@@ -801,22 +793,16 @@ class Test_Api(unittest.TestCase):
 
         print(response.json())
         self.assertEqual(response.status_code, 200)
+        #yapf: disable
         self.assertDictEqual(
             response.json(), {
-                'game_id':
-                1,
-                'created_at':
-                mock.ANY,
-                'id':
-                2,
-                'move':
-                'd2d4',
-                'taken':
-                '',
-                'castleable':
-                '',
-                'move_number':
-                1,
+                'game_id': 1,
+                'created_at': mock.ANY,
+                'id': 2,
+                'move': 'd2d4',
+                'taken': '',
+                'castleable': '',
+                'move_number': 1,
                 'board': ('xxxxxxxx'
                           'xxxxxxxx'
                           '________'
@@ -826,6 +812,7 @@ class Test_Api(unittest.TestCase):
                           'ppp_pppp'
                           'rnbqkbnr')
             })
+        #yapf: enable
 
     def test_getTurn(self):
         token, _ = self.addFakeUsers(self.db)
@@ -853,8 +840,7 @@ class Test_Api(unittest.TestCase):
 
         # get previous game/board
 
-        game_before = self.db.query(
-            models.Game).filter(models.Game.uuid == firstgame_uuid).first()
+        game_before = self.db.query(models.Game).filter(models.Game.uuid == firstgame_uuid).first()
 
         response = self.client.post(
             f'/games/{firstgame_uuid}/move',
@@ -869,8 +855,7 @@ class Test_Api(unittest.TestCase):
 
         # get after game/board
 
-        game_after = self.db.query(
-            models.Game).filter(models.Game.uuid == firstgame_uuid).first()
+        game_after = self.db.query(models.Game).filter(models.Game.uuid == firstgame_uuid).first()
 
         # test board is the expected one
         print([snap.__dict__ for snap in game_after.snaps])
@@ -1190,9 +1175,7 @@ class Test_Api(unittest.TestCase):
 
         for i, move in enumerate(moves):
             response = self.send_move(game_uuid, move, tokens[i % 2])
-            print(
-                f'ran move {move} by {jane_color if jane_token == tokens[i%2] else john_color}'
-            )
+            print(f'ran move {move} by {jane_color if jane_token == tokens[i%2] else john_color}')
             self.assertEqual(response.status_code, 200)
 
             # they ask for game and turn
@@ -1264,7 +1247,6 @@ class Test_Api(unittest.TestCase):
         )
 
         print("{} with {} won the game".format(
-            "janedoe" if jane_color == response.json()['winner'] else
-            "johndoe", jane_color))
+            "janedoe" if jane_color == response.json()['winner'] else "johndoe", jane_color))
 
         self.assertEqual(response.json()['winner'], 'black')

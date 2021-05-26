@@ -43,8 +43,7 @@ def get_db():
         db.close()
 
 
-def get_current_user(db: Session = Depends(get_db),
-                     token: str = Depends(oauth2_scheme)):
+def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -64,11 +63,9 @@ def get_current_user(db: Session = Depends(get_db),
     return user
 
 
-def get_current_active_user(
-        current_user: schemas.User = Depends(get_current_user)):
+def get_current_active_user(current_user: schemas.User = Depends(get_current_user)):
     if not current_user.is_active():
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail="Inactive user")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user")
     return current_user
 
 
@@ -112,21 +109,19 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = crud.create_access_token(data={"sub": user.username},
-                                            expires_delta=access_token_expires)
+    access_token = crud.create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires)
     return {"access_token": access_token, "token_type": "bearer"}
 
 
 @app.get("/users/me/", response_model=schemas.User)
-def read_users_me(
-        current_user: schemas.User = Depends(get_current_active_user)):
+def read_users_me(current_user: schemas.User = Depends(get_current_active_user)):
     return current_user
 
 
 @app.get("/users/me/games/", response_model=List[schemas.Game])
-def read_own_games(
-        current_user: schemas.User = Depends(get_current_active_user),
-        db: Session = Depends(get_db)):
+def read_own_games(current_user: schemas.User = Depends(get_current_active_user),
+                   db: Session = Depends(get_db)):
     games = crud.get_games_by_player(db, current_user)
     return games
 
@@ -145,13 +140,14 @@ def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = crud.get_users(db, skip=skip, limit=limit)
     return [user.username for user in users]
 
+
 @app.get("/users/u/{userID}", response_model=schemas.User)
-def read__single_user(
-    userID: int,
-    current_user: schemas.User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)):
+def read__single_user(userID: int,
+                      current_user: schemas.User = Depends(get_current_active_user),
+                      db: Session = Depends(get_db)):
     user = crud.get_user_by_id(db, userID)
     return user
+
 
 # we might be playing more than one game, we no longer can use this as-is
 # @app.get("/users/active_game")
@@ -168,7 +164,8 @@ def read__single_user(
 
 @app.post("/users/")
 def create_user(new_user: schemas.UserCreate, db: Session = Depends(get_db)):
-    if not(3 <= len(new_user.username) <= 15 and len(new_user.plain_password) >= PASSWORD_MIN_LENGTH):
+    if not (3 <= len(new_user.username) <= 15 and
+            len(new_user.plain_password) >= PASSWORD_MIN_LENGTH):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"username should be of lenght (3-15) and password at least {PASSWORD_MIN_LENGTH} chars.",
@@ -188,34 +185,31 @@ def create_user(new_user: schemas.UserCreate, db: Session = Depends(get_db)):
             status_code=status.HTTP_409_CONFLICT,
             detail="an account with this email already exists",
             headers={"WWW-Authenticate": "Bearer"},
-            )
+        )
     else:
         db_user = crud.create_user(db, new_user)
         return crud.get_user_by_username(db, new_user.username)
 
 
 @app.post("/games/")
-def post_new_game(
-    new_game: schemas.GameCreate,
-    current_user: schemas.User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)):
+def post_new_game(new_game: schemas.GameCreate,
+                  current_user: schemas.User = Depends(get_current_active_user),
+                  db: Session = Depends(get_db)):
     return crud.create_game(db, current_user, new_game)
 
 
 @app.get("/games/{gameUUID}")
-def get_game_by_uuid(
-    gameUUID: str,
-    current_user: schemas.User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)):
+def get_game_by_uuid(gameUUID: str,
+                     current_user: schemas.User = Depends(get_current_active_user),
+                     db: Session = Depends(get_db)):
     return crud.get_game_by_uuid(db, gameUUID)
 
 
 # lists available games
 @app.get("/games", response_model=List[schemas.Game])
-def list_available_games(
-        status_filter: str=GameStatus.WAITING,
-        current_user: schemas.User = Depends(get_current_active_user),
-        db: Session = Depends(get_db)):
+def list_available_games(status_filter: str = GameStatus.WAITING,
+                         current_user: schemas.User = Depends(get_current_active_user),
+                         db: Session = Depends(get_db)):
     games = crud.get_public_game_by_status(db, current_user, status_filter)
     return games
 
@@ -260,9 +254,8 @@ def join_game(gameUUID: str,
 
 # either creates a new game or joins an existing unstarted random game. Random games can not be joined via "join_game".
 @app.patch("/games")
-def join_random_game(
-        current_user: schemas.User = Depends(get_current_active_user),
-        db: Session = Depends(get_db)):
+def join_random_game(current_user: schemas.User = Depends(get_current_active_user),
+                     db: Session = Depends(get_db)):
     game = crud.get_random_public_game_waiting(db, current_user)
     if not game:
         return {}
@@ -447,4 +440,3 @@ def get_snaps(gameUUID: str,
         snap4player.prepare_for_player(player_color)
         result.append(snap4player)
     return result
-    

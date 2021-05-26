@@ -137,7 +137,6 @@ def get_public_game_by_status(db: Session, user: schemas.User, status):
              models.Game.white_id.is_not(user.id),
              models.Game.black_id.is_not(user.id),
              models.Game.public == True)).all()
-    print(games)
     return games
 
 

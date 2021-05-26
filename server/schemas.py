@@ -147,7 +147,7 @@ class Game(GameBase):
     white_id: Optional[int] = None
     black_id: Optional[int] = None
     status: str
-    turn: str
+    turn: Optional[str] = None
     winner: Optional[str] = None
     public: Optional[bool] = None
 
