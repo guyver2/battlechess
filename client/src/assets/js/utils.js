@@ -351,6 +351,33 @@ export async function getGameSnaps(token, gameId) {
     return { snaps, error };
 }
 
+export async function getLastGameSnap(token, gameId) {
+    let error = null;
+    let snap = null;
+    const requestOptions = {
+        method: 'GET',
+        headers: { 
+            'accept': 'application/json',
+            'Authorization': 'Bearer '+token,
+        },
+    }
+    let url = `${API_URL}/games/${gameId}/snap`;
+    try {
+        const response = await fetch(url, requestOptions);
+        const data = await response.json();
+        if (!response.ok) {
+            error = (data && data.message) || response.status;
+        } else {
+            snap = data;
+        }
+    } catch(err) {
+        console.error('There was an error!', err);
+        error = String(err);
+    }
+
+    return { snap, error };
+}
+
 export async function getGame(token, gameId) {
     let error = null;
     let game = null;

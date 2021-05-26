@@ -17,7 +17,7 @@
                 <label for="inputPassword" class="text-color-5">password</label>
                 <input type="password" id="inputPassword" class="form-control text-color-4" placeholder="password" required v-model="password">
                 <div class="text-color-5">
-                    <button type="button" class="button" v-on:click="login">Sign in {{resolution}}</button>
+                    <button type="button" class="button" v-on:click="login">Sign in</button>
                     <div class="signup">Or <a href="/register">Sign up</a>.</div>
                 </div>
             </form>
@@ -53,7 +53,6 @@ export default {
       board: null,
       selectedCell: null,
       errorMessage: '',
-      resolution: String(screen.width) + "x" + String(screen.height),
     }
   },
   mounted() {   

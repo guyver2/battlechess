@@ -1,55 +1,74 @@
 <template>
-    <div class="board">
-        <div v-for="index in 64" :key="index"
-        class="boardCell" 
-        :ref="'c'+String(index-1)"
-        :id="'c'+String(index-1)"
-        :class="{ 'blackCell': ((index-1)%8)%2 != (Math.floor((index-1)/8))%2,
-                'whiteCell': ((index-1)%8)%2 === (Math.floor((index-1)/8))%2 }"
-        v-on:click="selectCell($event)"> 
-        {{"ABCDEFGH"[Math.floor(((index-1)%8))]}}{{Math.ceil(8-(index-1)/8)}} 
-        </div>            
+    <div>
+        <div v-if="loading">
+            <h1 class="text-color-5">Loading...</h1>
+        </div>
+        <div v-if="myturn">
+            <h5 class="text-color-5">My turn ({{color}})</h5>
+        </div>
+        <div v-else>
+            <h5 class="text-color-5">Not my turn ({{color}})</h5>
+        </div>
+
+        <div class="board">
+            <div v-for="index in 64" :key="index"
+            class="boardCell" 
+            :ref="'c'+String(index-1)"
+            :id="'c'+String(index-1)"
+            :class="{ 'blackCell': ((index-1)%8)%2 != (Math.floor((index-1)/8))%2,
+                    'whiteCell': ((index-1)%8)%2 === (Math.floor((index-1)/8))%2 }"
+            v-on:click="selectCell($event)"> 
+            {{"ABCDEFGH"[Math.floor(((index-1)%8))]}}{{Math.ceil(8-(index-1)/8)}} 
+            </div>            
+        </div>
     </div>
 </template>
 
 <script>
-import * as utils from '../assets/js/utils.js'
+import * as utils from '../assets/js/utils.js';
+import { ref, watch } from 'vue';
 
 export default {
 
     created(){
-    
-      if (localStorage.token) {
-          this.token = localStorage.token;
-      } else {
-        this.$router.push({name:'login', params: {incomingError: "invalid credentials"}});
-      }
-      if (localStorage.activeGame) {
-          this.gameID = localStorage.activeGame;
-      } else {
-          this.$router.push({name:'home', params: {incomingError: "invalid game id"}});
-      }
-      this.init();
+
+        if (localStorage.token) {
+            this.token = localStorage.token;
+        } else {
+            this.$router.push({name:'login', params: {incomingError: "invalid credentials"}});
+        }
+        if (localStorage.activeGame) {
+            this.gameID = localStorage.activeGame;
+        } else {
+            this.$router.push({name:'home', params: {incomingError: "invalid game id"}});
+        }
+        watch(this.data, () => {
+            this.drawBoard();
+        })
+        this.init();
       },  
 
     mounted() {
-    },
+        },
 
     data () {
         return {
+            myturn: false,
+            loading: false,
             gameID: String,
             snaps: Array,
-            data: Map,
+            data: ref({}),
             color: String,
+            timer: null,
             // data:{
-            //         "gameID": "sdhsahda5551",
+                //         "gameID": "sdhsahda5551",
             //         "board":"RNBQKBNRPPPPPPPP________________________________pppppppprnbqkbnr",
             //         "taken":[],
             //         "castelable":[],
             //         "turn":"w",
             //         "status":"started",
             //         "players": {
-            //             "white": {"username": "john doe", "userid":"1212151"},
+                //             "white": {"username": "john doe", "userid":"1212151"},
             //             "black": "mary moe",
             //             }
             //         },
@@ -61,10 +80,22 @@ export default {
 
     methods: {
         
+        startTimer() {
+            this.timer = setTimeout(async () => {
+                if (!this.myturn){
+                    await this.getLastSnap();
+                    console.log("fetching...");
+                }
+                this.startTimer();
+            }, 1000);
+        },
+       
         async init() {
+            this.loading = true
             await this.getGameInfo();
             await this.getSnaps();
-            this.drawBoard();
+            this.loading = false;
+            this.startTimer();
         },
 
         async getGameInfo() {
@@ -87,7 +118,25 @@ export default {
           }
           console.log(snaps);
           this.snaps = snaps;
-          this.data = this.snaps[0];
+          this.data.value = this.snaps[0];
+          console.log((this.data.value.move_number % 2) == 0, parseInt(localStorage.userId), parseInt(this.game.white_id), parseInt(this.game.black_id));
+          this.myturn = (((this.data.value.move_number % 2) == 0) && this.color === "white") 
+                        ||(((this.data.value.move_number % 2) == 1) && this.color === "black");
+        },
+
+        async getLastSnap() {
+           const {snap, error} = await utils.getLastGameSnap(this.token, this.gameID);
+          if(error) {
+              console.log("error while getting snap", error);
+              this.$router.push({name:'home', params: {incomingError: "error while fetching game status"}});
+          }
+          const found = this.snaps.find(elt => elt.id === snap.id);
+          if(!found){
+              this.snaps.unshift(snap);
+              this.data.value = this.snaps[0];
+              this.myturn = (((this.data.value.move_number % 2) == 0) && this.color === "white") 
+                        ||(((this.data.value.move_number % 2) == 1) && this.color === "black");
+          }
         },
 
         isSelectable(cell) {
@@ -139,32 +188,28 @@ export default {
                 target = this.index2board(target.id);
                 const {snap, error} = await utils.move(this.token, this.gameID, origin, target);
                 if(error == null) {
-                    this.data = snap;
-                    this.drawBoard();
+                    this.data.value = snap;
+                    this.myturn = false;
                 } else {
                     console.log(error);
                 }
-
-                /*
-                Array.from(target.getElementsByTagName('img')).forEach((element) => {
-                    target.removeChild(element);
-                });
-                this.board[targetId] = this.board[this.selectedCell];
-                delete this.board[this.selectedCell];
-                console.log("moving piece from " + origin + " to " + target);
-                target.appendChild(origin.getElementsByTagName('img')[0]);
-                */
                this.selectedCell = null;
             }
             this.drawFog();
         },
-
-        drawBoard() {
+        
+        drawBoard() {            
             this.board = {};
-            [...this.data.board].forEach((element, idx) => {
+            [...this.data.value.board].forEach((element, idx) => {
                 let cellid = "c"+String(idx)
                 let cell = this.$refs[cellid];
                 this.board[cellid] = element;
+            
+                // clear
+                Array.from(cell.getElementsByTagName('img')).forEach((element) => {
+                        cell.removeChild(element);
+                });
+                // draw
                 if (element != "_" && element != "x" && element != "X") {
                     let img = document.createElement("img");
                     img.classList.add("imgaeInCell")
