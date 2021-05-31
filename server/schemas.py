@@ -75,11 +75,11 @@ class GameSnap(GameSnapBase):
 
         #[(i,j,c) for j in range(1,9) for i,c in enumerate(foo[j*10+1:j*10+9])]
 
-        print(''.join([
-            self.filterchar(color, extboard[i * 10 + j], extboard, i, j)
-            for i in range(1, 9)
-            for j in range(1, 9)
-        ]))
+        # print(''.join([
+        #     self.filterchar(color, extboard[i * 10 + j], extboard, i, j)
+        #     for i in range(1, 9)
+        #     for j in range(1, 9)
+        # ]))
 
         blist = [
             self.filterchar(color, extboard[i * 10 + j], extboard, i, j)
@@ -99,7 +99,6 @@ class GameSnap(GameSnapBase):
 
         #remove other player board
         self.board = self.filterBoard(player_color)
-        print(f"filtered board is {self.board}")
 
         if player_color == 'black':
             self.castleable = ''.join(c for c in self.castleable if c.isupper())

@@ -55,6 +55,12 @@ class Game(Base):
     # black = relationship("User", back_populates="blacks", foreign_keys=[black_id])
     snaps = relationship("GameSnap", back_populates="game")
 
+    def reset(self):
+        self.turn = 'white'
+        self.winner = None
+        firstsnap = self.snaps[0]
+        self.snaps[:] = [firstsnap]
+
     def set_player(self, user: User):
 
         if self.white_id == user.id or self.black_id == user.id:

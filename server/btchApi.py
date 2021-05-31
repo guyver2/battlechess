@@ -12,7 +12,7 @@ from sqlalchemy.sql.functions import user
 
 from .config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 from . import crud, models, schemas
-from .schemas import Game, GameStatus 
+from .schemas import Game, GameStatus
 from .btchApiDB import SessionLocal, engine
 
 PASSWORD_MIN_LENGTH = 3
@@ -122,7 +122,9 @@ def read_users_me(current_user: schemas.User = Depends(get_current_active_user))
 @app.get("/users/me/games/", response_model=List[schemas.Game])
 def read_own_games(current_user: schemas.User = Depends(get_current_active_user),
                    db: Session = Depends(get_db)):
+    print("read own games")
     games = crud.get_games_by_player(db, current_user)
+    print(f'{games}')
     return games
 
 
