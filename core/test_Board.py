@@ -23,7 +23,7 @@ class Test_Board(unittest.TestCase):
                       'rnbqkbnr'),
             'taken': '',
             'castleable': 'LSKlsk',
-            'enpassant': '',
+            'enpassant': None,
             'winner': None,
         }
 
