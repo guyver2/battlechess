@@ -18,7 +18,7 @@ from .utils import get_password_hash
 import json
 
 
-class Test_Api(unittest.TestCase):
+class Test_Api_Autoplay(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -204,7 +204,7 @@ class Test_Api(unittest.TestCase):
         game.reset()
         db.commit()
 
-    def test__move__MrExonGame__OneGame(self):
+    def test__move__MrExonGame__OneGame__EnPassant(self):
         _, _ = self.addFakeUsers(self.db)
         jane_token = self.getToken("janedoe")
         john_token = self.getToken("johndoe")
@@ -220,6 +220,31 @@ class Test_Api(unittest.TestCase):
         with open('ia/algebraic2icu/icu/mrexongames.txt') as json_file:
             data = json.load(json_file)
             moves = data['https://lichess.org/auXLYNj1']
+            for i, move in enumerate(moves):
+                response = self.send_move(firstgame_uuid, move, tokens[i % 2])
+
+                if response.status_code == 200:
+                    self.prettyBoard(response.json()['board'])
+                else:
+                    print(response.json())
+                self.assertEqual(response.status_code, 200)
+
+    def test__move__MrExonGame__Enpassant2(self):
+        _, _ = self.addFakeUsers(self.db)
+        jane_token = self.getToken("janedoe")
+        john_token = self.getToken("johndoe")
+        self.addFakeGames(self.db, self.fakegamesdb())
+        firstgame_uuid = list(self.fakegamesdb().values())[0]["uuid"]
+        self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
+
+        tokens = [jane_token, john_token]
+
+        # read games
+        # for game in games:
+        # for moves in game['moves']
+        with open('ia/algebraic2icu/icu/mrexongames.txt') as json_file:
+            data = json.load(json_file)
+            moves = data['https://lichess.org/X1Nk72xr']
             for i, move in enumerate(moves):
                 response = self.send_move(firstgame_uuid, move, tokens[i % 2])
 

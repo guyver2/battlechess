@@ -206,15 +206,14 @@ class GameSnap(Base):
         board = Board()
         board.reset()
         enpassantColumn = self.enpassantColumn()
-        enpassant = chr(enpassantColumn + ord('a')) if enpassantColumn else None
-        print(f'le enpassant {enpassant}')
+        enpassant = chr(enpassantColumn + ord('a')) if enpassantColumn is not None else None
         winner = None # TODO better way to get for unit testing self.game.winner
         board.updateFromElements(self.board, self.taken, self.castleable, enpassant, winner)
         return board
 
     def toBtchBoard(self) -> BtchBoard:
         enpassantColumn = self.enpassantColumn()
-        enpassant = enpassantColumn + 2 if enpassantColumn else None
+        enpassant = enpassantColumn + 2 if enpassantColumn is not None else None
         return BtchBoard.factoryFromElements(self.board, self.taken, self.castleable, enpassant)
 
     def enpassantColumn(self):

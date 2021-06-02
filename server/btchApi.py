@@ -395,7 +395,6 @@ def get_snap(gameUUID: str,
              current_user: schemas.User = Depends(get_current_active_user),
              db: Session = Depends(get_db)):
     game = get_game(gameUUID, current_user, db)
-    print(game)
     # user not allowed to query that game snap for now
     if (game.status != GameStatus.OVER) and (current_user.id not in [game.white_id, game.black_id]):
         game = None
