@@ -4,10 +4,13 @@
             <h1 class="text-color-5">Loading...</h1>
         </div>
         <div v-if="myturn">
-            <h5 class="text-color-5">My turn ({{color}})</h5>
+            <h5 class="text-color-5">{{color}} turn (you)</h5>
         </div>
         <div v-else>
-            <h5 class="text-color-5">Not my turn ({{color}})</h5>
+            <h5 class="text-color-5">{{otherColor}} turn (not you)</h5>
+        </div>
+        <div v-if="gameover">
+            <h5 class="text-color-5">Game is Over {{winner}} won ({{(winner === color)?"you":"not you"}})</h5>
         </div>
 
         <div class="board">
@@ -50,6 +53,14 @@ export default {
 
     mounted() {
         },
+    
+    beforeUnmount() {
+        if(this.timer) {
+            clearTimeout(this.timer);
+            this.timer = null;
+        }
+    },
+
 
     data () {
         return {
@@ -59,22 +70,13 @@ export default {
             snaps: Array,
             data: ref({}),
             color: String,
+            otherColor: String,
             timer: null,
-            // data:{
-                //         "gameID": "sdhsahda5551",
-            //         "board":"RNBQKBNRPPPPPPPP________________________________pppppppprnbqkbnr",
-            //         "taken":[],
-            //         "castelable":[],
-            //         "turn":"w",
-            //         "status":"started",
-            //         "players": {
-                //             "white": {"username": "john doe", "userid":"1212151"},
-            //             "black": "mary moe",
-            //             }
-            //         },
-            board:{},
-            selectedCell:null,
-            possibleMoves:[],
+            board: {},
+            selectedCell: null,
+            possibleMoves: [],
+            gameover: false,
+            winner: null,
         }
     },
 
@@ -84,7 +86,8 @@ export default {
             this.timer = setTimeout(async () => {
                 if (!this.myturn){
                     await this.getLastSnap();
-                    console.log("fetching...");
+                } else {
+                    await this.getGameInfo();
                 }
                 this.startTimer();
             }, 1000);
@@ -106,8 +109,12 @@ export default {
           }
           this.game = game;
           this.color = game.white_id == localStorage.userId? "white":"black";
-          console.log(this.color);
-          console.log(game);
+          this.otherColor = this.color === "white"? "black":"white";
+          if (game.winner != null){
+                this.gameover = true;
+                this.winner = game.winner;
+          }
+
         },
 
         async getSnaps() {
@@ -125,18 +132,27 @@ export default {
         },
 
         async getLastSnap() {
-           const {snap, error} = await utils.getLastGameSnap(this.token, this.gameID);
-          if(error) {
-              console.log("error while getting snap", error);
-              this.$router.push({name:'home', params: {incomingError: "error while fetching game status"}});
-          }
-          const found = this.snaps.find(elt => elt.id === snap.id);
-          if(!found){
-              this.snaps.unshift(snap);
-              this.data.value = this.snaps[0];
-              this.myturn = (((this.data.value.move_number % 2) == 0) && this.color === "white") 
-                        ||(((this.data.value.move_number % 2) == 1) && this.color === "black");
-          }
+            const promise1 = utils.getGame(this.token, this.gameID);
+            const promise2 = utils.getLastGameSnap(this.token, this.gameID);
+            const data = await Promise.all([promise1, promise2])
+            const { game, _ } = data[0];
+            console.log(game);
+            if (game.winner != null){
+                this.gameover = true;
+                this.winner = game.winner;
+            }
+            const {snap, error} = data[1];
+            if(error) {
+                console.log("error while getting snap", error);
+                this.$router.push({name:'home', params: {incomingError: "error while fetching game status"}});
+            }
+            const found = this.snaps.find(elt => elt.id === snap.id);
+            if(!found){
+                this.snaps.unshift(snap);
+                this.data.value = this.snaps[0];
+                this.myturn = (((this.data.value.move_number % 2) == 0) && this.color === "white") 
+                            ||(((this.data.value.move_number % 2) == 1) && this.color === "black");
+            }
         },
 
         isSelectable(cell) {

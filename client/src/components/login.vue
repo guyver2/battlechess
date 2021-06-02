@@ -35,7 +35,6 @@
 </template>
 
 <script>
-
 import * as utils from '../assets/js/utils.js'
 
 export default {
@@ -47,11 +46,8 @@ export default {
     return {
       username: 'Antoine',
       password:'secret',
-      games: null,
       token: null,
       user: null,
-      board: null,
-      selectedCell: null,
       errorMessage: '',
     }
   },
@@ -99,136 +95,6 @@ export default {
         console.error("There was an error!", error);
         });
     },
-
-    listAllGames() {
-    fetch("http://localhost:8080/api/games")
-    .then(async response => {
-      const data = await response.json();
-
-      // check for error response
-      if (!response.ok) {
-        // get error message from body or default to response statusText
-        const error = (data && data.message) || response.statusText;
-        return Promise.reject(error);
-      }
-      if (data.status == true) {
-          this.games = data.games;
-          this.page = "listgames"
-      }
-    })
-    .catch(error => {
-      this.errorMessage = error;
-      console.error("There was an error!", error);
-    });
-    },
-
-    listMyGames() {
-        const requestOptions = {
-        method: 'GET',
-        headers: { 
-                'accept': 'application/json',
-                'Authorization': 'Bearer '+ this.token,
-            },
-        };
-        fetch('http://sxbn.org:8080/users/me/games/', requestOptions)
-            .then(async response => {
-                const data = await response.json();
-
-                // check for error response
-                if (!response.ok) {
-                    // get error message from body or default to response status
-                    const error = (data && data.message) || response.status;
-                    return Promise.reject(error);
-                }
-                this.games = data;
-                this.page = "listgames";
-            })
-            .catch(error => {
-                    this.errorMessage = error;
-                    console.error('There was an error!', error);
-            });
-    },
-    /*
-    home() {
-        this.page = "home";
-    },
-
-    selectCell(event) {
-        for (let idx = 0; idx < 64; idx++) {
-            let cellid = "c"+String(idx);
-            let cell = this.$refs[cellid];
-            cell.classList.remove("selected");
-        }
-        let targetId = event.currentTarget.id;
-        if (this.selectedCell == null || this.selectedCell === targetId){
-            if (targetId in this.board){
-                let cell = this.$refs[targetId];
-                cell.classList.add("selected")
-                this.selectedCell = targetId;
-            }
-        } else {
-            let origin = this.$refs[this.selectedCell];
-            let target = this.$refs[targetId];
-            Array.from(target.getElementsByTagName('img')).forEach((element) => {
-                target.removeChild(element);
-            });
-            this.board[targetId] = this.board[this.selectedCell];
-            delete this.board[this.selectedCell];
-            console.log("moving piece from " + origin + " to " + target);
-            target.appendChild(origin.getElementsByTagName('img')[0]);
-            this.selectedCell = null;
-        }
-        this.drawFog();
-    },
-    
-    drawBoard() {
-        let data = GAMESTATE;
-        this.board = {};
-        [...data.board].forEach((element, idx) => {
-            let cellid = "c"+String(idx)
-            let cell = this.$refs[cellid];
-            this.board[cellid] = element;
-            if (element != "_") {
-                let img = document.createElement("img");
-                img.src = "img/" + element + ".svg";
-                cell.appendChild(img);
-            }
-        });
-        this.drawFog();
-    },
-
-    drawFog() {
-        for (let idx = 0; idx < 64; idx++) {
-            let cellid = "c"+String(idx)
-            let cell = this.$refs[cellid];
-            cell.classList.remove("fog");
-        }
-        const myColor = data.players.white === this.username ? "white":"black";
-        const pieces = {"white":"rnbkqp", "black": "RNBKQP"};
-        for(let i=0; i<64; i++){
-            let neighbors = [-9, -8, -7, -1, 0, 1, 7, 8, 9];
-            if (i%8 == 0){
-                neighbors = [-8, -7, 0, 1, 8, 9];
-            } else if (i%8 == 7){
-                neighbors = [-9, -8, -1, 0, 7, 8];
-            }
-            console.log(i, i%8, neighbors);
-            let fog = true;
-            neighbors.forEach(n => {
-                const cellid = i + n;
-                if (cellid < 64 && cellid >= 0) {
-                    if (pieces[myColor].includes(this.board["c"+String(cellid)])) {
-                        fog = false;
-                    }
-                } 
-            });
-            if (fog) {
-                let cell = this.$refs["c"+String(i)];
-                cell.classList.add("fog");
-                console.log("fog in c" + String(i));
-            }
-        }
-    },*/
 
   },
 

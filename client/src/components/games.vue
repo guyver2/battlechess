@@ -68,7 +68,8 @@
             </div>
             <div v-if="currentList === 'finished'" class="gameInfo">
                 <div>
-                    <span v-if="game[game.turn].username === player.username" class="valign-wrapper">Won<i class="material-icons tiny">emoji_events</i></span>
+
+                    <span v-if="game.winner.userId == userId" class="valign-wrapper">Won<i class="material-icons tiny">emoji_events</i></span>
                     <span v-else>Lost</span>
                 </div>
             </div>
@@ -92,12 +93,8 @@
 
 <script>
 import * as utils from '../assets/js/utils.js'
+import {source} from '../assets/js/store.js'
 import Modal from './modalNewGame.vue'
-
-const localUser = {
-    "username": "@Antoine",
-    "avatar": "./img/canti.png",
-};
 
 Array.prototype.sample = function(){
   return this[Math.floor(Math.random()*this.length)];
@@ -111,7 +108,9 @@ export default {
   data() {
       return {
           token: '',
-          player: localUser,
+          username: null,
+          userId: null,
+          avatar: null,
           games: [],
           liveGames: [],
           finishedGames: [],
@@ -120,18 +119,65 @@ export default {
           currentList: 'live',
           isModalVisible: false,
           canjoin: false,
+          timer: null,
       }
   },
   created(){
-       if (localStorage.token) {
-          this.token = localStorage.token;
-      }
-      this.getGames();
+        if(localStorage.token && localStorage.username && localStorage.userId && localStorage.userAvatar){
+            this.token = localStorage.token;
+            this.username = localStorage.username;
+            this.userId = localStorage.userId;
+            this.avatar = localStorage.avatar;
+        } else {
+            this.$router.push({name:'login', params: {}});
+        }
+      this.init();
       },  
   mounted () {
-         
   },
+
+  beforeUnmount() {
+    if(this.timer) {
+        clearTimeout(this.timer);
+        this.timer = null;
+    }
+    },
+
   methods: {
+
+      startTimer() {
+            this.timer = setTimeout(async () => {
+                await this.fetchGames();
+                this.startTimer();
+            }, 3000);
+        },
+
+    init() {
+        this.getGames();
+        this.startTimer();
+    },
+
+    async fetchGames() {
+        const { liveGames, finishedGames, myOpenGames, error } = await utils.getUserGames(this.token);
+        const { openGames , error2 } = await utils.getOpenGames(this.token);
+        if (liveGames != this.liveGames) {
+            this.liveGames = liveGames;
+        }
+        if (finishedGames != this.finishedGames) {
+            this.finishedGames = finishedGames;
+        }
+        if (myOpenGames != this.myOpenGames) {
+            this.myOpenGames = myOpenGames;
+        }
+        if (openGames != this.openGames) {
+            this.openGames = openGames;
+        }
+        if (this.currentList === 'open'){
+            this.games = this.myOpenGames.concat(this.openGames);
+        }
+
+    },
+
     async getGames() {
         const { liveGames, finishedGames, myOpenGames, error } = await utils.getUserGames(this.token);
         const { openGames , error2 } = await utils.getOpenGames(this.token);
@@ -161,7 +207,8 @@ export default {
 
   async clicked(game) {
       if (this.currentList === 'open'){
-          this.join(game);
+          await this.join(game);
+          this.fetchGames();
       } else if (this.currentList === 'live') {
           this.play(game);
       }
@@ -203,6 +250,7 @@ export default {
   },
   closeModal() {
         this.isModalVisible = false;
+        this.fetchGames();
   },
 }
 

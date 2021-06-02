@@ -32,6 +32,7 @@
 </template>
 
 <script>
+import {source} from '../assets/js/store.js'
 
 export default {
   name: 'UserCard',

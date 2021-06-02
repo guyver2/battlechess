@@ -1,5 +1,8 @@
+import {Game, User, source} from './store.js'
+
 const API_URL = 'http://sxbn.org:8080' ;
-const DEFAULT_AVATAR = './img/avatar_09.jpeg';
+const DEFAULT_AVATAR = './img/avatars/avatar_09.jpeg';
+
 
 export async function login(username, password) {
     let errorMessage = null;
@@ -73,6 +76,20 @@ export async function getUserInfo(token, userID=null) {
     let userId = null;
     let error = null;
     let avatar = null;
+    if (userID in source.users) {
+        const user = source.users[userID];
+        username = user.username;
+        userId = user.id;
+        avatar = user.avatar;
+        return {username, userId, avatar, error};
+    } else if (userID == null) {
+        if (localStorage.username && localStorage.userId && localStorage.userAvatar){
+            username = localStorage.username;
+            userId = parseInt(localStorage.userId);
+            avatar = localStorage.userAvatar;
+            return {username, userId, avatar, error};
+        }
+    }
     const requestOptions = {
         method: 'GET',
         headers: { 
@@ -95,6 +112,7 @@ export async function getUserInfo(token, userID=null) {
         console.error('There was an error!', err);
         error = String(err);
     }
+    source.users[userId] = new User(username, userId, avatar);
     return {username, userId, avatar, error};
 }
 
@@ -177,6 +195,12 @@ export async function getUserGames(token) {
                 g.public = game.public;
                 g.hash = game.uuid;
                 g.canJoin = false;
+                g.winner = null;
+                if (game.winner === "white"){
+                    g.winner = g.white;
+                } else if (game.winner === "black"){
+                    g.winner = g.black;
+                }
 
                 if(game.status === "waiting") {
                     myOpenGames.push(g);
