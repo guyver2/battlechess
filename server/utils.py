@@ -45,3 +45,8 @@ def ad2extij(square):
     i = 8 - int(square[1]) + 2
     j = ord(square[0]) - ord('a') + 2
     return (i, j)
+
+def ad2ij(square):
+    i = 8 - int(square[1])
+    j = ord(square[0]) - ord('a')
+    return (i, j)

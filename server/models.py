@@ -7,7 +7,7 @@ from .schemas import GameStatus
 from core.Board import Board
 from core.btchBoard import BtchBoard
 
-from .utils import ad2extij, extij2ad
+from .utils import ad2extij, extij2ad, ad2ij
 
 
 class User(Base):
@@ -205,8 +205,7 @@ class GameSnap(Base):
     def toBoard(self):
         board = Board()
         board.reset()
-        enpassantColumn = self.enpassantColumn()
-        enpassant = chr(enpassantColumn) if enpassantColumn is not None else None
+        enpassant = self.enpassantColumn()
         winner = None # TODO better way to get for unit testing self.game.winner
         board.updateFromElements(self.board, self.taken, self.castleable, enpassant, winner)
         return board
@@ -216,7 +215,17 @@ class GameSnap(Base):
                                              self.enpassantColumn())
 
     def enpassantColumn(self):
-        return self.move[0] - ord('a') if self.move and self.move[1] in [4, 5] else None
+        if not self.move:
+            return None
+
+        i, j = ad2ij(self.move[0:2])
+        ii, jj = ad2ij(self.move[2:4])
+        piece = self.board[ii * 8 + jj]
+
+        if piece in ['p', 'P']:
+            return self.move[0] if i in [1, 6] and ii in [3, 4] else None
+
+        return None
 
     # unused
     def filtered(self, color=None):
@@ -230,6 +239,5 @@ class GameSnap(Base):
 
         # btchboard coordinates are extended [0,12]
         i, j = ad2extij(square)
-        print(f'{square} --- {i}{j} wants to move')
         ijmoves = board.possibleMoves(color, i, j)
         return [extij2ad(i, j) for i, j in ijmoves]

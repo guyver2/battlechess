@@ -204,7 +204,7 @@ class Test_Api(unittest.TestCase):
         game.reset()
         db.commit()
 
-    def _test__move__MrExonGame__OneGame(self):
+    def test__move__MrExonGame__OneGame(self):
         _, _ = self.addFakeUsers(self.db)
         jane_token = self.getToken("janedoe")
         john_token = self.getToken("johndoe")
