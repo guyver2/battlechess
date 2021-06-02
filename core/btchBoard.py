@@ -175,7 +175,7 @@ class BtchBoard():
             i = 7 if self.isBlack(color) else 4
             # and filter out if not visible
             if not self.hasEnemy(i, j):
-                self.enpassant = ''
+                self.enpassant = None
 
     # color is the viewer color. So if you want to keep the black info, color = black.
     def filter(self, color):
