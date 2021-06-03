@@ -82,14 +82,14 @@ export async function getUserInfo(token, userID=null) {
         userId = user.id;
         avatar = user.avatar;
         return {username, userId, avatar, error};
-    } else if (userID == null) {
+    } /*else if (userID == null) {
         if (localStorage.username && localStorage.userId && localStorage.userAvatar){
             username = localStorage.username;
             userId = parseInt(localStorage.userId);
             avatar = localStorage.userAvatar;
             return {username, userId, avatar, error};
         }
-    }
+    }*/
     const requestOptions = {
         method: 'GET',
         headers: { 

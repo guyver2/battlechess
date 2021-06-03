@@ -51,7 +51,12 @@ export default {
       errorMessage: '',
     }
   },
-  mounted() {   
+  mounted() {
+      localStorage.removeItem('username');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('userAvatar');
+      localStorage.removeItem('token');
+
   },
   methods: {
     async login() {
