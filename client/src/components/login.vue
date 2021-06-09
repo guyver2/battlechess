@@ -56,7 +56,7 @@ export default {
       localStorage.removeItem('userId');
       localStorage.removeItem('userAvatar');
       localStorage.removeItem('token');
-
+      localStorage.removeItem('activeGame');
   },
   methods: {
     async login() {
@@ -65,7 +65,7 @@ export default {
         this.errorMessage = errorMessage;
         if (this.token) {
             localStorage.token = this.token;
-             const {username, userId, avatar, error} = await utils.getUserInfo(this.token);
+            const {username, userId, avatar, error} = await utils.getUserInfo(this.token);
             if (!error) {
                 localStorage.username = username;
                 localStorage.userId = userId;

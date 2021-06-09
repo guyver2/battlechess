@@ -95,12 +95,24 @@ body {
 }
 
 /* no idea why this specific one has to be in the main css theme and not simply the component style */
-.boardCell img {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 11.25vmin;
-  width: 11.25vmin;
+@media all and (orientation: portrait) {
+  .boardCell img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 11.5vmin;
+    width: 11.5vmin;
+  }
+}
+
+@media all and (orientation: landscape) {
+  .boardCell img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 10vmin;
+    width: 10vmin;
+  }
 }
 /* same comment as above for ".boardCell img" */
 .boardCell.fog img {

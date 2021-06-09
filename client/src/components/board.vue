@@ -1,28 +1,66 @@
 <template>
-    <div>
-        <div v-if="loading">
-            <h1 class="text-color-5">Loading...</h1>
+    <div class="main">
+        <div class="mobileMenu">
+            <div v-if="loading">
+                <h1 class="text-color-5">Loading...</h1>
+            </div>
+            <div v-if="myturn">
+                <h5 class="text-color-5">{{color}} turn (you)</h5>
+            </div>
+            <div v-else>
+                <h5 class="text-color-5">{{otherColor}} turn (not you)</h5>
+            </div>
+            <div v-if="gameover">
+                <h5 class="text-color-5">Game is Over {{winner}} won ({{(winner === color)?"you":"not you"}})</h5>
+            </div>
         </div>
-        <div v-if="myturn">
-            <h5 class="text-color-5">{{color}} turn (you)</h5>
+            <div v-if="data.value" class="taken">
+                <img v-for="index in data.value.taken.length" :key="index" 
+                    :src="'./img/pieces/' + data.value.taken.substring(index-1, index) + '.svg'"
+                    :class= "{'hidden': data.value.taken.substring(index-1, index).toUpperCase() == data.value.taken.substring(index-1, index) }"
+                    > 
+            </div>
+        <div class="gridGame">
+            <div class="board">
+                <div v-for="index in 64" :key="index"
+                class="boardCell" 
+                :ref="'c'+String(index-1)"
+                :id="'c'+String(index-1)"
+                :class="{ 'blackCell': ((index-1)%8)%2 != (Math.floor((index-1)/8))%2,
+                        'whiteCell': ((index-1)%8)%2 === (Math.floor((index-1)/8))%2 }"
+                v-on:click="selectCell($event)"> 
+                {{"ABCDEFGH"[Math.floor(((index-1)%8))]}}{{Math.ceil(8-(index-1)/8)}} 
+                </div>           
+            </div>
+            <div class="rightPanel">
+                <div class="gameInfo">
+                    <div v-if="myturn">
+                        {{color}} turn (you)
+                    </div>
+                    <div v-else>
+                        {{otherColor}} turn (not you)
+                    </div>
+                    <div v-if="gameover">
+                        Game is Over {{winner}} won ({{(winner === color)?"you":"not you"}})
+                    </div>
+                </div>
+                <div class="moves">
+                    <div v-for="snap in snaps" :key="snap" class="moveItem">
+                        <div>
+                            {{snap.move_number}}.
+                        </div>
+                        <div> 
+                            {{snap.move?snap.move.substring(0,2)+" - "+snap.move.substring(2,4):"?"}}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div v-else>
-            <h5 class="text-color-5">{{otherColor}} turn (not you)</h5>
-        </div>
-        <div v-if="gameover">
-            <h5 class="text-color-5">Game is Over {{winner}} won ({{(winner === color)?"you":"not you"}})</h5>
-        </div>
-
-        <div class="board">
-            <div v-for="index in 64" :key="index"
-            class="boardCell" 
-            :ref="'c'+String(index-1)"
-            :id="'c'+String(index-1)"
-            :class="{ 'blackCell': ((index-1)%8)%2 != (Math.floor((index-1)/8))%2,
-                    'whiteCell': ((index-1)%8)%2 === (Math.floor((index-1)/8))%2 }"
-            v-on:click="selectCell($event)"> 
-            {{"ABCDEFGH"[Math.floor(((index-1)%8))]}}{{Math.ceil(8-(index-1)/8)}} 
-            </div>            
+        <div v-if="data.value" class="taken">
+            <img v-for="index in data.value.taken.length" :key="index" 
+                 :src="'./img/pieces/' + data.value.taken.substring(index-1, index) + '.svg'"
+                 :class= "{'hidden': data.value.taken.substring(index-1, index).toLowerCase() == data.value.taken.substring(index-1, index) }"
+                 > 
         </div>
     </div>
 </template>
@@ -97,6 +135,7 @@ export default {
             this.loading = true
             await this.getGameInfo();
             await this.getSnaps();
+            console.log(this.snaps);
             this.loading = false;
             this.startTimer();
         },
@@ -272,23 +311,153 @@ export default {
 
 <style scoped>
 
-.board {
-  /* border: 10px solid red; */
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  grid-template-columns: repeat(8, 1fr);
-  width: 90vmin;
-  height: 90vmin;
-  position: relative;
+.hidden {
+    display: none;
 }
 
-.boardCell {
-  font-family: sans-serif;
-  font-weight: bold;
-  position: relative;
-  padding-left: 0.2vmin;
-  height: 11.25vmin;
-  width: 11.25vmin;
+.main {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    height: 100%;
+    /* margin-top: -40px; */
+    margin-left: 10px;
+}
+
+@media all and (orientation:portrait) {
+
+    .board {
+        /* border: 10px solid red; */
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        width: 90vmin;
+        height: 90vmin;
+        position: relative;
+    }
+
+    .boardCell {
+        font-family: sans-serif;
+        font-weight: bold;
+        position: relative;
+        padding-left: 0.2vmin;
+        height: 11.25vmin;
+        width: 11.25vmin;
+    }
+
+    .rightPanel {
+        display: none;
+    }
+
+    .taken {
+        color: var(--color-5);
+        background-color: var(--color-2);
+        width: 90vmin;
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+    }
+
+    .taken img {
+        width: 5.5vmin;
+        height: 5.5vmin;
+    }
+}
+
+
+@media all and (orientation:landscape) {
+    .mobileMenu {
+        display: none;
+    }
+
+    .gridGame {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 80vmin 35vmin;
+        column-gap: 10px;
+    }
+
+    .board {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    width: 80vmin;
+    height: 80vmin;
+    position: relative;
+    }
+
+    .boardCell {
+    font-family: sans-serif;
+    font-weight: bold;
+    position: relative;
+    padding-left: 0.2vmin;
+    height: 10vmin;
+    width: 10vmin;
+    }
+
+    .rightPanel {
+        width: 100%;
+        height: 80vmin;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+    .gameInfo {
+        width: 100%;
+        height: 20vmin;
+        background-color: var(--color-2);
+        color: var(--color-5);
+        border-style: solid;
+        border-color: var(--color-5);
+        border-width: 1px;
+        border-radius: 3px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        padding-left: 10px;
+    }
+
+    .moves {
+        width: 100%;
+        height: 40vmin;
+        background-color: var(--color-1);
+        padding: 5px;
+        color: var(--color-5);
+        border-style: solid;
+        border-color: var(--color-5);
+        border-width: 1px;
+        border-radius: 3px;
+        margin-bottom: 8px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        overflow-y: scroll
+    }
+
+    .moveItem {
+        height: 30px;
+        margin-bottom: 10px;
+        background-color: var(--color-2);
+        color: var(--color-5);
+        margin:3px;
+        padding: 5px;
+        display: grid;
+        grid-template-columns: 1fr 8fr;
+        column-gap: 10px;
+    }
+
+    .taken {
+        color: var(--color-5);
+        background-color: var(--color-2);
+        width: 80vmin;
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+    }
+
+    .taken img {
+        width: 5vmin;
+        height: 5vmin;
+    }
 }
 
 
