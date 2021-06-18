@@ -56,11 +56,13 @@
                 </div>
             </div>
         </div>
-        <div v-if="data.value" class="taken">
+        <div class="taken">
+            <div v-if="data.value" >
             <img v-for="index in data.value.taken.length" :key="index" 
                  :src="'./img/pieces/' + data.value.taken.substring(index-1, index) + '.svg'"
                  :class= "{'hidden': data.value.taken.substring(index-1, index).toLowerCase() == data.value.taken.substring(index-1, index) }"
                  > 
+            </div>
         </div>
     </div>
 </template>
@@ -86,6 +88,7 @@ export default {
         watch(this.data, () => {
             this.drawBoard();
         })
+        
         this.init();
       },  
 
@@ -125,7 +128,7 @@ export default {
                 if (!this.myturn){
                     await this.getLastSnap();
                 } else {
-                    await this.getGameInfo();
+                    //await this.getGameInfo();
                 }
                 this.startTimer();
             }, 1000);
@@ -135,7 +138,6 @@ export default {
             this.loading = true
             await this.getGameInfo();
             await this.getSnaps();
-            console.log(this.snaps);
             this.loading = false;
             this.startTimer();
         },
@@ -162,10 +164,8 @@ export default {
               console.log("error while getting snaps", error);
               this.$router.push({name:'home', params: {incomingError: "error while fetching game status"}});
           }
-          console.log(snaps);
           this.snaps = snaps;
           this.data.value = this.snaps[0];
-          console.log((this.data.value.move_number % 2) == 0, parseInt(localStorage.userId), parseInt(this.game.white_id), parseInt(this.game.black_id));
           this.myturn = (((this.data.value.move_number % 2) == 0) && this.color === "white") 
                         ||(((this.data.value.move_number % 2) == 1) && this.color === "black");
         },
@@ -175,7 +175,6 @@ export default {
             const promise2 = utils.getLastGameSnap(this.token, this.gameID);
             const data = await Promise.all([promise1, promise2])
             const { game, _ } = data[0];
-            console.log(game);
             if (game.winner != null){
                 this.gameover = true;
                 this.winner = game.winner;
@@ -206,9 +205,15 @@ export default {
            return false;
         },
 
-        index2board(cell){
+        index2board(cell) {
             const idx = parseInt(cell.substring(1,3));
             return "abcdefgh"[Math.floor(((idx)%8))] + String(Math.ceil(8-(idx)/8));
+        },
+
+        board2index(cell) {
+            const col = "abcdefgh".indexOf(cell.substring(0,1));
+            const row = 8-parseInt(cell.substring(1,2));
+            return col+row*8;
         },
 
         async selectCell(event) {
@@ -219,8 +224,6 @@ export default {
                 cell.classList.remove("selected");
             }
             let targetId = event.currentTarget.id;
-            console.log("selecting ", targetId);
-            console.log(this.board);
             let previousSelected = this.selectedCell != null;
             if(this.isSelectable(targetId)) {
                 let cell = this.$refs[targetId];
@@ -233,12 +236,10 @@ export default {
                     console.log(error);
                 }
                 this.possibleMoves = moves;
-                console.log(this.possibleMoves);
+                this.drawPossibleMoves();
             } else if(previousSelected) {
                 let origin = this.$refs[this.selectedCell];
                 let target = this.$refs[targetId];
-                console.log(origin.id, typeof(origin.id));
-                console.log(target.id, typeof(target.id));
                 origin = this.index2board(origin.id);
                 target = this.index2board(target.id);
                 const {snap, error} = await utils.move(this.token, this.gameID, origin, target);
@@ -249,6 +250,8 @@ export default {
                     console.log(error);
                 }
                this.selectedCell = null;
+               this.possibleMoves = [];
+               this.drawPossibleMoves();
             }
             this.drawFog();
         },
@@ -273,6 +276,7 @@ export default {
                 }
             });
             this.drawFog();
+            this.drawPossibleMoves();
         },
 
         drawFog() {
@@ -304,8 +308,21 @@ export default {
                 }
             }
         },
-    },
 
+        drawPossibleMoves() {
+            for (let idx = 0; idx < 64; idx++) {
+                let cellid = "c"+String(idx)
+                let cell = this.$refs[cellid];
+                cell.classList.remove("possible");
+            }
+            for(const pos of this.possibleMoves){
+                const cellId = this.board2index(pos);
+                let cell = this.$refs["c"+String(cellId)];
+                cell.classList.remove("fog");
+                cell.classList.add("possible");
+            }
+        },
+    }
 }
 </script>
 
@@ -326,12 +343,17 @@ export default {
 
 @media all and (orientation:portrait) {
 
+    .main {
+        align-items: center;
+        justify-content: center;
+    }
+
     .board {
         /* border: 10px solid red; */
         display: grid;
         grid-template-columns: repeat(8, 1fr);
-        width: 90vmin;
-        height: 90vmin;
+        width: 80vmin;
+        height: 80vmin;
         position: relative;
     }
 
@@ -340,8 +362,8 @@ export default {
         font-weight: bold;
         position: relative;
         padding-left: 0.2vmin;
-        height: 11.25vmin;
-        width: 11.25vmin;
+        height: 10vmin;
+        width: 10vmin;
     }
 
     .rightPanel {
@@ -349,17 +371,19 @@ export default {
     }
 
     .taken {
+        display: block;
         color: var(--color-5);
         background-color: var(--color-2);
-        width: 90vmin;
+        width: 80vmin;
+        height: 5vmin;
         display: flex;
         flex-direction: row;
         justify-content: flex-start;
     }
 
     .taken img {
-        width: 5.5vmin;
-        height: 5.5vmin;
+        width: 5vmin;
+        height: 5vmin;
     }
 }
 
@@ -449,6 +473,7 @@ export default {
         color: var(--color-5);
         background-color: var(--color-2);
         width: 80vmin;
+        height: 5vmin;
         display: flex;
         flex-direction: row;
         justify-content: flex-start;
@@ -481,7 +506,17 @@ export default {
 }
 
 .selected {
-  background: var(--color-0);/*rgb(168, 119, 119);*/
+  background: var(--color-0);
+}
+
+.whiteCell.possible {
+  background: pink;
+  color: var(--color-1);
+}
+
+.blackCell.possible {
+    background-color: indianred;
+    color: var(--color-5);
 }
 
 
