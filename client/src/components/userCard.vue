@@ -32,7 +32,7 @@
 </template>
 
 <script>
-import * as utils from '../assets/js/utils.js'
+import {source} from '../assets/js/store.js'
 
 export default {
   name: 'UserCard',
@@ -48,7 +48,9 @@ export default {
       if (localStorage.token) {
           this.token = localStorage.token;
       }
-      this.getUserInfo();
+      if (localStorage.username) {
+          this.username = localStorage.username;
+      }
   },
 
   mounted() {
@@ -60,14 +62,7 @@ export default {
   },
 
   methods: {
-      async getUserInfo() {
-        const result = await utils.getUserInfo(this.token);
-        this.username = result.username;
-        if (!this.username) {
-            this.$router.push({name:'login', params: {incomingError: result.error}});
-        }
-    },
-  }
+  },
 }
 </script>
 

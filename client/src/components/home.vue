@@ -2,7 +2,7 @@
   <div class="center">
     <div class="home">
             <div class="row-12 col-12">
-                <div class="userCard"><UserCard avatar="./img/canti.png" :games="53" :victories="27" :points="1257" :position="17" :players="153"/></div>
+                <div class="userCard"><UserCard avatar="./img/avatars/canti.png" :games="53" :victories="27" :points="1257" :position="17" :players="153"/></div>
                 <div class="row-8 cell">SCORES</div>
             </div>
             <div class="row-12 col-11 cell">
@@ -16,6 +16,8 @@
 <script>
 import UserCard from '@/components/userCard.vue';
 import Games from '@/components/games.vue';
+
+
 export default {
     name: 'Home',
   components: {
@@ -24,7 +26,6 @@ export default {
   },
   data() {
       return {
-          msg: "hello",
           token: String,
       }
   },
@@ -37,6 +38,8 @@ export default {
       if (this.token == null) {
           this.$router.push({name:'login', params: {}});
       }
+  },
+  methods: {
   },
 }
 </script>
