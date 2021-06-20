@@ -253,9 +253,34 @@ class Test_Api(unittest.TestCase):
             db.add(db_snap)
             db.commit()
 
+    def addCustomGameSnap(self, db, boardStr, move):
+        guuid = "lkml4a3.d3"
+
+        game = crud.get_game_by_uuid(db, guuid)
+
+        db_snap = models.GameSnap(
+            created_at=datetime(2021, 4, 5, 10, tzinfo=timezone.utc),
+            game_id=game.id,
+            board=boardStr,
+            move=move,
+            taken="",
+            castleable="",
+            move_number=2,
+        )
+        db.add(db_snap)
+        db.commit()
+
     def getToken(self, username):
         return crud.create_access_token(
             data={"sub": username}, expires_delta=timedelta(minutes=3000))
+
+    def classicSetup(self):
+        token, _ = self.addFakeUsers(self.db)
+        self.addFakeGames(self.db, self.fakegamesdb())
+        firstgame_uuid = list(self.fakegamesdb().values())[0]["uuid"]
+        self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
+
+        return firstgame_uuid, token
 
     def test__version(self):
         response = self.client.get("/version")
@@ -686,9 +711,7 @@ class Test_Api(unittest.TestCase):
         self.assertDictEqual(response.json(), {'detail': 'Player is already in this game'})
 
     def test__getsnap__byNum(self):
-        token, _ = self.addFakeUsers(self.db)
-        self.addFakeGames(self.db, self.fakegamesdb())
-        firstgame_uuid = list(self.fakegamesdb().values())[0]["uuid"]
+        firstgame_uuid, token = self.classicSetup()
         firstgame_white_player = list(self.fakegamesdb().values())[0]["white"]
         token = self.getToken(firstgame_white_player)
         self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
@@ -726,10 +749,7 @@ class Test_Api(unittest.TestCase):
 
     def test__getsnaps(self):
         self.maxDiff = None
-        token, _ = self.addFakeUsers(self.db)
-        self.addFakeGames(self.db, self.fakegamesdb())
-        firstgame_uuid = list(self.fakegamesdb().values())[0]["uuid"]
-        self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
+        firstgame_uuid, token = self.classicSetup()
 
         response = self.client.get(
             f'/games/{firstgame_uuid}/snaps',
@@ -778,10 +798,7 @@ class Test_Api(unittest.TestCase):
         #yapf: enable
 
     def test__getsnap__latest(self):
-        token, _ = self.addFakeUsers(self.db)
-        self.addFakeGames(self.db, self.fakegamesdb())
-        firstgame_uuid = list(self.fakegamesdb().values())[0]["uuid"]
-        self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
+        firstgame_uuid, token = self.classicSetup()
 
         response = self.client.get(
             f'/games/{firstgame_uuid}/snap',
@@ -815,10 +832,7 @@ class Test_Api(unittest.TestCase):
         #yapf: enable
 
     def test_getTurn(self):
-        token, _ = self.addFakeUsers(self.db)
-        self.addFakeGames(self.db, self.fakegamesdb())
-        firstgame_uuid = list(self.fakegamesdb().values())[0]["uuid"]
-        self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
+        firstgame_uuid, token = self.classicSetup()
 
         response = self.client.get(
             f'/games/{firstgame_uuid}/turn',
@@ -833,10 +847,7 @@ class Test_Api(unittest.TestCase):
         self.assertEqual(response.json(), 'black')
 
     def test_move(self):
-        token, _ = self.addFakeUsers(self.db)
-        self.addFakeGames(self.db, self.fakegamesdb())
-        firstgame_uuid = list(self.fakegamesdb().values())[0]["uuid"]
-        self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
+        firstgame_uuid, token = self.classicSetup()
 
         # get previous game/board
 
@@ -877,12 +888,9 @@ class Test_Api(unittest.TestCase):
         )
 
     def test__move__filtered(self):
-        _, _ = self.addFakeUsers(self.db)
+        firstgame_uuid, _ = self.classicSetup()
         #change to second player
         token = self.getToken("janedoe")
-        self.addFakeGames(self.db, self.fakegamesdb())
-        firstgame_uuid = list(self.fakegamesdb().values())[0]["uuid"]
-        self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
 
         response = self.client.post(
             f'/games/{firstgame_uuid}/move',
@@ -911,12 +919,9 @@ class Test_Api(unittest.TestCase):
         )
 
     def test__possibleMoves__pawnMove(self):
-        _, _ = self.addFakeUsers(self.db)
+        firstgame_uuid, _ = self.classicSetup()
         #change to second player
         token = self.getToken("janedoe")
-        self.addFakeGames(self.db, self.fakegamesdb())
-        firstgame_uuid = list(self.fakegamesdb().values())[0]["uuid"]
-        self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
 
         square = 'd7'
 

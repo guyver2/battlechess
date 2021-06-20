@@ -310,9 +310,9 @@ def post_move(
 
     # It looks like modifying the pydantic model does not change the db model
     snap = crud.create_snap_by_move(db, current_user, game, gameMove)
-    schemasnap = schemas.GameSnap.from_orm(snap)
-    schemasnap.prepare_for_player(game.get_player_color(current_user.id))
-    return schemasnap
+    snap4player = schemas.GameSnap.from_orm(snap)
+    snap4player.prepare_for_player(game.get_player_color(current_user.id))
+    return snap4player
 
 
 # TODO List[str] might throw ValidationError: <unprintable ValidationError object>
