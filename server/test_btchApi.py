@@ -941,6 +941,39 @@ class Test_Api(unittest.TestCase):
             ['d6', 'd5'],
         )
 
+    def test__possibleMoves__king(self):
+        firstgame_uuid, token = self.classicSetup()
+
+        move = 'g3f3'
+        boardStr = ('____K___'
+                    '________'
+                    '________'
+                    '__p_____'
+                    '________'
+                    '____pk__'
+                    '___P_pp_'
+                    '________')
+
+        self.addCustomGameSnap(self.db, boardStr, move)
+
+        square = 'f3'
+
+        response = self.client.get(
+            f'/games/{firstgame_uuid}/moves/{square}',
+            headers={
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json',
+            },
+        )
+
+        print("response: {}".format(response.json()))
+        self.assertEqual(response.status_code, 200)
+
+        self.assertListEqual(
+            response.json(),
+            ['e4', 'f4', 'g4', 'g3', 'e2'],
+        )
+
     def send_move(self, game_uuid, move, token):
         response = self.client.post(
             f'/games/{game_uuid}/move',

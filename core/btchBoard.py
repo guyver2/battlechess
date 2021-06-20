@@ -255,8 +255,8 @@ class BtchBoard():
         yield from self.bishopMoves(color, i, j)
 
     def kingMoves(self, color, i, j):
-        for di in range(-1, 1):
-            for dj in range(-1, 1):
+        for di in range(-1, 2):
+            for dj in range(-1, 2):
                 ii, jj = i + di, j + dj
                 if self.isFree(ii, jj):
                     yield (ii, jj)
