@@ -172,7 +172,7 @@ class BtchBoard():
         j = self.enpassant
         if j:
             # if owner is black, check white enpassant
-            i = 7 if self.isBlack(color) else 4
+            i = 6 if self.isBlack(color) else 5
             # and filter out if not visible
             if not self.hasEnemy(i, j):
                 self.enpassant = None
@@ -298,10 +298,10 @@ class BtchBoard():
             yield (i + di, j - 1)
 
         # enpassant
-        enpassantrow = 7 if self.isWhite(color) else 5
+        enpassantrow = 6 if self.isBlack(color) else 5
         if i == enpassantrow:
-            if self.isEnemy(color, self.board[i][j - 1]) and j - 1 in self.enpassant:
-                yield (i, j - 1)
+            if self.isEnemy(color, self.board[i][j - 1]) and j - 1 == self.enpassant:
+                yield (i + di, j - 1)
 
-            if self.isEnemy(color, self.board[i][j + 1]) and j + 1 in self.enpassant:
-                yield (i, j + 1)
+            if self.isEnemy(color, self.board[i][j + 1]) and j + 1 == self.enpassant:
+                yield (i + di, j + 1)

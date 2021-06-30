@@ -974,6 +974,109 @@ class Test_Api(unittest.TestCase):
             ['e4', 'f4', 'g4', 'g3', 'e2'],
         )
 
+    def test__possibleMoves__pawn_enpassant_black(self):
+        firstgame_uuid, _ = self.classicSetup()
+
+        token = self.getToken("janedoe")
+
+        move = 'c2c4'
+        boardStr = ('____K___'
+                    '________'
+                    '________'
+                    '________'
+                    '__pP____'
+                    '____pk__'
+                    '_____pp_'
+                    '________')
+
+        self.addCustomGameSnap(self.db, boardStr, move)
+
+        square = 'd4'
+
+        response = self.client.get(
+            f'/games/{firstgame_uuid}/moves/{square}',
+            headers={
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json',
+            },
+        )
+
+        print("response: {}".format(response.json()))
+        self.assertEqual(response.status_code, 200)
+
+        self.assertListEqual(
+            response.json(),
+            ['c3', 'd3'],
+        )
+
+    def test__possibleMoves__pawn_enpassant_white(self):
+        firstgame_uuid, token = self.classicSetup()
+
+        move = 'd7d5'
+        boardStr = ('____K___'
+                    '________'
+                    '________'
+                    '__pP____'
+                    '________'
+                    '____pk__'
+                    '_____pp_'
+                    '________')
+
+        self.addCustomGameSnap(self.db, boardStr, move)
+
+        square = 'c5'
+
+        response = self.client.get(
+            f'/games/{firstgame_uuid}/moves/{square}',
+            headers={
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json',
+            },
+        )
+
+        print("response: {}".format(response.json()))
+        self.assertEqual(response.status_code, 200)
+
+        self.assertListEqual(
+            response.json(),
+            ['c6', 'd6'],
+        )
+
+    def test__possibleMoves__pawn_impossible_enpassant_black(self):
+        firstgame_uuid, _ = self.classicSetup()
+
+        token = self.getToken("janedoe")
+
+        move = 'c7c5'
+        boardStr = ('____K___'
+                    '________'
+                    '________'
+                    '__pP____'
+                    '________'
+                    '____pk__'
+                    '_____pp_'
+                    '________')
+
+        self.addCustomGameSnap(self.db, boardStr, move)
+
+        square = 'd5'
+
+        response = self.client.get(
+            f'/games/{firstgame_uuid}/moves/{square}',
+            headers={
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json',
+            },
+        )
+
+        print("response: {}".format(response.json()))
+        self.assertEqual(response.status_code, 200)
+
+        self.assertListEqual(
+            response.json(),
+            ['d4'],
+        )
+
     def send_move(self, game_uuid, move, token):
         response = self.client.post(
             f'/games/{game_uuid}/move',
