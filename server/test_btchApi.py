@@ -1006,7 +1006,7 @@ class Test_Api(unittest.TestCase):
 
         self.assertListEqual(
             response.json(),
-            ['c3', 'd3'],
+            ['c3', 'd3', 'e3'],
         )
 
     def test__possibleMoves__pawn_enpassant_white(self):
@@ -1075,6 +1075,39 @@ class Test_Api(unittest.TestCase):
         self.assertListEqual(
             response.json(),
             ['d4'],
+        )
+
+    def test__possibleMoves__pawn_take(self):
+        firstgame_uuid, token = self.classicSetup()
+
+        move = 'f5f6'
+        boardStr = ('____K___'
+                    '_____PP_'
+                    '_____p__'
+                    '________'
+                    '________'
+                    '_____k__'
+                    '_____pp_'
+                    '________')
+
+        self.addCustomGameSnap(self.db, boardStr, move)
+
+        square = 'f6'
+
+        response = self.client.get(
+            f'/games/{firstgame_uuid}/moves/{square}',
+            headers={
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json',
+            },
+        )
+
+        print("response: {}".format(response.json()))
+        self.assertEqual(response.status_code, 200)
+
+        self.assertListEqual(
+            response.json(),
+            ['g7'],
         )
 
     def send_move(self, game_uuid, move, token):

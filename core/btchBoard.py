@@ -297,6 +297,9 @@ class BtchBoard():
         if self.isEnemy(color, self.board[i + di][j - 1]):
             yield (i + di, j - 1)
 
+        if self.isEnemy(color, self.board[i + di][j + 1]):
+            yield (i + di, j + 1)
+
         # enpassant
         enpassantrow = 6 if self.isBlack(color) else 5
         if i == enpassantrow:
