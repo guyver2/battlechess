@@ -831,7 +831,7 @@ class Test_Api(unittest.TestCase):
             })
         #yapf: enable
 
-    def test_getTurn(self):
+    def test__getTurn(self):
         firstgame_uuid, token = self.classicSetup()
 
         response = self.client.get(
@@ -846,7 +846,7 @@ class Test_Api(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), 'black')
 
-    def test_move(self):
+    def test__move(self):
         firstgame_uuid, token = self.classicSetup()
 
         # get previous game/board
