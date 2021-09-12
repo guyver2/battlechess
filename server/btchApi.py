@@ -193,6 +193,16 @@ def create_user(new_user: schemas.UserCreate, db: Session = Depends(get_db)):
         return crud.get_user_by_username(db, new_user.username)
 
 
+@app.put("/users/")
+def update_user(updated_user: schemas.User,
+                current_user: schemas.User = Depends(get_current_active_user),
+                db: Session = Depends(get_db)):
+    if updated_user.email is None:
+        updated_user.email = ""
+
+    raise NotImplementedError()
+
+
 @app.post("/games/")
 def post_new_game(new_game: schemas.GameCreate,
                   current_user: schemas.User = Depends(get_current_active_user),
