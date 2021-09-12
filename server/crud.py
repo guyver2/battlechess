@@ -1,4 +1,8 @@
 import random
+
+from pathlib import Path
+import shutil
+
 from sqlalchemy import or_, and_
 from sqlalchemy.orm import Session
 from typing import Optional, Tuple, Set
@@ -56,14 +60,44 @@ def get_users(db: Session, skip: int = 0, limit: int = 100):
 
 def create_user(db: Session, user: schemas.UserCreate):
     hashed_password = get_password_hash(user.plain_password)
-    db_user = models.User(username=user.username,
-                          full_name=user.full_name,
-                          email=user.email,
-                          hashed_password=hashed_password)
+    db_user = models.User(
+        username=user.username,
+        full_name=user.full_name,
+        email=user.email,
+        avatar=user.avatar,
+        hashed_password=hashed_password)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
     return db_user
+
+
+def update_user(db: Session, current_user: schemas.User, updated_user: schemas.User):
+
+    db_user = get_user_by_username(db, current_user.username)
+    if not db_user:
+        return None
+
+    # TODO allow changing more things other than fullname
+    fullname = updated_user.full_name
+    updated_user = current_user
+    updated_user['fullname'] = fullname
+
+    db_user.update(**updated_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+
+def create_avatar_file(db: Session, user: schemas.User, file):
+
+    avatar_dir = Path(__file__).parent.parent / "data" / "avatars"
+    avatar_filepath = avatar_dir / f"{user.id}_avatar.jpeg"
+
+    with avatar_filepath.open('wb') as write_file:
+        shutil.copyfileobj(file.file, write_file)
+
+    return file.filename
 
 
 def authenticate_user(db: Session, username: str, password: str):

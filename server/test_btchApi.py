@@ -6,6 +6,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
+from pathlib import Path
+
+from PIL import Image
+
 from jose import JWTError, jwt
 
 from fastapi.testclient import TestClient
@@ -83,6 +87,9 @@ class Test_Api(unittest.TestCase):
         # delete db
         self.db.close()
         Base.metadata.drop_all(self.engine)
+
+    def testDataDir(self):
+        return Path(__file__).parent.parent / "data"
 
     def fakeusersdb(self):
         fake_users_db = {
@@ -316,6 +323,86 @@ class Test_Api(unittest.TestCase):
                 "avatar": None,
                 "status": "active",
             })
+
+    def test__create_user__with_avatar(self):
+        hashed_password = get_password_hash("secret")
+        new_avatar = "images/avatar001.jpeg"
+        response = self.client.post(
+            "/users/",
+            json={
+                "username": "alice",
+                "full_name": "Alice la Suisse",
+                "email": "alice@lasuisse.ch",
+                "avatar": new_avatar,
+                "plain_password": "secret"
+            },
+        )
+
+        print(response.json())
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['avatar'], new_avatar)
+
+    # TODO fix the put method for user
+    def _test__update_user__full_name(self):
+        token, _ = self.addFakeUsers(self.db)
+
+        oneUser = self.db.query(models.User)[1]
+
+        new_full_name = "Alicia la catalana"
+
+        response = self.client.put(
+            f'/users/update',
+            headers={
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json',
+            },
+            json={
+                "username": oneUser.username,
+                "full_name": new_full_name,
+                "email": oneUser.email,
+                "avatar": oneUser.avatar
+            })
+
+        print(response.json())
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(
+            response.json(), {
+                "username": "alice",
+                "full_name": "Alice la Suisse",
+                "email": "alice@lasuisse.ch",
+                "avatar": new_full_name,
+                "plain_password": "secret"
+            })
+
+    def test__upload_user__avatarImage(self):
+        token, _ = self.addFakeUsers(self.db)
+
+        oneUser = self.db.query(models.User)[1]
+        filename = self.testDataDir() / "test_avatar.jpeg"
+        with open(filename, 'rb') as f:
+            img = Image.open(f)
+            try:
+                img.verify()
+            except (IOError, SyntaxError) as e:
+                print('Bad file:', filename)
+
+        # TODO reset cursor instead of reopening
+        with open(filename, 'rb') as f:
+            response = self.client.put(
+                f'/users/u/{oneUser.id}/avatar',
+                headers={'Authorization': 'Bearer ' + token},
+                files={'file': f})
+
+        print(response.json())
+        self.assertEqual(response.status_code, 200)
+
+        expected_avatar_dir = Path(__file__).parent.parent / "data" / "avatars"
+        expected_avatar_filepath = expected_avatar_dir / f"1_avatar.jpeg"
+        expected_avatar_file = Path(expected_avatar_filepath)
+
+        # remove the test file from the config directory
+        expected_avatar_file.unlink()
 
     def test__getUsers__unauthorized(self):
         response = self.client.get("/users/")

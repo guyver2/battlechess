@@ -7,3 +7,5 @@ python-multipart
 pytest
 pygame
 sqlalchemy
+pathlib
+Pillow
