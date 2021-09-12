@@ -89,7 +89,7 @@ class Test_Api(unittest.TestCase):
         Base.metadata.drop_all(self.engine)
 
     def testDataDir(self):
-        return Path(__file__).parent.parent / "data"
+        return Path(__file__).parent.parent / "data" / "avatars"
 
     def fakeusersdb(self):
         fake_users_db = {
