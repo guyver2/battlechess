@@ -410,6 +410,21 @@ class Test_Api(unittest.TestCase):
         # remove the test file from the config directory
         expected_avatar_file.unlink()
 
+    @unittest.skipIf('PIL' not in sys.modules, reason="PIL module is not installed")
+    def test__upload_user__avatarImage__file_too_big(self):
+        token, _ = self.addFakeUsers(self.db)
+
+        oneUser = self.db.query(models.User)[1]
+
+        img = Image.new(mode='RGB', size=(1000, 1000), color = 'red')
+        response = self.client.put(
+            f'/users/u/{oneUser.id}/avatar',
+            headers={'Authorization': 'Bearer ' + token},
+            files={'file': img.tobytes()})
+
+        print(response.json())
+        self.assertEqual(response.status_code, 422)
+
     def test__getUsers__unauthorized(self):
         response = self.client.get("/users/")
         self.assertEqual(response.status_code, 401)

@@ -3,7 +3,7 @@ from typing import Optional, Tuple, Set, List
 
 from sqlalchemy.orm import Session
 
-from fastapi import Depends, FastAPI, HTTPException, status, Body, File, UploadFile
+from fastapi import Depends, FastAPI, HTTPException, status, Body, File, UploadFile, Header
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from jose import JWTError, jwt
@@ -16,6 +16,7 @@ from .schemas import Game, GameStatus
 from .btchApiDB import SessionLocal, engine
 
 PASSWORD_MIN_LENGTH = 3
+AVATAR_MAX_SIZE = 100000
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -42,6 +43,8 @@ def get_db():
     finally:
         db.close()
 
+def valid_content_length(content_length: int = Header(..., lt=AVATAR_MAX_SIZE)):
+    return content_length
 
 def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
@@ -212,17 +215,10 @@ def update_user(updated_user: schemas.User,
 
 
 # first a default avatar is created, so the avatar is always updated
-@app.put("/users/u/{userID}/avatar")
+@app.put("/users/u/{userID}/avatar", dependencies=[Depends(valid_content_length)])
 def update_avatar_file(file: UploadFile = File(...),
                        current_user: schemas.User = Depends(get_current_active_user),
                        db: Session = Depends(get_db)):
-
-    # TODO check file size before saving
-    # if len(file.file) > 1000000:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-    #         detail=f"file too big {len(file)} > 10000 bytes",
-    #         headers={"WWW-Authenticate": "Bearer"})
 
     # TODO check that file is sane before saving
 
