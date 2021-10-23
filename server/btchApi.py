@@ -3,7 +3,7 @@ from typing import Optional, Tuple, Set, List
 
 from sqlalchemy.orm import Session
 
-from fastapi import Depends, FastAPI, HTTPException, status, Body
+from fastapi import Depends, FastAPI, HTTPException, status, Body, File, UploadFile, Header
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from jose import JWTError, jwt
@@ -16,6 +16,7 @@ from .schemas import Game, GameStatus
 from .btchApiDB import SessionLocal, engine
 
 PASSWORD_MIN_LENGTH = 3
+AVATAR_MAX_SIZE = 100000
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -42,6 +43,8 @@ def get_db():
     finally:
         db.close()
 
+def valid_content_length(content_length: int = Header(..., lt=AVATAR_MAX_SIZE)):
+    return content_length
 
 def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
@@ -191,6 +194,53 @@ def create_user(new_user: schemas.UserCreate, db: Session = Depends(get_db)):
     else:
         db_user = crud.create_user(db, new_user)
         return crud.get_user_by_username(db, new_user.username)
+
+
+# TODO fix the put method for user
+@app.put("/users/update")
+def update_user(updated_user: schemas.User,
+                current_user: schemas.User = Depends(get_current_active_user),
+                db: Session = Depends(get_db)):
+    if updated_user.email is None:
+        updated_user.email = ""
+
+    db_user = crud.update_user(db, current_user, updated_user)
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"user {current_user} not found",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return db_user
+
+
+# first a default avatar is created, so the avatar is always updated
+@app.put("/users/u/{userID}/avatar", dependencies=[Depends(valid_content_length)])
+def update_avatar_file(file: UploadFile = File(...),
+                       current_user: schemas.User = Depends(get_current_active_user),
+                       db: Session = Depends(get_db)):
+
+    # TODO check that file is sane before saving
+
+    # img = Image.open(file)
+    # try:
+    #     img.verify()
+    # except (IOError, SyntaxError) as e:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+    #         detail=f"file failed image verification",
+    #         headers={"WWW-Authenticate": "Bearer"})
+
+    try:
+        output = crud.create_avatar_file(db, current_user, file)
+    except Exception as err:
+        raise HTTPException(
+            detail=f'{err} encountered while uploading {file.filename}',
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+    finally:
+        file.file.close()
+
+    return {"filename": output}
 
 
 @app.post("/games/")

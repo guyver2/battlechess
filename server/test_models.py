@@ -47,18 +47,18 @@ class Test_Models(unittest.TestCase):
                 "full_name": "John Doe",
                 "email": "johndoe@example.com",
                 "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
-                "disabled": False,
+                "status": "active",
                 "avatar": None,
-                "created_at":  datetime(2021, 1, 1, tzinfo=timezone.utc),
+                "created_at": datetime(2021, 1, 1, tzinfo=timezone.utc),
             },
             "janedoe": {
                 "username": "janedoe",
                 "full_name": "Jane Doe",
                 "email": "janedoe@example.com",
                 "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
-                "disabled": False,
+                "status": "active",
                 "avatar": None,
-                "created_at":  datetime(2021, 1, 1, tzinfo=timezone.utc),
+                "created_at": datetime(2021, 1, 1, tzinfo=timezone.utc),
             }
         }
         return fake_users_db
@@ -97,12 +97,7 @@ class Test_Models(unittest.TestCase):
 
     def addFakeUsers(self, db):
         for username, user in self.fakeusersdb().items():
-            db_user = models.User(
-                username=user["username"],
-                full_name=user["full_name"],
-                email=user["email"],
-                hashed_password=user["hashed_password"]
-            )
+            db_user = models.User(**user)
             db.add(db_user)
             db.commit()
         return db.query(models.User).all()
@@ -218,3 +213,10 @@ class Test_Models(unittest.TestCase):
 
         snaps = db_game.snaps
         self.assertTrue(len(snaps) > 0)
+
+    def test__User__setAvatar(self):
+        users = self.addFakeUsers(self.db)
+        avatar = self.fakeusersdb()['johndoe']['avatar']
+        johndoe = users[0]
+
+        self.assertEqual(johndoe.avatar, avatar)

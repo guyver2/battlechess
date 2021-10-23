@@ -46,8 +46,7 @@ class GameSnap(GameSnapBase):
     # i,j extended board coordinates
     def hasEnemy(self, extboard, i, j):
         c = extboard[i * 10 + j]
-        # import pdb
-        # pdb.set_trace()
+
         # print(f"{j} {i} {c} {extboard}")
         for j2 in [j - 1, j, j + 1]:
             for i2 in [i - 1, i, i + 1]:
