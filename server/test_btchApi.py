@@ -8,7 +8,12 @@ from sqlalchemy.orm import sessionmaker
 
 from pathlib import Path
 
-from PIL import Image
+import sys
+try:
+    from PIL import Image
+except ImportError:
+    print('PIL module is not installed. Some tests will be skipped')
+
 
 from jose import JWTError, jwt
 
@@ -375,6 +380,7 @@ class Test_Api(unittest.TestCase):
                 "plain_password": "secret"
             })
 
+    @unittest.skipIf('PIL' not in sys.modules, reason="PIL module is not installed")
     def test__upload_user__avatarImage(self):
         token, _ = self.addFakeUsers(self.db)
 
