@@ -397,7 +397,7 @@ def post_move(
 
     # It looks like modifying the pydantic model does not change the db model
     snap = crud.create_snap_by_move(db, current_user, game, gameMove)
-    snap4player = schemas.GameSnap.from_orm(snap)
+    snap4player = schemas.GameSnap.model_validate(snap)
     snap4player.prepare_for_player(game.get_player_color(current_user.id))
     return snap4player
 
@@ -475,7 +475,7 @@ def get_snap(
         return snap
 
     player_color = "black" if current_user.id == game.black_id else "white"
-    snap4player = schemas.GameSnap.from_orm(snap)
+    snap4player = schemas.GameSnap.model_validate(snap)
     print(f"preparing board for {current_user.username} {player_color}")
     snap4player.prepare_for_player(player_color)
 
@@ -510,7 +510,7 @@ def get_snap_by_move(
         )
 
     player_color = "black" if current_user.id == game.black_id else "white"
-    snap4player = schemas.GameSnap.from_orm(snap)
+    snap4player = schemas.GameSnap.model_validate(snap)
     snap4player.prepare_for_player(player_color)
     return snap4player
 
@@ -538,7 +538,7 @@ def get_snaps(
     result = []
     for snap in game.snaps:
 
-        snap4player = schemas.GameSnap.from_orm(snap)
+        snap4player = schemas.GameSnap.model_validate(snap)
         snap4player.prepare_for_player(player_color)
         result.append(snap4player)
     return result

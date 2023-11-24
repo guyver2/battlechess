@@ -118,11 +118,13 @@ class GameSnap(GameSnapBase):
 
     class Config:
         orm_mode = True
+        from_attributes = True
 
 
 class FilteredGameSnap(GameSnap):
     class Config:
         orm_mode = False
+        from_attributes = True
 
 
 class GameMove(BaseModel):
@@ -160,6 +162,7 @@ class Game(GameBase):
 
     class Config:
         orm_mode = True
+        from_attributes = True
 
 
 class Move(BaseModel):
@@ -189,3 +192,4 @@ class User(UserBase):
 
     class Config:
         orm_mode = True
+        from_attributes = True

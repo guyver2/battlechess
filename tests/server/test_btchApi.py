@@ -562,7 +562,7 @@ class Test_Api(unittest.TestCase):
 
         self.assertEqual(response.status_code, 422)
         print(response.json())
-        self.assertEqual(response.json()["detail"][0]["type"], "type_error.integer")
+        self.assertEqual(response.json()["detail"][0]["type"], "int_parsing")
 
     def test__db_cleanup(self):
 
@@ -612,7 +612,7 @@ class Test_Api(unittest.TestCase):
                 "Authorization": "Bearer " + token,
                 "Content-Type": "application/json",
             },
-            json={
+            params={
                 "random": False,
             },
         )
