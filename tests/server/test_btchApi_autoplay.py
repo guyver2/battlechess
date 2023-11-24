@@ -1,33 +1,32 @@
+import json
 import unittest
 import unittest.mock as mock
 from datetime import datetime, timedelta, timezone
 
+from fastapi import HTTPException, status
+from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from fastapi.testclient import TestClient
-from fastapi import HTTPException, status
-
-from .btchApi import app, get_db
-
-from .btchApiDB import Base
-from . import crud, models
-from .schemas import GameStatus
-from .utils import get_password_hash
-
-import json
+from battlechess.server import crud, models
+from battlechess.server.btchApi import app, get_db
+from battlechess.server.btchApiDB import Base
+from battlechess.server.schemas import GameStatus
+from battlechess.server.utils import get_password_hash
 
 
 class Test_Api_Autoplay(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 
         cls.engine = create_engine(
-            SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+            SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+        )
 
-        cls.TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=cls.engine)
+        cls.TestingSessionLocal = sessionmaker(
+            autocommit=False, autoflush=False, bind=cls.engine
+        )
 
     @classmethod
     def override_get_db(cls):
@@ -75,7 +74,7 @@ class Test_Api_Autoplay(unittest.TestCase):
                 "disabled": False,
                 "avatar": None,
                 "created_at": datetime(2021, 1, 1, tzinfo=timezone.utc),
-            }
+            },
         }
         return fake_users_db
 
@@ -95,22 +94,26 @@ class Test_Api_Autoplay(unittest.TestCase):
         return fake_games_db
 
     def fakegamesnapsdb(self):
-        fake_games_snaps = [{
-            "game_uuid": "lkml4a3.d3",
-            "move": "",
-            "board": ('RNBQKBNR'
-                      'PPPPPPPP'
-                      '________'
-                      '________'
-                      '________'
-                      '________'
-                      'pppppppp'
-                      'rnbqkbnr'),
-            "taken": "",
-            "castleable": "LKSlks",
-            "move_number": 0,
-            "created_at": datetime(2021, 4, 5, 0, tzinfo=timezone.utc),
-        }]
+        fake_games_snaps = [
+            {
+                "game_uuid": "lkml4a3.d3",
+                "move": "",
+                "board": (
+                    "RNBQKBNR"
+                    "PPPPPPPP"
+                    "________"
+                    "________"
+                    "________"
+                    "________"
+                    "pppppppp"
+                    "rnbqkbnr"
+                ),
+                "taken": "",
+                "castleable": "LKSlks",
+                "move_number": 0,
+                "created_at": datetime(2021, 4, 5, 0, tzinfo=timezone.utc),
+            }
+        ]
         return fake_games_snaps
 
     def addFakeUsers(self, db):
@@ -119,7 +122,8 @@ class Test_Api_Autoplay(unittest.TestCase):
                 username=user["username"],
                 full_name=user["full_name"],
                 email=user["email"],
-                hashed_password=user["hashed_password"])
+                hashed_password=user["hashed_password"],
+            )
             db.add(db_user)
             db.commit()
         firstusername, _ = self.fakeusersdb().keys()
@@ -127,9 +131,21 @@ class Test_Api_Autoplay(unittest.TestCase):
 
     def addFakeGames(self, db, fakegamesdb):
         for uuid, game in fakegamesdb.items():
-            owner = db.query(models.User).filter(models.User.username == game['owner']).first()
-            white = db.query(models.User).filter(models.User.username == game['white']).first()
-            black = db.query(models.User).filter(models.User.username == game['black']).first()
+            owner = (
+                db.query(models.User)
+                .filter(models.User.username == game["owner"])
+                .first()
+            )
+            white = (
+                db.query(models.User)
+                .filter(models.User.username == game["white"])
+                .first()
+            )
+            black = (
+                db.query(models.User)
+                .filter(models.User.username == game["black"])
+                .first()
+            )
             db_game = models.Game(
                 created_at=game["created_at"],
                 uuid=game["uuid"],
@@ -139,7 +155,8 @@ class Test_Api_Autoplay(unittest.TestCase):
                 status=game["status"],
                 last_move_time=None,
                 turn=game.get("turn", None),
-                public=game["public"])
+                public=game["public"],
+            )
             print(db_game.__dict__)
             db.add(db_game)
             db.commit()
@@ -173,7 +190,8 @@ class Test_Api_Autoplay(unittest.TestCase):
 
     def getToken(self, username):
         return crud.create_access_token(
-            data={"sub": username}, expires_delta=timedelta(minutes=3000))
+            data={"sub": username}, expires_delta=timedelta(minutes=3000)
+        )
 
     def test__version(self):
         response = self.client.get("/version")
@@ -182,10 +200,10 @@ class Test_Api_Autoplay(unittest.TestCase):
 
     def send_move(self, game_uuid, move, token):
         response = self.client.post(
-            f'/games/{game_uuid}/move',
+            f"/games/{game_uuid}/move",
             headers={
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json',
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json",
             },
             json={
                 "move": move,
@@ -194,10 +212,10 @@ class Test_Api_Autoplay(unittest.TestCase):
         return response
 
     def prettyBoard(self, boardStr):
-        print('    abcdefgh')
-        print('    01234567')
+        print("    abcdefgh")
+        print("    01234567")
         for i in range(8):
-            print('{} - {} - {}'.format(i, boardStr[8 * i:8 * i + 8], 8 - i))
+            print("{} - {} - {}".format(i, boardStr[8 * i : 8 * i + 8], 8 - i))
 
     def resetGame(self, db, uuid):
         game = db.query(models.Game).filter(models.Game.uuid == uuid).first()
@@ -217,14 +235,14 @@ class Test_Api_Autoplay(unittest.TestCase):
         # read games
         # for game in games:
         # for moves in game['moves']
-        with open('ia/algebraic2icu/icu/mrexongames.txt') as json_file:
+        with open("ia/algebraic2icu/icu/mrexongames.txt") as json_file:
             data = json.load(json_file)
-            moves = data['https://lichess.org/auXLYNj1']
+            moves = data["https://lichess.org/auXLYNj1"]
             for i, move in enumerate(moves):
                 response = self.send_move(firstgame_uuid, move, tokens[i % 2])
 
                 if response.status_code == 200:
-                    self.prettyBoard(response.json()['board'])
+                    self.prettyBoard(response.json()["board"])
                 else:
                     print(response.json())
                 self.assertEqual(response.status_code, 200)
@@ -242,14 +260,14 @@ class Test_Api_Autoplay(unittest.TestCase):
         # read games
         # for game in games:
         # for moves in game['moves']
-        with open('ia/algebraic2icu/icu/mrexongames.txt') as json_file:
+        with open("ia/algebraic2icu/icu/mrexongames.txt") as json_file:
             data = json.load(json_file)
-            moves = data['https://lichess.org/X1Nk72xr']
+            moves = data["https://lichess.org/X1Nk72xr"]
             for i, move in enumerate(moves):
                 response = self.send_move(firstgame_uuid, move, tokens[i % 2])
 
                 if response.status_code == 200:
-                    self.prettyBoard(response.json()['board'])
+                    self.prettyBoard(response.json()["board"])
                 else:
                     print(response.json())
                 self.assertEqual(response.status_code, 200)
@@ -268,15 +286,15 @@ class Test_Api_Autoplay(unittest.TestCase):
         # read games
         # for game in games:
         # for moves in game['moves']
-        with open('ia/algebraic2icu/icu/mrexongames.txt') as json_file:
+        with open("ia/algebraic2icu/icu/mrexongames.txt") as json_file:
             data = json.load(json_file)
             for game, moves in data.items():
-                print('Game: {} moves {}'.format(game, moves))
+                print("Game: {} moves {}".format(game, moves))
                 for move in moves:
                     response = self.send_move(firstgame_uuid, move, tokens[0 % 2])
 
                     if response.status_code == 200:
-                        self.prettyBoard(response.json()['board'])
+                        self.prettyBoard(response.json()["board"])
                     else:
                         print(response.json())
                     self.assertEqual(response.status_code, 200)

@@ -2,11 +2,12 @@
 
 import socket
 import sys
-import traceback
 import threading
 import time
-from core.Board import Board
-from communication import sendData, recvData, waitForMessage
+import traceback
+
+from battlechess.core.Board import Board
+from communication import recvData, sendData, waitForMessage
 
 
 class GameThread(threading.Thread):
@@ -19,18 +20,18 @@ class GameThread(threading.Thread):
         self.board = Board()
 
     def run(self):
-        self.nick_1 = waitForMessage(self.client_1, 'NICK')
-        self.nick_2 = waitForMessage(self.client_2, 'NICK')
+        self.nick_1 = waitForMessage(self.client_1, "NICK")
+        self.nick_2 = waitForMessage(self.client_2, "NICK")
         filename = time.strftime("games/%Y_%m_%d_%H_%M_%S")
-        filename += "_"+self.nick_1+"_Vs_"+self.nick_2+".txt"
+        filename += "_" + self.nick_1 + "_Vs_" + self.nick_2 + ".txt"
         log = open(filename, "w")
-        log.write(self.nick_1+' Vs. '+self.nick_2+'\n')
+        log.write(self.nick_1 + " Vs. " + self.nick_2 + "\n")
 
-        sendData(self.client_1, 'URLR', "http://git.sxbn.org/battleChess/"+filename)
-        sendData(self.client_2, 'URLR', "http://git.sxbn.org/battleChess/"+filename)
+        sendData(self.client_1, "URLR", "http://git.sxbn.org/battleChess/" + filename)
+        sendData(self.client_2, "URLR", "http://git.sxbn.org/battleChess/" + filename)
 
-        sendData(self.client_1, 'NICK', self.nick_2)
-        sendData(self.client_2, 'NICK', self.nick_1)
+        sendData(self.client_1, "NICK", self.nick_2)
+        sendData(self.client_2, "NICK", self.nick_1)
 
         loop = True
         try:
@@ -41,24 +42,24 @@ class GameThread(threading.Thread):
                     if head == "OVER":
                         loop = False
                         raise ValueError()  # jump to finaly
-                    elif head == 'MOVE':
+                    elif head == "MOVE":
                         i, j, ii, jj = move
-                        valid, pos, msg = self.board.move(i, j, ii, jj, 'w')
+                        valid, pos, msg = self.board.move(i, j, ii, jj, "w")
                         # print "got move from", [i,j], "to", [ii,jj], "from white", valid
-                        sendData(self.client_1, 'VALD', valid)
+                        sendData(self.client_1, "VALD", valid)
                     else:
-                        print('error : server was expecting MOVE, not', head)
+                        print("error : server was expecting MOVE, not", head)
                         raise ValueError()
 
                 log.write("%d %d %d %d\n" % (i, j, ii, jj))
                 if self.board.winner:  # if we have a winner, send the whole board
                     endBoard = self.board.toString()
-                    sendData(self.client_1, 'BORD', endBoard)
-                    sendData(self.client_2, 'BORD', endBoard)
+                    sendData(self.client_1, "BORD", endBoard)
+                    sendData(self.client_2, "BORD", endBoard)
                     break  # game is over
                 else:
-                    sendData(self.client_1, 'BORD', self.board.toString('w'))
-                    sendData(self.client_2, 'BORD', self.board.toString('b'))
+                    sendData(self.client_1, "BORD", self.board.toString("w"))
+                    sendData(self.client_2, "BORD", self.board.toString("b"))
 
                 valid = False
                 while not valid:
@@ -66,24 +67,24 @@ class GameThread(threading.Thread):
                     if head == "OVER":
                         loop = False
                         raise ValueError()  # jump to finaly
-                    elif head == 'MOVE':
+                    elif head == "MOVE":
                         i, j, ii, jj = move
-                        valid, pos, msg = self.board.move(i, j, ii, jj, 'b')
+                        valid, pos, msg = self.board.move(i, j, ii, jj, "b")
                         # print "got move from", [i,j], "to", [ii,jj], "from black", valid
-                        sendData(self.client_2, 'VALD', valid)
+                        sendData(self.client_2, "VALD", valid)
                     else:
-                        print('error : server was expecting MOVE, not', head)
+                        print("error : server was expecting MOVE, not", head)
                         raise ValueError()
 
                 log.write("%d %d %d %d\n" % (i, j, ii, jj))
                 if self.board.winner:  # if we have awinner, send the whole board
                     endBoard = self.board.toString()
-                    sendData(self.client_1, 'BORD', endBoard)
-                    sendData(self.client_2, 'BORD', endBoard)
+                    sendData(self.client_1, "BORD", endBoard)
+                    sendData(self.client_2, "BORD", endBoard)
                     break  # game is over
                 else:
-                    sendData(self.client_1, 'BORD', self.board.toString('w'))
-                    sendData(self.client_2, 'BORD', self.board.toString('b'))
+                    sendData(self.client_1, "BORD", self.board.toString("w"))
+                    sendData(self.client_2, "BORD", self.board.toString("b"))
         except Exception as e:
             print(e)
             traceback.print_exc(file=sys.stdout)
@@ -92,15 +93,15 @@ class GameThread(threading.Thread):
             # print "finishing the game"
             log.flush()
             log.close()
-            sendData(self.client_1, 'OVER', None)
-            sendData(self.client_2, 'OVER', None)
+            sendData(self.client_1, "OVER", None)
+            sendData(self.client_2, "OVER", None)
             self.client_1.close()
             self.client_2.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     PORT = 8887
-    HOST = ''  # default value
+    HOST = ""  # default value
     if len(sys.argv) == 1:
         print("Usage:\n\t", sys.argv[0], "PORT")
     if len(sys.argv) > 1:
@@ -116,7 +117,7 @@ if __name__ == '__main__':
 
     # register SIGINT to close socket
     def signal_handler(signal, frame):
-        print('You pressed Ctrl+C!')
+        print("You pressed Ctrl+C!")
         serversocket.close()
         sys.exit(0)
 
@@ -127,9 +128,9 @@ if __name__ == '__main__':
         try:
             # accept connections from outside
             (client_1, address) = serversocket.accept()
-            sendData(client_1, 'COLR', 'white')
+            sendData(client_1, "COLR", "white")
             (client_2, address) = serversocket.accept()
-            sendData(client_2, 'COLR', 'black')
+            sendData(client_2, "COLR", "black")
             game = GameThread(client_1, client_2)
             game.start()
         except Exception as e:

@@ -2,14 +2,14 @@
 name = "battlechess"
 version = "0.1.0"
 description = "chess with fog of war"
-authors = ["guyver2@github.com", "quimnuss@github.com"]
+authors = ["Antoine <guyver2@github.com>", "Quim Nuss <quimnuss@github.com>"]
 license = "GPLv3"
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-requests = "^2.31.0"
 pathlib = "^1.0.1"
+httpx = "^0.25.2"
 
 
 [tool.poetry.group.standalone.dependencies]
@@ -22,6 +22,7 @@ sqlalchemy = "^2.0.23"
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 uvicorn = "^0.24.0.post1"
+python-multipart = "^0.0.6"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -30,6 +31,7 @@ black = "^23.11.0"
 pre-commit = "^3.5.0"
 ipdb = "^0.13.13"
 isort = "^5.12.0"
+ruff = "^0.1.6"
 
 [build-system]
 requires = ["poetry-core"]
