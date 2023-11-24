@@ -1,13 +1,12 @@
 import unittest
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 from battlechess.core.Board import Board
 from battlechess.server import models
-from battlechess.server.btchApiDB import Base, BtchDBContextManager, SessionLocal
+from battlechess.server.btchApiDB import Base
 from battlechess.server.schemas import GameStatus
 
 

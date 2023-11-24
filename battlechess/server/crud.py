@@ -2,14 +2,14 @@ import random
 import shutil
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Optional, Set, Tuple
+from typing import Optional
 
-from jose import JWTError, jwt
+from jose import jwt
 from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session
 
 from . import models, schemas
-from .config import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, HANDLEBASEURL, SECRET_KEY
+from .config import ALGORITHM, SECRET_KEY
 from .utils import defaultBoard, get_password_hash, get_random_string, verify_password
 
 
@@ -169,7 +169,7 @@ def get_public_game_by_status(db: Session, user: schemas.User, status):
                 models.Game.status == status,
                 models.Game.white_id.is_not(user.id),
                 models.Game.black_id.is_not(user.id),
-                models.Game.public == True,
+                models.Game.public is True,
             )
         )
         .all()
@@ -239,15 +239,6 @@ def create_snap_by_move(
         )
 
     game.refresh_turn()
-
-    color = None
-    if game.black_id == user.id:
-        color = "b"
-    if game.white_id == user.id:
-        color = "w"
-
-    # deprecated in favor of pydantic prepare_for_player TODO pydantic elements
-    # elements = db_snap.filtered(color)
 
     db.commit()
     return db_snap

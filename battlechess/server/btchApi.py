@@ -1,27 +1,16 @@
-from datetime import datetime, timedelta, timezone
-from typing import List, Optional, Set, Tuple
+from datetime import timedelta
+from typing import List
 
-from fastapi import (
-    Body,
-    Depends,
-    FastAPI,
-    File,
-    Header,
-    HTTPException,
-    UploadFile,
-    status,
-)
+from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from sqlalchemy.sql.functions import user
 
-from . import crud, models, schemas
-from .btchApiDB import SessionLocal, engine
-from .config import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, SECRET_KEY
-from .schemas import Game, GameStatus
+from battlechess.server import crud, models, schemas
+from battlechess.server.btchApiDB import SessionLocal, engine
+from battlechess.server.config import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, SECRET_KEY
+from battlechess.server.schemas import GameStatus
 
 PASSWORD_MIN_LENGTH = 3
 AVATAR_MAX_SIZE = 100000
@@ -154,7 +143,7 @@ def read_own_games(
 
 
 @app.get("/users/", response_model=List[schemas.User])
-def read_users(
+def read_users_all(
     skip: int = 0,
     limit: int = 100,
     current_user: schemas.User = Depends(get_current_active_user),
@@ -220,7 +209,7 @@ def create_user(new_user: schemas.UserCreate, db: Session = Depends(get_db)):
             headers={"WWW-Authenticate": "Bearer"},
         )
     else:
-        db_user = crud.create_user(db, new_user)
+        _ = crud.create_user(db, new_user)
         return crud.get_user_by_username(db, new_user.username)
 
 
@@ -494,7 +483,7 @@ def get_snap(
 
 
 @app.get("/games/{gameUUID}/snap/{moveNum}")
-def get_snap(
+def get_snap_by_move(
     gameUUID: str,
     moveNum: int,
     current_user: schemas.User = Depends(get_current_active_user),

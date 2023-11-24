@@ -1,9 +1,7 @@
 import json
 import unittest
-import unittest.mock as mock
 from datetime import datetime, timedelta, timezone
 
-from fastapi import HTTPException, status
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -161,7 +159,7 @@ class Test_Api_Autoplay(unittest.TestCase):
             db.add(db_game)
             db.commit()
             # force None turn since db defaults to white on creation
-            if "turn" in game and game["turn"] == None:
+            if "turn" in game and game["turn"] is None:
                 db_game.turn = None
                 db.commit()
             print(

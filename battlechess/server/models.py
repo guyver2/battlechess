@@ -4,10 +4,9 @@ from sqlalchemy.orm import relationship
 
 from battlechess.core.Board import Board
 from battlechess.core.btchBoard import BtchBoard
-
-from .btchApiDB import Base
-from .schemas import GameStatus
-from .utils import ad2extij, ad2ij, extij2ad
+from battlechess.server.btchApiDB import Base
+from battlechess.server.schemas import GameSnap, GameStatus
+from battlechess.server.utils import ad2extij, ad2ij, extij2ad
 
 
 class User(Base):
@@ -119,7 +118,7 @@ class Game(Base):
     # TODO ensure that the turn color is guaranteed to be correct to the caller user's color
     # TODO should we create the snap here instead of returning
     # the snap options and delegating to the client?
-    def moveGame(self, move):
+    def moveGame(self, move) -> GameSnap:
         current_snap = self.get_latest_snap()
         new_snap_options = current_snap.moveSnap(move)
         return new_snap_options
@@ -180,7 +179,6 @@ class GameSnap(Base):
         # TODO sync with board
         color = self.getNextTurn()
 
-        snapOptions = None
         # build board from model
         coordlist = self.moveToCoordList(move)
         board = self.toBoard()

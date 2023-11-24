@@ -5,7 +5,6 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 try:
@@ -14,13 +13,11 @@ except ImportError:
     print("PIL module is not installed. Some tests will be skipped")
 
 
-from fastapi import HTTPException, status
 from fastapi.testclient import TestClient
-from jose import JWTError, jwt
 
 from battlechess.server import crud, models
 from battlechess.server.btchApi import app, get_db
-from battlechess.server.btchApiDB import Base, BtchDBContextManager, SessionLocal
+from battlechess.server.btchApiDB import Base
 from battlechess.server.schemas import GameStatus
 from battlechess.server.utils import get_password_hash, verify_password
 
@@ -258,7 +255,7 @@ class Test_Api(unittest.TestCase):
             db.add(db_game)
             db.commit()
             # force None turn since db defaults to white on creation
-            if "turn" in game and game["turn"] == None:
+            if "turn" in game and game["turn"] is None:
                 db_game.turn = None
                 db.commit()
             print(
@@ -321,7 +318,7 @@ class Test_Api(unittest.TestCase):
         self.assertEqual(response.json(), {"version": "1.0"})
 
     def test__createUser(self):
-        hashed_password = get_password_hash("secret")
+        get_password_hash("secret")
         response = self.client.post(
             "/users/",
             json={
@@ -353,7 +350,7 @@ class Test_Api(unittest.TestCase):
         )
 
     def test__create_user__with_avatar(self):
-        hashed_password = get_password_hash("secret")
+        get_password_hash("secret")
         new_avatar = "images/avatar001.jpeg"
         response = self.client.post(
             "/users/",
@@ -380,7 +377,7 @@ class Test_Api(unittest.TestCase):
         new_full_name = "Alicia la catalana"
 
         response = self.client.put(
-            f"/users/update",
+            "/users/update",
             headers={
                 "Authorization": "Bearer " + token,
                 "Content-Type": "application/json",
@@ -416,7 +413,7 @@ class Test_Api(unittest.TestCase):
             img = Image.open(f)
             try:
                 img.verify()
-            except (IOError, SyntaxError) as e:
+            except (IOError, SyntaxError):
                 print("Bad file:", filename)
 
         # TODO reset cursor instead of reopening
@@ -431,7 +428,7 @@ class Test_Api(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
         expected_avatar_dir = Path(__file__).parent.parent / "data" / "avatars"
-        expected_avatar_filepath = expected_avatar_dir / f"1_avatar.jpeg"
+        expected_avatar_filepath = expected_avatar_dir / "1_avatar.jpeg"
         expected_avatar_file = Path(expected_avatar_filepath)
 
         # remove the test file from the config directory
@@ -524,7 +521,7 @@ class Test_Api(unittest.TestCase):
     def test__getUsernames(self):
         token, _ = self.addFakeUsers(self.db)
 
-        users = self.db.query(models.User).all()
+        self.db.query(models.User).all()
 
         response = self.client.get(
             "/users/usernames",
@@ -641,10 +638,10 @@ class Test_Api(unittest.TestCase):
 
     def test__get_me_games(self):
         token, _ = self.addFakeUsers(self.db)
-        uuid = self.addFakeGames(self.db, self.fakegamesdb())
+        self.addFakeGames(self.db, self.fakegamesdb())
 
         response = self.client.get(
-            f"/users/me/games/",
+            "/users/me/games/",
             headers={
                 "Authorization": "Bearer " + token,
                 "Content-Type": "application/json",
@@ -664,7 +661,6 @@ class Test_Api(unittest.TestCase):
                 "last_move_time": None,
                 "owner_id": 1,
                 "public": False,
-                "last_move_time": None,
                 "status": "started",
                 "turn": "black",
                 "white_id": 1,
@@ -676,7 +672,7 @@ class Test_Api(unittest.TestCase):
         _, _ = self.addFakeUsers(self.db)
         # change to second player
         jane_token = self.getToken("janedoe")
-        john_token = self.getToken("johndoe")
+        _ = self.getToken("johndoe")
         self.addFakeGames(self.db, self.fakegamesdb())
         self.addFakeGameSnaps(self.db, self.fakegamesnapsdb())
 
@@ -697,7 +693,7 @@ class Test_Api(unittest.TestCase):
     # TODO test list random games before setting my player
     def test__joinRandomGame(self):
         token, _ = self.addFakeUsers(self.db)
-        uuid = self.addFakeGames(self.db, self.fakegamesdb())
+        self.addFakeGames(self.db, self.fakegamesdb())
 
         oneUser = self.db.query(models.User)[1]
 
@@ -745,7 +741,7 @@ class Test_Api(unittest.TestCase):
         gamesdbmod = self.fakegamesdb()
         gamesdbmod["123fr12339"]["status"] = "done"
         gamesdbmod["da40a3ee5e"]["status"] = "done"
-        uuid = self.addFakeGames(self.db, gamesdbmod)
+        self.addFakeGames(self.db, gamesdbmod)
 
         response = self.client.patch(
             "/games",
@@ -761,7 +757,7 @@ class Test_Api(unittest.TestCase):
 
     def test__listAvailableGames(self):
         token, _ = self.addFakeUsers(self.db)
-        uuid = self.addFakeGames(self.db, self.fakegamesdb())
+        self.addFakeGames(self.db, self.fakegamesdb())
 
         response = self.client.get(
             "/games",
@@ -850,15 +846,13 @@ class Test_Api(unittest.TestCase):
             },
         )
 
-    def test__joinGame__playerAlreadyInGame(self):
+    def test__joinGame__playerAlreadyInGame__simple(self):
         token, username = self.addFakeUsers(self.db)
         uuid = self.addFakeGames(self.db, self.fakegamesdb())
 
-        user = crud.get_user_by_username(self.db, username)
+        crud.get_user_by_username(self.db, username)
 
-        game_before = (
-            self.db.query(models.Game).filter(models.Game.uuid == uuid).first()
-        )
+        (self.db.query(models.Game).filter(models.Game.uuid == uuid).first())
 
         response = self.client.get(
             f"/games/{uuid}/join",
@@ -1497,7 +1491,7 @@ class Test_Api(unittest.TestCase):
         self.assertEqual(response.json()["status"], GameStatus.WAITING)
 
         white_id = response.json()["white_id"]
-        black_id = response.json()["black_id"]
+        response.json()["black_id"]
         jane_color = (
             None if not white_id else "white" if white_id == jane_id else "black"
         )
