@@ -271,7 +271,8 @@ def post_new_game(
     current_user: schemas.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-    return crud.create_game(db, current_user, new_game)
+    game = crud.create_game(db, current_user, new_game)
+    return game
 
 
 @app.get("/games/{gameUUID}")

@@ -33,6 +33,7 @@ class GameSnap(GameSnapBase):
     taken: str
     castleable: str
     move_number: int
+    model_config = {"from_attributes": True}
 
     def extendboard(self, board):
         return (
@@ -116,15 +117,9 @@ class GameSnap(GameSnapBase):
             self.castleable = "".join(c for c in self.castleable if c.islower())
             self.move = self.move if self.move_number % 2 else None
 
-    class Config:
-        orm_mode = True
-        from_attributes = True
-
 
 class FilteredGameSnap(GameSnap):
-    class Config:
-        orm_mode = False
-        from_attributes = True
+    model_config = {"from_attributes": False}
 
 
 class GameMove(BaseModel):
@@ -160,9 +155,7 @@ class Game(GameBase):
     winner: Optional[str] = None
     public: Optional[bool] = None
 
-    class Config:
-        orm_mode = True
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class Move(BaseModel):
@@ -190,6 +183,4 @@ class User(UserBase):
     # whites: List[Game] = []
     # blacks: List[Game] = []
 
-    class Config:
-        orm_mode = True
-        from_attributes = True
+    model_config = {"from_attributes": True}
