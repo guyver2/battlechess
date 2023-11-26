@@ -12,3 +12,5 @@ bin
 .vscode
 sql_app.db
 test.db
+
+.env
