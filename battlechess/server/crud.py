@@ -8,9 +8,14 @@ from jose import jwt
 from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session
 
-from . import models, schemas
-from .config import ALGORITHM, SECRET_KEY
-from .utils import defaultBoard, get_password_hash, get_random_string, verify_password
+from battlechess.server import models, schemas
+from battlechess.server.config import ALGORITHM, SECRET_KEY
+from battlechess.server.utils import (
+    defaultBoard,
+    get_password_hash,
+    get_random_string,
+    verify_password,
+)
 
 
 # TODO redo this. I hate myself for writing it.
