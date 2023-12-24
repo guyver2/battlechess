@@ -63,7 +63,7 @@ That new rule has some direct consequences on the gameplay.
 
 - Using the server application :
 	If you want to host your own server (you don't have to). You just need to run the api with
-	`$ uvicorn server.btchApi:app --reload`
+	`$ uvicorn battleches.server.btchApi:app --reload`
 	program on a computer that can be reached through the network. Change the port and hostname if you want and pass those informations to the client application. Check `$ uvicorn --help`.
 	You'll need to install the packages listed in `requirements.txt`. You can do so with `$ pip install -r requirements.txt`
 

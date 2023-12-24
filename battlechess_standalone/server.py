@@ -7,7 +7,7 @@ import time
 import traceback
 
 from battlechess.core.Board import Board
-from communication import recvData, sendData, waitForMessage
+from .communication import recvData, sendData, waitForMessage
 
 
 class GameThread(threading.Thread):
