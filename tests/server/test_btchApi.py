@@ -752,8 +752,8 @@ class Test_Api(unittest.TestCase):
         )
 
         print(response.json())
-        self.assertEqual(response.status_code, 200)
-        self.assertDictEqual(response.json(), {})
+        self.assertEqual(response.status_code, 404)
+        self.assertDictEqual(response.json(), {'detail': 'available random game not found'})
 
     def test__listAvailableGames(self):
         token, _ = self.addFakeUsers(self.db)

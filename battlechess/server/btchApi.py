@@ -265,7 +265,7 @@ def update_avatar_file(
     return {"filename": output}
 
 
-@app.post("/games/")
+@app.post("/games")
 def post_new_game(
     new_game: schemas.GameCreate,
     current_user: schemas.User = Depends(get_current_active_user),
@@ -343,7 +343,12 @@ def join_random_game(
 ):
     game = crud.get_random_public_game_waiting(db, current_user)
     if not game:
-        return {}
+        print("random game not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="available random game not found",
+            headers={"Authorization": "Bearer"},
+        )
 
     game = set_player(game, current_user, db)
 
