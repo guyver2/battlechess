@@ -126,12 +126,12 @@ def login_for_access_token(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@app.get("/users/me/", response_model=schemas.User)
+@app.get("/users/me", response_model=schemas.User)
 def read_users_me(current_user: schemas.User = Depends(get_current_active_user)):
     return current_user
 
 
-@app.get("/users/me/games/", response_model=List[schemas.Game])
+@app.get("/users/me/games", response_model=List[schemas.Game])
 def read_own_games(
     current_user: schemas.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
@@ -142,7 +142,7 @@ def read_own_games(
     return games
 
 
-@app.get("/users/", response_model=List[schemas.User])
+@app.get("/users", response_model=List[schemas.User])
 def read_users_all(
     skip: int = 0,
     limit: int = 100,
@@ -182,7 +182,7 @@ def read__single_user(
 #     return game
 
 
-@app.post("/users/")
+@app.post("/users")
 def create_user(new_user: schemas.UserCreate, db: Session = Depends(get_db)):
     if not (
         3 <= len(new_user.username) <= 15
