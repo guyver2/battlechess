@@ -115,6 +115,23 @@ class Test_Api(unittest.TestCase):
         }
         return fake_users_db
 
+
+    def janedoe(self):
+        return {
+            'avatar': None,
+            'email': 'janedoe@example.com',
+            'full_name': 'Jane Doe',
+            'username': 'janedoe'
+        }
+    
+    def johndoe(self):
+        return {
+            'avatar': None,
+            'email': 'johndoe@example.com',
+            'full_name': 'John Doe',
+            'username': 'johndoe'
+        }
+
     def fakegamesdb(self):
         fake_games_db = {
             "lkml4a3.d3": {
@@ -654,16 +671,16 @@ class Test_Api(unittest.TestCase):
         self.assertDictEqual(
             response.json()[0],
             {
-                "black_id": 2,
+                "black": self.janedoe(),
                 "created_at": mock.ANY,
                 "uuid": mock.ANY,
                 "id": 1,
                 "last_move_time": None,
-                "owner_id": 1,
+                "owner": self.johndoe(),
                 "public": False,
                 "status": "started",
                 "turn": "black",
-                "white_id": 1,
+                "white": self.johndoe(),
                 "winner": None,
             },
         )
@@ -777,26 +794,26 @@ class Test_Api(unittest.TestCase):
                     "id": 3,
                     "uuid": mock.ANY,
                     "created_at": mock.ANY,
-                    "owner_id": 2,
+                    "owner": self.janedoe(),
                     "last_move_time": None,
                     "public": True,
-                    "white_id": None,
-                    "black_id": 2,
+                    "white": None,
+                    "black": self.janedoe(),
                     "status": GameStatus.WAITING,
                     "turn": "white",
                     "winner": None,
                 },
                 {
-                    "black_id": None,
+                    "black": None,
                     "created_at": mock.ANY,
                     "uuid": mock.ANY,
                     "id": 4,
                     "last_move_time": None,
-                    "owner_id": 2,
+                    "owner": self.janedoe(),
                     "public": True,
                     "status": GameStatus.WAITING,
                     "turn": "white",
-                    "white_id": 2,
+                    "white": self.janedoe(),
                     "winner": None,
                 },
             ],

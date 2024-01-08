@@ -20,6 +20,27 @@ class TokenData(BaseModel):
     username: Optional[str] = None
 
 
+class UserBase(BaseModel):
+    username: str
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    avatar: Optional[str] = None
+
+
+class UserCreate(UserBase):
+    plain_password: str
+
+
+class User(UserBase):
+    id: int
+    status: str
+
+    # games: List[Game] = []
+    # whites: List[Game] = []
+    # blacks: List[Game] = []
+
+    model_config = {"from_attributes": True}
+
 class GameSnapBase(BaseModel):
     pass
 
@@ -147,9 +168,9 @@ class Game(GameBase):
     uuid: str
     created_at: Optional[datetime] = None
     last_move_time: Optional[datetime] = None
-    owner_id: int
-    white_id: Optional[int] = None
-    black_id: Optional[int] = None
+    owner: UserBase
+    white: Optional[UserBase] = None
+    black: Optional[UserBase] = None
     status: str
     turn: Optional[str] = None
     winner: Optional[str] = None
@@ -163,24 +184,3 @@ class Move(BaseModel):
     destination: Tuple[int, int]
     color: str
 
-
-class UserBase(BaseModel):
-    username: str
-    full_name: Optional[str] = None
-    email: Optional[str] = None
-    avatar: Optional[str] = None
-
-
-class UserCreate(UserBase):
-    plain_password: str
-
-
-class User(UserBase):
-    id: int
-    status: str
-
-    # games: List[Game] = []
-    # whites: List[Game] = []
-    # blacks: List[Game] = []
-
-    model_config = {"from_attributes": True}
