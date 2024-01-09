@@ -409,14 +409,14 @@ class Board(object):
             return (
                 False,
                 [],
-                "{}{} is not {}".format(i, j, "white" if color == "w" else "black"),
+                "({},{}) is not {}".format(i, j, "white" if color == "w" else "black"),
             )
         if self.board[ii][jj] != "" and self.board[i][j][1] == self.board[ii][jj][1]:
             # same color
             return (
                 False,
                 [],
-                f"{ii}{jj} is occupied by your own {self.board[ii][jj]} piece",
+                f"({ii},{jj}) is occupied by your own {self.board[ii][jj]} piece",
             )
         reach = self.getReachablePosition(
             i, j
@@ -427,7 +427,7 @@ class Board(object):
             return (
                 False,
                 [],
-                f"{ii}{jj} is not a {self.board[i][j]} possible position for some reason",
+                f"({ii},{jj}) is not a {self.board[i][j]} possible position for some reason",
             )
         elif [ii, jj] not in reach:
             res = self.getClosest(i, j, ii, jj, reach)
