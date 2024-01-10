@@ -154,10 +154,14 @@ def get_games_by_owner(db: Session, user: schemas.User):
     return db.query(models.Game).filter(models.Game.owner == user).all()
 
 
-def get_games_by_player(db: Session, user: schemas.User):
+def get_games_by_player(db: Session, user: schemas.User, status: schemas.GameStatus = None):
+    status_filter = or_(models.Game.black == user, models.Game.white == user)
+    if status:
+        status_filter = and_(status_filter, models.Game.status == status)
+        
     return (
         db.query(models.Game)
-        .filter(or_(models.Game.black == user, models.Game.white == user))
+        .filter(status_filter)
         .all()
     )
 

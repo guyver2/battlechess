@@ -133,11 +133,14 @@ def read_users_me(current_user: schemas.User = Depends(get_current_active_user))
 
 @app.get("/users/me/games", response_model=List[schemas.Game])
 def read_own_games(
+    status: str | None = None,
     current_user: schemas.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
     print("read own games")
-    games = crud.get_games_by_player(db, current_user)
+    game_status : schemas.GameStatus = schemas.GameStatus.WAITING if status == 'waiting' else None
+    print(f'{game_status} and {status}')
+    games = crud.get_games_by_player(db, current_user, game_status)
     print(f"{games}")
     return games
 
@@ -297,7 +300,7 @@ def list_available_games(
 
 # TODO should be patch
 # joines an existing game. error when game already started
-@app.get("/games/{gameUUID}/join")
+@app.get("/games/{gameUUID}/join", response_model=schemas.Game)
 def join_game(
     gameUUID: str,
     current_user: schemas.User = Depends(get_current_active_user),
@@ -336,7 +339,7 @@ def join_game(
 
 
 # either creates a new game or joins an existing unstarted random game. Random games can not be joined via "join_game".
-@app.patch("/games")
+@app.patch("/games", response_model=schemas.Game)
 def join_random_game(
     current_user: schemas.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
@@ -353,7 +356,7 @@ def join_random_game(
     game = set_player(game, current_user, db)
 
     db.refresh(game)
-
+    print(game.owner)
     return game
 
 
@@ -378,7 +381,7 @@ def query_turn(
     return game.turn
 
 
-@app.post("/games/{gameUUID}/move")
+@app.post("/games/{gameUUID}/move", response_model=schemas.GameSnap)
 def post_move(
     gameUUID: str,
     # move: dict = Body(...), # or pydantic or query parameter? Probably pydantic to make clear what a move is
@@ -450,7 +453,7 @@ def get_moves(
     return moves
 
 
-@app.get("/games/{gameUUID}/snap")
+@app.get("/games/{gameUUID}/snap", response_model=schemas.GameSnap)
 def get_snap(
     gameUUID: str,
     current_user: schemas.User = Depends(get_current_active_user),
@@ -488,7 +491,7 @@ def get_snap(
     return snap4player
 
 
-@app.get("/games/{gameUUID}/snap/{moveNum}")
+@app.get("/games/{gameUUID}/snap/{moveNum}", response_model=schemas.GameSnap)
 def get_snap_by_move(
     gameUUID: str,
     moveNum: int,
@@ -521,7 +524,7 @@ def get_snap_by_move(
     return snap4player
 
 
-@app.get("/games/{gameUUID}/snaps")
+@app.get("/games/{gameUUID}/snaps", response_model=List[schemas.GameSnap])
 def get_snaps(
     gameUUID: str,
     current_user: schemas.User = Depends(get_current_active_user),
