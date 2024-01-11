@@ -1,11 +1,21 @@
 from datetime import timedelta
-from typing import List
+from typing import List, Union
 
-from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile, status
+from fastapi import (
+    Depends,
+    FastAPI,
+    File,
+    Header,
+    HTTPException,
+    Query,
+    UploadFile,
+    status,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
+from typing_extensions import Annotated
 
 from battlechess.server import crud, models, schemas
 from battlechess.server.btchApiDB import SessionLocal, engine
@@ -133,15 +143,11 @@ def read_users_me(current_user: schemas.User = Depends(get_current_active_user))
 
 @app.get("/users/me/games", response_model=List[schemas.Game])
 def read_own_games(
-    status: str | None = None,
     current_user: schemas.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
     print("read own games")
-    game_status : schemas.GameStatus = schemas.GameStatus.WAITING if status == 'waiting' else None
-    print(f'{game_status} and {status}')
-    games = crud.get_games_by_player(db, current_user, game_status)
-    print(f"{games}")
+    games = crud.get_games_by_player(db, current_user)
     return games
 
 
@@ -289,12 +295,12 @@ def get_game_by_uuid(
 
 # lists available games
 @app.get("/games", response_model=List[schemas.Game])
-def list_available_games(
-    status_filter: str = GameStatus.WAITING,
+def get_available_games(
+    status: Annotated[Union[List[str], None], Query()] = None,
     current_user: schemas.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-    games = crud.get_public_game_by_status(db, current_user, status_filter)
+    games = crud.get_games_by_status(db, current_user, status)
     return games
 
 

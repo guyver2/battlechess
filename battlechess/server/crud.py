@@ -2,7 +2,7 @@ import random
 import shutil
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 from jose import jwt
 from sqlalchemy import and_, or_
@@ -154,16 +154,14 @@ def get_games_by_owner(db: Session, user: schemas.User):
     return db.query(models.Game).filter(models.Game.owner == user).all()
 
 
-def get_games_by_player(db: Session, user: schemas.User, status: schemas.GameStatus = None):
+def get_games_by_player(
+    db: Session, user: schemas.User, status: schemas.GameStatus = None
+):
     status_filter = or_(models.Game.black == user, models.Game.white == user)
     if status:
         status_filter = and_(status_filter, models.Game.status == status)
-        
-    return (
-        db.query(models.Game)
-        .filter(status_filter)
-        .all()
-    )
+
+    return db.query(models.Game).filter(status_filter).all()
 
 
 def get_game_by_uuid(db: Session, gameUUID):
@@ -179,6 +177,29 @@ def get_public_game_by_status(db: Session, user: schemas.User, status):
                 models.Game.white_id.is_not(user.id),
                 models.Game.black_id.is_not(user.id),
                 bool(models.Game.public) is True,
+            )
+        )
+        .all()
+    )
+    return games
+
+
+def get_games_by_status(
+    db: Session, user: schemas.User, statuses: List[schemas.GameStatus]
+):
+
+    db_statuses: list(str) = [str(status) for status in statuses] if statuses else None
+
+    games = (
+        db.query(models.Game)
+        .filter(
+            and_(
+                models.Game.status.in_(db_statuses) if db_statuses else True,
+                or_(
+                    models.Game.white_id == user.id,
+                    models.Game.black_id == user.id,
+                    bool(models.Game.public) is True,
+                ),
             )
         )
         .all()

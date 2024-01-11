@@ -115,21 +115,20 @@ class Test_Api(unittest.TestCase):
         }
         return fake_users_db
 
-
     def janedoe(self):
         return {
-            'avatar': None,
-            'email': 'janedoe@example.com',
-            'full_name': 'Jane Doe',
-            'username': 'janedoe'
+            "avatar": None,
+            "email": "janedoe@example.com",
+            "full_name": "Jane Doe",
+            "username": "janedoe",
         }
-    
+
     def johndoe(self):
         return {
-            'avatar': None,
-            'email': 'johndoe@example.com',
-            'full_name': 'John Doe',
-            'username': 'johndoe'
+            "avatar": None,
+            "email": "johndoe@example.com",
+            "full_name": "John Doe",
+            "username": "johndoe",
         }
 
     def fakegamesdb(self):
@@ -723,33 +722,29 @@ class Test_Api(unittest.TestCase):
         )
 
         # TODO join game (client chooses one)
-
-        print(response.json())
+        game_dict = response.json()
+        print(game_dict)
         self.assertEqual(response.status_code, 200)
-        self.assertNotEqual(response.json(), {})
+        self.assertNotEqual(game_dict, {})
         self.assertTrue(
-            response.json()["white_id"] == oneUser.id
-            or response.json()["black_id"] == oneUser.id
+            game_dict["white"]["username"] == oneUser.username
+            or game_dict["black"]["username"] == oneUser.username
         )
         self.assertDictEqual(
-            response.json(),
+            game_dict,
             {
-                "black_id": mock.ANY,
+                "black": mock.ANY,
                 "created_at": mock.ANY,
                 "uuid": mock.ANY,
                 "last_move_time": None,
                 "id": mock.ANY,
-                "owner_id": mock.ANY,
+                "owner": mock.ANY,
                 "public": True,
                 "status": "started",
                 "turn": "white",
-                "white_id": mock.ANY,
+                "white": mock.ANY,
                 "winner": None,
             },
-        )
-        self.assertTrue(
-            response.json()["black_id"] == oneUser.id
-            or response.json()["white_id"] == oneUser.id
         )
 
     # TODO deprecated, client chooses game and joins a random one
@@ -770,9 +765,11 @@ class Test_Api(unittest.TestCase):
 
         print(response.json())
         self.assertEqual(response.status_code, 404)
-        self.assertDictEqual(response.json(), {'detail': 'available random game not found'})
+        self.assertDictEqual(
+            response.json(), {"detail": "available random game not found"}
+        )
 
-    def test__listAvailableGames(self):
+    def test__get_available_games__all(self):
         token, _ = self.addFakeUsers(self.db)
         _ = self.addFakeGames(self.db, self.fakegamesdb())
 
@@ -786,37 +783,28 @@ class Test_Api(unittest.TestCase):
 
         print(response.json())
         self.assertEqual(response.status_code, 200)
-        self.maxDiff = None
+        game_ids = [game["id"] for game in response.json()]
+        self.assertListEqual(game_ids, [1, 2, 3, 4, 5])
+
+    def test__get_available_games__waiting(self):
+        token, _ = self.addFakeUsers(self.db)
+        _ = self.addFakeGames(self.db, self.fakegamesdb())
+
+        response = self.client.get(
+            "/games",
+            headers={
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json",
+            },
+            params={"status": ["waiting"]},
+        )
+
+        print(response.json())
+        self.assertEqual(response.status_code, 200)
+        game_ids = [(game["id"], game["status"]) for game in response.json()]
         self.assertListEqual(
-            response.json(),
-            [
-                {
-                    "id": 3,
-                    "uuid": mock.ANY,
-                    "created_at": mock.ANY,
-                    "owner": self.janedoe(),
-                    "last_move_time": None,
-                    "public": True,
-                    "white": None,
-                    "black": self.janedoe(),
-                    "status": GameStatus.WAITING,
-                    "turn": "white",
-                    "winner": None,
-                },
-                {
-                    "black": None,
-                    "created_at": mock.ANY,
-                    "uuid": mock.ANY,
-                    "id": 4,
-                    "last_move_time": None,
-                    "owner": self.janedoe(),
-                    "public": True,
-                    "status": GameStatus.WAITING,
-                    "turn": "white",
-                    "white": self.janedoe(),
-                    "winner": None,
-                },
-            ],
+            game_ids,
+            [(3, GameStatus.WAITING), (4, GameStatus.WAITING), (5, GameStatus.WAITING)],
         )
 
     # TODO this test was deactivated by mistake
