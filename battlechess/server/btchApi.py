@@ -102,8 +102,8 @@ def set_player(
 ):
     game.set_player(current_user)
 
-    # if all players are there, start
-    if game.is_full():
+    # if all players are there and game is waiting, start
+    if game.is_waiting() and game.is_full():
         crud.create_default_snap(db, current_user, game)
         game.start_game()
 

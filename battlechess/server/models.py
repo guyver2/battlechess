@@ -64,11 +64,7 @@ class Game(Base):
     def set_player(self, user: User):
 
         if self.white_id == user.id or self.black_id == user.id:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Player is already in this game",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+            return
 
         if not self.white_id and not self.black_id:
             # TODO random
@@ -94,6 +90,9 @@ class Game(Base):
         if user_id == self.black_id:
             return "black"
         return None
+
+    def is_waiting(self):
+        return self.status == GameStatus.WAITING
 
     def is_finished(self):
         return self.status == GameStatus.OVER

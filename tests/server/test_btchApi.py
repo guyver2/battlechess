@@ -868,10 +868,7 @@ class Test_Api(unittest.TestCase):
             },
         )
 
-        self.assertEqual(response.status_code, 409)
-        self.assertDictEqual(
-            response.json(), {"detail": "Player is already in this game"}
-        )
+        self.assertEqual(response.status_code, 200)
 
     def test__getsnap__byNum(self):
         firstgame_uuid, token = self.classicSetup()
