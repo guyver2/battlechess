@@ -638,16 +638,16 @@ class Test_Api(unittest.TestCase):
         self.assertDictEqual(
             response.json(),
             {
-                "black_id": None,
+                "black": None,
                 "created_at": mock.ANY,
                 "uuid": mock.ANY,
                 "id": 5,
-                "owner_id": 1,
+                "owner": self.johndoe(),
                 "last_move_time": None,
                 "public": False,
                 "status": GameStatus.WAITING,
                 "turn": "white",
-                "white_id": 1,
+                "white": self.johndoe(),
                 "winner": None,
             },
         )
@@ -1418,7 +1418,7 @@ class Test_Api(unittest.TestCase):
             },
         )
 
-        john_id = response.json()["id"]
+        john_username = response.json()["username"]
 
         self.assertEqual(response.status_code, 200)
 
@@ -1432,7 +1432,7 @@ class Test_Api(unittest.TestCase):
             },
         )
 
-        jane_id = response.json()["id"]
+        jane_username = response.json()["username"]
 
         self.assertEqual(response.status_code, 200)
 
@@ -1493,16 +1493,16 @@ class Test_Api(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["status"], GameStatus.WAITING)
 
-        white_id = response.json()["white_id"]
-        response.json()["black_id"]
+        white = response.json()["white"]
+        response.json()["black"]
         jane_color = (
-            None if not white_id else "white" if white_id == jane_id else "black"
+            None if not white else "white" if white["username"] == jane_username else "black"
         )
         john_color = (
             None
-            if not white_id
+            if not white
             else "white"
-            if response.json()["white_id"] == john_id
+            if white['username'] == john_username
             else "black"
         )
 

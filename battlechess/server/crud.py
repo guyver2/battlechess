@@ -263,7 +263,7 @@ def create_snap_by_move(
     winner = db_snap.winner()
     if winner:
         game.winner = winner
-        game.status = "finished"
+        game.status = schemas.GameStatus.OVER
         print(
             f"Game {game.uuid} {game.white_id} vs {game.black_id} won by {game.winner}"
         )

@@ -284,13 +284,36 @@ def post_new_game(
     return game
 
 
-@app.get("/games/{gameUUID}")
+@app.get("/games/{gameUUID}", response_model=schemas.Game)
 def get_game_by_uuid(
     gameUUID: str,
     current_user: schemas.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-    return crud.get_game_by_uuid(db, gameUUID)
+    game =  crud.get_game_by_uuid(db, gameUUID)
+    if not game:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"game {gameUUID} not found",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return game
+
+# TODO test and should it be a pydantic GameStatus?
+@app.get("/games/{gameUUID}/status", response_model=str)
+def get_game_status_by_uuid(
+    gameUUID: str,
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    game = crud.get_game_by_uuid(db, gameUUID)
+    if not game:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"game {gameUUID} not found",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return game.status
 
 
 # lists available games
@@ -506,8 +529,9 @@ def get_snap(
 
     player_color = "black" if current_user.id == game.black_id else "white"
     snap4player = schemas.GameSnap.model_validate(snap)
-    print(f"preparing board for {current_user.username} {player_color}")
-    snap4player.prepare_for_player(player_color)
+    if game.status != GameStatus.OVER:
+        print(f"preparing board for {current_user.username} {player_color}")
+        snap4player.prepare_for_player(player_color)
 
     return snap4player
 
@@ -539,9 +563,14 @@ def get_snap_by_move(
             headers={"Authorization": "Bearer"},
         )
 
-    player_color = "black" if current_user.id == game.black_id else "white"
+    print(f"check if we need to prepare snap {game.status}")
+
     snap4player = schemas.GameSnap.model_validate(snap)
-    snap4player.prepare_for_player(player_color)
+    if game.status != GameStatus.OVER:
+        player_color = "black" if current_user.id == game.black_id else "white"
+        snap4player.prepare_for_player(player_color)
+    else:
+        print("game is over and snap is",snap4player)
     return snap4player
 
 
@@ -569,6 +598,7 @@ def get_snaps(
     for snap in game.snaps:
 
         snap4player = schemas.GameSnap.model_validate(snap)
-        snap4player.prepare_for_player(player_color)
+        if game.status != GameStatus.OVER:
+            snap4player.prepare_for_player(player_color)
         result.append(snap4player)
     return result
