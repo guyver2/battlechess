@@ -477,6 +477,21 @@ def get_snap(
             detail="game not found",
             headers={"Authorization": "Bearer"},
         )
+
+    if game.is_waiting():
+        raise HTTPException(
+            status_code=status.HTTP_412_PRECONDITION_FAILED,
+            detail="a waiting game has no snaps",
+            headers={"Authorization": "Bearer"},
+        )
+
+    if len(game.snaps) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="snap not found",
+            headers={"Authorization": "Bearer"},
+        )
+
     snap = game.snaps[-1]
 
     if not snap:
