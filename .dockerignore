@@ -1,0 +1,10 @@
+fly.toml
+app
+battlechess_standalone
+client
+data
+ia
+tests
+.vscode
+.pytest_cache
+.github

@@ -3,7 +3,7 @@ import string
 
 from passlib.context import CryptContext
 
-from .config import HANDLEBASEURL
+from battlechess.server.config import HANDLEBASEURL
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

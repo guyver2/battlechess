@@ -1,7 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
+from battlechess.server.config import SQLALCHEMY_DATABASE_URL
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
+# SQLALCHEMY_DATABASE_URL = "sqlite:///./btchdb.sqlite"
 # SQLALCHEMY_DATABASE_URL = 'sqlite:///:memory:' # doesn't work
 # SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgresserver/db"
 

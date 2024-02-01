@@ -8,9 +8,9 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-pathlib = "^1.0.1"
 httpx = "^0.25.2"
 python-decouple = "^3.8"
+pathlib2 = "^2.3.7.post1"
 
 
 [tool.poetry.group.standalone.dependencies]
