@@ -490,11 +490,16 @@ def get_snap(
 ):
     game = get_game(gameUUID, current_user, db)
     # user not allowed to query that game snap for now
+    if not game:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="game not found",
+            headers={"Authorization": "Bearer"},
+        )
+
     if (game.status != GameStatus.OVER) and (
         current_user.id not in [game.white_id, game.black_id]
     ):
-        game = None
-    if not game:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="game not found",
