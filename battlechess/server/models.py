@@ -1,3 +1,4 @@
+import datetime
 from fastapi import HTTPException, status
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
@@ -20,7 +21,7 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     status = Column(String, default="active")
-    created_at = Column(DateTime)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     # games = relationship("Game", back_populates="owner", foreign_keys='Game.owner_id')
     # whites = relationship("Game", back_populates="white")
@@ -35,7 +36,7 @@ class Game(Base):
     __tablename__ = "game"
 
     id = Column(Integer, primary_key=True, index=True)
-    created_at = Column(DateTime)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
     uuid = Column(String)
     owner_id = Column(Integer, ForeignKey("user.id"))
     white_id = Column(Integer, ForeignKey("user.id"))
