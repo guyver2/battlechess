@@ -1,4 +1,6 @@
 import sys
+import time
+import asyncio
 import unittest
 import unittest.mock as mock
 from datetime import datetime, timedelta, timezone
@@ -1005,6 +1007,27 @@ class Test_Api(unittest.TestCase):
         print(response.json())
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), "black")
+
+    @unittest.skip("slow test")
+    def test__getTurn__long_polling(self):
+        firstgame_uuid, _ = self.classicSetup()
+        token = self.getToken("janedoe")
+
+        start = time.time()
+        response = self.client.get(
+            f"/games/{firstgame_uuid}/turn",
+            headers={
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json",
+            },
+            params={
+                "long_polling": True
+            }
+        )
+
+        elapsed = time.time() - start
+        self.assertGreater(elapsed,5)
+
 
     def test__move(self):
         firstgame_uuid, token = self.classicSetup()

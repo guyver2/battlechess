@@ -1,3 +1,4 @@
+import time
 from datetime import timedelta
 from typing import List, Union
 
@@ -405,9 +406,22 @@ def query_turn(
     gameUUID: str,
     current_user: schemas.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
+    long_polling: bool = False
 ):
     game = get_game(gameUUID, current_user, db)
-    return game.turn
+    if not long_polling:
+        return game.turn
+    
+    print("long polling")
+    start = time.time()
+    elapsed = 0
+    while elapsed < 10:
+        elapsed = time.time() - start
+        game = get_game(gameUUID, current_user, db)
+        if game.turn != game.get_player_color(current_user.id):
+            print(f"{current_user.username} is {game.get_player_color(current_user.id)} is not {game.turn}")
+            return game.turn
+        time.sleep(1)
 
 
 @app.post("/games/{gameUUID}/move", response_model=schemas.GameSnap)
