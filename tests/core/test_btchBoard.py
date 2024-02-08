@@ -1,174 +1,165 @@
-import unittest
-
 from battlechess.core.btchBoard import BtchBoard
 
 
-class Test_BtchBoard(unittest.TestCase):
-    def setUp(self):
-        pass
+def startboardStr():
+    return (
+        "RNBQKBNR"
+        "PPPPPPPP"
+        "________"
+        "________"
+        "________"
+        "________"
+        "pppppppp"
+        "rnbqkbnr"
+    )
 
-    def tearDown(self):
-        pass
+def fakeElements():
+    elements = {
+        "board": startboardStr(),
+        "taken": "",
+        "castleable": "LSKlsk",
+        "enpassant": None,
+        "winner": None,
+    }
 
-    def startboardStr(self):
-        return (
-            "RNBQKBNR"
-            "PPPPPPPP"
-            "________"
-            "________"
-            "________"
-            "________"
-            "pppppppp"
-            "rnbqkbnr"
-        )
+    return elements
 
-    def fakeElements(self):
-        elements = {
-            "board": self.startboardStr(),
-            "taken": "",
-            "castleable": "LSKlsk",
-            "enpassant": None,
-            "winner": None,
-        }
+def squares2ascii(squares):
+    return "\n".join(
+        "".join("x" if (i, j) in squares else "_" for j in range(0, 12))
+        for i in range(0, 12)
+    )
 
-        return elements
+def test__factory():
+    btchBoard = BtchBoard.factory(startboardStr())
 
-    def squares2ascii(self, squares):
-        return "\n".join(
-            "".join("x" if (i, j) in squares else "_" for j in range(0, 12))
-            for i in range(0, 12)
-        )
+    btchBoard.toElements() == fakeElements()
 
-    def test__factory(self):
-        btchBoard = BtchBoard.factory(self.startboardStr())
+def test__isEnemy():
 
-        self.assertEqual(btchBoard.toElements(), self.fakeElements())
+    result = BtchBoard.isEnemy("white", None)
 
-    def test__isEnemy(self):
+    assert not result
 
-        result = BtchBoard.isEnemy("white", None)
+    result = BtchBoard.isEnemy("white", "p")
 
-        self.assertFalse(result)
+    assert not result
 
-        result = BtchBoard.isEnemy("white", "p")
+    result = BtchBoard.isEnemy("white", "P")
 
-        self.assertFalse(result)
+    assert result
 
-        result = BtchBoard.isEnemy("white", "P")
+    result = BtchBoard.isEnemy("white", "_")
 
-        self.assertTrue(result)
+    assert not result
 
-        result = BtchBoard.isEnemy("white", "_")
+def test__rookMoves__emptyBoard():
 
-        self.assertFalse(result)
+    b = BtchBoard()
+    b.empty()
 
-    def test__rookMoves__emptyBoard(self):
+    moves = sorted(sq for sq in b.rookMoves("white", 2, 2))
 
-        b = BtchBoard()
-        b.empty()
+    print("moves\n{}".format(squares2ascii(moves)))
 
-        moves = sorted(sq for sq in b.rookMoves("white", 2, 2))
+    expected = sorted(
+        [(i, 2) for i in range(3, 10)] + [(2, j) for j in range(3, 10)]
+    )
 
-        print("moves\n{}".format(self.squares2ascii(moves)))
+    print("expected\n{}".format(squares2ascii(expected)))
 
-        expected = sorted(
-            [(i, 2) for i in range(3, 10)] + [(2, j) for j in range(3, 10)]
-        )
+    assert moves == expected
 
-        print("expected\n{}".format(self.squares2ascii(expected)))
+def test__rookMoves__startBoard():
 
-        self.assertListEqual(moves, expected)
+    b = BtchBoard()
 
-    def test__rookMoves__startBoard(self):
+    moves = sorted(sq for sq in b.rookMoves("black", 2, 2))
 
-        b = BtchBoard()
+    expected = []
 
-        moves = sorted(sq for sq in b.rookMoves("black", 2, 2))
+    assert moves == expected
 
-        expected = []
+def test__bishopMoves__emptyBoard():
 
-        self.assertListEqual(moves, expected)
+    b = BtchBoard()
+    b.empty()
 
-    def test__bishopMoves__emptyBoard(self):
+    moves = sorted(sq for sq in b.bishopMoves("white", 6, 6))
 
-        b = BtchBoard()
-        b.empty()
+    print("moves\n{}".format(squares2ascii(moves)))
 
-        moves = sorted(sq for sq in b.bishopMoves("white", 6, 6))
+    expected = sorted(
+        [(i, i) for i in range(2, 10)] + [(3 + i, 9 - i) for i in range(0, 7)]
+    )
+    expected.remove((6, 6))
+    expected.remove((6, 6))
 
-        print("moves\n{}".format(self.squares2ascii(moves)))
+    print("expected\n {}".format(squares2ascii(expected)))
 
-        expected = sorted(
-            [(i, i) for i in range(2, 10)] + [(3 + i, 9 - i) for i in range(0, 7)]
-        )
-        expected.remove((6, 6))
-        expected.remove((6, 6))
+    assert moves == expected
 
-        print("expected\n {}".format(self.squares2ascii(expected)))
+def test__moves__pawn():
+    b = BtchBoard()
 
-        self.assertListEqual(moves, expected)
+    moves = sorted(sq for sq in b.pawnMoves("white", 8, 6))
 
-    def test__moves__pawn(self):
-        b = BtchBoard()
+    expected = [(6, 6), (7, 6)]
 
-        moves = sorted(sq for sq in b.pawnMoves("white", 8, 6))
+    assert moves == expected
 
-        expected = [(6, 6), (7, 6)]
+def test__moves__manyMoves():
+    pass
 
-        self.assertListEqual(moves, expected)
+def test__moves__enpassant():
+    pass
 
-    def test__moves__manyMoves(self):
-        pass
+def test__moves__notMovingForbidden():
+    pass
 
-    def test__moves__enpassant(self):
-        pass
+# check that an impossible move is possible if fogged enemies
+def test__moves__unknownInfo():
+    pass
 
-    def test__moves__notMovingForbidden(self):
-        pass
+def test__filter__startPosition():
+    color = "white"
+    b = BtchBoard()
+    b.filter(color)
 
-    # check that an impossible move is possible if fogged enemies
-    def test__moves__unknownInfo(self):
-        pass
+    expectedBoardStr = (
+        "________"
+        "________"
+        "________"
+        "________"
+        "________"
+        "________"
+        "pppppppp"
+        "rnbqkbnr"
+    )
 
-    def test__filter__startPosition(self):
-        color = "white"
-        b = BtchBoard()
-        b.filter(color)
+    expected = BtchBoard.factory(expectedBoardStr)
+    expected.castleable = "lsk"
 
-        expectedBoardStr = (
-            "________"
-            "________"
-            "________"
-            "________"
-            "________"
-            "________"
-            "pppppppp"
-            "rnbqkbnr"
-        )
+    assert b.toElements() == expected.toElements()
 
-        expected = BtchBoard.factory(expectedBoardStr)
-        expected.castleable = "lsk"
+def test__moves__fog():
+    boardStr = (
+        "________"
+        "________"
+        "________"
+        "________"
+        "________"
+        "________"
+        "ppppppp_"
+        "rnbqkbnr"
+    )
 
-        self.assertDictEqual(b.toElements(), expected.toElements())
+    b = BtchBoard.factory(boardStr)
 
-    def test__moves__fog(self):
-        boardStr = (
-            "________"
-            "________"
-            "________"
-            "________"
-            "________"
-            "________"
-            "ppppppp_"
-            "rnbqkbnr"
-        )
+    print("fog {} ".format(b.toElements()))
 
-        b = BtchBoard.factory(boardStr)
+    moves = b.possibleMoves("white", 9, 9)
 
-        print("fog {} ".format(b.toElements()))
+    expectedMoves = sorted([(i, 9) for i in range(2, 9)])
 
-        moves = b.possibleMoves("white", 9, 9)
-
-        expectedMoves = sorted([(i, 9) for i in range(2, 9)])
-
-        self.assertListEqual(moves, expectedMoves)
+    assert moves == expectedMoves
