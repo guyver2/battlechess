@@ -557,7 +557,7 @@ def test__getsnap__byNum(db, client, classicSetup, fakegamesdb, addFakeGameSnaps
         'id': 1,
         'move': None,
         'taken': '',
-        'castleable': '',
+        'castleable': 'lks',
         'move_number': 0,
         'board': ('xxxxxxxx'
                   'xxxxxxxx'
@@ -590,7 +590,7 @@ def test__getsnaps(db, client, classicSetup):
         'id': 1,
         'move': None,
         'taken': '',
-        'castleable': '',
+        'castleable': 'lks',
         'move_number': 0,
         'board': ('xxxxxxxx'
                     'xxxxxxxx'
@@ -606,7 +606,7 @@ def test__getsnaps(db, client, classicSetup):
         'id': 2,
         'move': 'd2d4',
         'taken': '',
-        'castleable': '',
+        'castleable': 'lks',
         'move_number': 1,
         'board': ('xxxxxxxx'
                     'xxxxxxxx'
@@ -639,7 +639,7 @@ def test__getsnap__latest(db, client, classicSetup):
         'id': 2,
         'move': 'd2d4',
         'taken': '',
-        'castleable': '',
+        'castleable': 'lks',
         'move_number': 1,
         'board': ('xxxxxxxx'
                   'xxxxxxxx'

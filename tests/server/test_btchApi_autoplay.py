@@ -100,5 +100,4 @@ def test__move__MrExonGames(db, client, game_setup):
                     print(response.json())
                 assert response.status_code == 200
 
-            db.rollback()
-            #resetGame(db, firstgame_uuid)
+            resetGame(db, firstgame_uuid)

@@ -126,7 +126,7 @@ def fakegamesnapsdb():
                 "rnbqkbnr"
             ),
             "taken": "",
-            "castleable": "",
+            "castleable": "LKSlks",
             "move_number": 0,
             "created_at": datetime(2021, 4, 5, 0, tzinfo=timezone.utc),
         },
@@ -144,7 +144,7 @@ def fakegamesnapsdb():
                 "rnbqkbnr"
             ),
             "taken": "",
-            "castleable": "",
+            "castleable": "LKSlks",
             "move_number": 1,
             "created_at": datetime(2021, 4, 5, 10, tzinfo=timezone.utc),
         },
@@ -239,6 +239,25 @@ def addFakeGameSnaps(db):
         db.commit()
 
 @pytest.fixture(scope="function")
+def addFakeGameStartSnap(db):
+    snap = fakegamesnapsdb()[0]
+    guuid = snap["game_uuid"]
+
+    game = crud.get_game_by_uuid(db, guuid)
+
+    db_snap = models.GameSnap(
+        created_at=snap["created_at"],
+        game_id=game.id,
+        board=snap["board"],
+        move=snap["move"],
+        taken=snap["taken"],
+        castleable=snap["castleable"],
+        move_number=snap["move_number"],
+    )
+    db.add(db_snap)
+    db.commit()
+
+@pytest.fixture(scope="function")
 def addCustomGameSnap(request, db):
     boardStr, move = request.param
     guuid = "lkml4a3.d3"
@@ -312,7 +331,7 @@ def getToken(username):
 
 
 @pytest.fixture(scope="function")
-def game_setup(db, addFakeUsers, addFakeGames, addFakeGameSnaps, fakegamesdb):
+def game_setup(db, addFakeUsers, addFakeGames, addFakeGameStartSnap, fakegamesdb):
     _, _ = addFakeUsers
     jane_token = getToken("janedoe")
     john_token = getToken("johndoe")
