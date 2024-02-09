@@ -14,6 +14,7 @@ try:
 except ImportError:
     print("PIL module is not installed. Some tests will be skipped")
 
+from httpx import AsyncClient
 from fastapi.testclient import TestClient
 
 from battlechess.server import crud, models
@@ -683,6 +684,35 @@ def test__getTurn__long_polling(client, classicSetup):
             "long_polling": True
         }
     )
+
+    elapsed = time.time() - start
+    assert elapsed > 5
+
+@pytest.mark.anyio
+async def test_root():
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        response = await ac.get("/")
+    assert response.status_code == 200
+    assert response.json() == {"message": "Tomato"}
+
+@pytest.mark.anyio
+async def test__getTurn__long_polling_async(classicSetup):
+    firstgame_uuid, _ = classicSetup
+    token = getToken("janedoe")
+
+    start = time.time()
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        response = await ac.get(
+            f"/games/{firstgame_uuid}/turn",
+            headers={
+                "Authorization": "Bearer " + token,
+                "Content-Type": "application/json",
+            },
+            params={
+                "long_polling": True
+            }
+        )
+    assert response.status_code == 200
 
     elapsed = time.time() - start
     assert elapsed > 5
