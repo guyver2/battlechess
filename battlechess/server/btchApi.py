@@ -118,6 +118,9 @@ def set_player(
 def version():
     return {"version": "1.0"}
 
+@app.get("/")
+async def root():
+    return {"message": "Tomato"}
 
 @app.post("/token", response_model=schemas.Token)
 def login_for_access_token(
