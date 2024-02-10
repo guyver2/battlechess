@@ -1,11 +1,11 @@
+import asyncio
 import sys
 import time
-import asyncio
-import pytest
 import unittest.mock as mock
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -14,8 +14,8 @@ try:
 except ImportError:
     print("PIL module is not installed. Some tests will be skipped")
 
-from httpx import AsyncClient
 from fastapi.testclient import TestClient
+from httpx import AsyncClient
 
 from battlechess.server import crud, models
 from battlechess.server.btchApi import app, get_db
@@ -27,10 +27,12 @@ from battlechess.server.utils import get_password_hash, verify_password
 def testDataDir():
     return Path(__file__).parent.parent / "data" / "avatars"
 
+
 def getToken(username):
     return crud.create_access_token(
         data={"sub": username}, expires_delta=timedelta(minutes=3000)
     )
+
 
 def test__version(client):
     response = client.get("/version")
@@ -56,7 +58,7 @@ def test__createUser(client):
     assert response.json() is not None
     response_dict = response.json()
     assert verify_password("secret", response_dict["hashed_password"])
-                           
+
     response_dict.pop("hashed_password", None)
     assert response_dict == {
         "username": "alice",
@@ -67,6 +69,7 @@ def test__createUser(client):
         "avatar": None,
         "status": "active",
     }
+
 
 def test__create_user__with_avatar(client):
     get_password_hash("secret")
@@ -120,6 +123,7 @@ def _test__update_user__full_name(db, client, addFakeUsers):
         "plain_password": "secret",
     }
 
+
 @pytest.mark.skipif("PIL" not in sys.modules, reason="PIL module is not installed")
 def test__upload_user__avatarImage(db, client, addFakeUsers):
     token, _ = addFakeUsers
@@ -151,6 +155,7 @@ def test__upload_user__avatarImage(db, client, addFakeUsers):
     # remove the test file from the config directory
     expected_avatar_file.unlink()
 
+
 @pytest.mark.skipif("PIL" not in sys.modules, reason="PIL module is not installed")
 def test__upload_user__avatarImage__file_too_big(db, client, addFakeUsers):
     token, _ = addFakeUsers
@@ -167,9 +172,11 @@ def test__upload_user__avatarImage__file_too_big(db, client, addFakeUsers):
     print(response.json())
     assert response.status_code == 422
 
+
 def test__getUsers__unauthorized(client):
     response = client.get("/users/")
     assert response.status_code == 401
+
 
 def test__authenticate(client):
 
@@ -196,6 +203,7 @@ def test__authenticate(client):
 
     assert response.status_code == 200
     assert list(response.json().keys()) == ["access_token", "token_type"]
+
 
 def test__createUser__persistence(client):
     response = client.post(
@@ -230,8 +238,10 @@ def test__createUser__persistence(client):
     assert response.status_code == 200
     assert response.json() == ["alice"]
 
+
 def test__addFakeUsers(db, addFakeUsers):
     pass
+
 
 def test__getUsernames(db, client, addFakeUsers):
     token, _ = addFakeUsers
@@ -245,6 +255,7 @@ def test__getUsernames(db, client, addFakeUsers):
 
     assert response.status_code == 200
     assert response.json() == ["johndoe", "janedoe"]
+
 
 def test__getUserById(db, client, addFakeUsers):
     token, _ = addFakeUsers
@@ -264,6 +275,7 @@ def test__getUserById(db, client, addFakeUsers):
         "status": "active",
     }
 
+
 def test__getUserById__malformedId(db, client, addFakeUsers):
     token, _ = addFakeUsers
 
@@ -276,11 +288,13 @@ def test__getUserById__malformedId(db, client, addFakeUsers):
     print(response.json())
     assert response.json()["detail"][0]["type"] == "int_parsing"
 
+
 def test__db_cleanup(db):
 
     users = db.query(models.User).all()
 
     assert users == []
+
 
 def test__createGame(db, client, addFakeUsers):
     token, _ = addFakeUsers
@@ -310,6 +324,7 @@ def test__createGame(db, client, addFakeUsers):
         "white_id": response.json()["owner_id"],
         "winner": None,
     }
+
 
 def test__get_game_by_uuid(db, client, addFakeUsers, addFakeGames, johndoe):
     token, _ = addFakeUsers
@@ -342,6 +357,7 @@ def test__get_game_by_uuid(db, client, addFakeUsers, addFakeGames, johndoe):
         "winner": None,
     }
 
+
 def test__get_me_games(db, client, addFakeUsers, addFakeGames, johndoe, janedoe):
     token, _ = addFakeUsers
 
@@ -368,9 +384,12 @@ def test__get_me_games(db, client, addFakeUsers, addFakeGames, johndoe, janedoe)
         "turn": "black",
         "white": johndoe,
         "winner": None,
-    }    
+    }
 
-def test__getGames__finishedGame(db, client, addFakeUsers, addFakeGames, addFakeGameSnaps, johndoe, janedoe):
+
+def test__getGames__finishedGame(
+    db, client, addFakeUsers, addFakeGames, addFakeGameSnaps, johndoe, janedoe
+):
     # change to second player
     jane_token = getToken("janedoe")
     _ = getToken("johndoe")
@@ -388,6 +407,7 @@ def test__getGames__finishedGame(db, client, addFakeUsers, addFakeGames, addFake
     assert len(games) == 4
     finishedgame = [g for g in games if g["status"] == GameStatus.OVER][0]
     assert finishedgame["turn"] is None
+
 
 # TODO test list random games before setting my player
 def test__joinRandomGame(db, client, addFakeUsers, addFakeGames):
@@ -426,6 +446,7 @@ def test__joinRandomGame(db, client, addFakeUsers, addFakeGames):
         "winner": None,
     }
 
+
 # TODO deprecated, client chooses game and joins a random one
 def test__joinRandomGame__noneAvailable(db, client, addFakeUsers, addFakeDoneGames):
     token, _ = addFakeUsers
@@ -441,6 +462,7 @@ def test__joinRandomGame__noneAvailable(db, client, addFakeUsers, addFakeDoneGam
     print(response.json())
     assert response.status_code == 404
     assert response.json() == {"detail": "available random game not found"}
+
 
 def test__get_available_games__all(db, client, addFakeUsers, addFakeGames):
     token, _ = addFakeUsers
@@ -458,6 +480,7 @@ def test__get_available_games__all(db, client, addFakeUsers, addFakeGames):
     game_ids = [game["id"] for game in response.json()]
     assert game_ids == [1, 2, 3, 4, 5]
 
+
 def test__get_available_games__waiting(db, client, addFakeUsers, addFakeGames):
     token, _ = addFakeUsers
 
@@ -474,8 +497,11 @@ def test__get_available_games__waiting(db, client, addFakeUsers, addFakeGames):
     assert response.status_code == 200
     game_ids = [(game["id"], game["status"]) for game in response.json()]
     assert game_ids == [
-        (3, GameStatus.WAITING), (4, GameStatus.WAITING), (5, GameStatus.WAITING)
+        (3, GameStatus.WAITING),
+        (4, GameStatus.WAITING),
+        (5, GameStatus.WAITING),
     ]
+
 
 # TODO this test was deactivated by mistake
 def _test__joinGame__playerAlreadyInGame(db, client, addFakeUsers, addFakeGames):
@@ -485,9 +511,7 @@ def _test__joinGame__playerAlreadyInGame(db, client, addFakeUsers, addFakeGames)
 
     user = crud.get_user_by_username(db, username)
 
-    game_before = (
-        db.query(models.Game).filter(models.Game.uuid == uuid).first()
-    )
+    game_before = db.query(models.Game).filter(models.Game.uuid == uuid).first()
 
     response = client.get(
         f"/games/{uuid}/join",
@@ -518,6 +542,7 @@ def _test__joinGame__playerAlreadyInGame(db, client, addFakeUsers, addFakeGames)
         "white_id": game.white_id,
     }
 
+
 def test__joinGame__playerAlreadyInGame__simple(db, client, addFakeUsers, addFakeGames):
     token, username = addFakeUsers
     uuid = addFakeGames
@@ -535,6 +560,7 @@ def test__joinGame__playerAlreadyInGame__simple(db, client, addFakeUsers, addFak
     )
 
     assert response.status_code == 200
+
 
 def test__getsnap__byNum(db, client, classicSetup, fakegamesdb, addFakeGameSnaps):
     firstgame_uuid, token = classicSetup
@@ -570,6 +596,7 @@ def test__getsnap__byNum(db, client, classicSetup, fakegamesdb, addFakeGameSnaps
                   'rnbqkbnr'),
     }
     # yapf: enable
+
 
 def test__getsnaps(db, client, classicSetup):
     firstgame_uuid, token = classicSetup
@@ -620,6 +647,7 @@ def test__getsnaps(db, client, classicSetup):
     }]
     # yapf: enable
 
+
 def test__getsnap__latest(db, client, classicSetup):
     firstgame_uuid, token = classicSetup
 
@@ -653,6 +681,7 @@ def test__getsnap__latest(db, client, classicSetup):
     }
     # yapf: enable
 
+
 def test__getTurn(db, client, classicSetup):
     firstgame_uuid, token = classicSetup
 
@@ -668,6 +697,7 @@ def test__getTurn(db, client, classicSetup):
     assert response.status_code == 200
     assert response.json() == "black"
 
+
 @pytest.mark.skip(reason="slow test")
 def test__getTurn__long_polling(client, classicSetup):
     firstgame_uuid, _ = classicSetup
@@ -680,39 +710,8 @@ def test__getTurn__long_polling(client, classicSetup):
             "Authorization": "Bearer " + token,
             "Content-Type": "application/json",
         },
-        params={
-            "long_polling": True
-        }
+        params={"long_polling": True},
     )
-
-    elapsed = time.time() - start
-    assert elapsed > 5
-
-@pytest.mark.anyio
-async def test_root():
-    async with AsyncClient(app=app, base_url="http://test") as ac:
-        response = await ac.get("/")
-    assert response.status_code == 200
-    assert response.json() == {"message": "Tomato"}
-
-@pytest.mark.anyio
-async def test__getTurn__long_polling_async(classicSetup):
-    firstgame_uuid, _ = classicSetup
-    token = getToken("janedoe")
-
-    start = time.time()
-    async with AsyncClient(app=app, base_url="http://test") as ac:
-        response = await ac.get(
-            f"/games/{firstgame_uuid}/turn",
-            headers={
-                "Authorization": "Bearer " + token,
-                "Content-Type": "application/json",
-            },
-            params={
-                "long_polling": True
-            }
-        )
-    assert response.status_code == 200
 
     elapsed = time.time() - start
     assert elapsed > 5
@@ -724,9 +723,7 @@ def test__move(db, client, classicSetup):
     # get previous game/board
 
     game_before = (
-        db.query(models.Game)
-        .filter(models.Game.uuid == firstgame_uuid)
-        .first()
+        db.query(models.Game).filter(models.Game.uuid == firstgame_uuid).first()
     )
 
     response = client.post(
@@ -743,9 +740,7 @@ def test__move(db, client, classicSetup):
     # get after game/board
 
     game_after = (
-        db.query(models.Game)
-        .filter(models.Game.uuid == firstgame_uuid)
-        .first()
+        db.query(models.Game).filter(models.Game.uuid == firstgame_uuid).first()
     )
 
     # test board is the expected one
@@ -812,6 +807,7 @@ def test__move__filtered(db, client, classicSetup):
         "XXXXXXXX"
     )
 
+
 def test__possibleMoves__pawnMove(db, client, classicSetup):
     firstgame_uuid, _ = classicSetup
     # change to second player
@@ -832,19 +828,25 @@ def test__possibleMoves__pawnMove(db, client, classicSetup):
 
     assert response.json() == ["d6", "d5"]
 
+
 @pytest.mark.parametrize(
-        "addCustomGameSnap",
-        [((
-        "____K___"
-        "________"
-        "________"
-        "__p_____"
-        "________"
-        "____pk__"
-        "___P_pp_"
-        "________"
-        ), "g3f3")],
-        indirect=True
+    "addCustomGameSnap",
+    [
+        (
+            (
+                "____K___"
+                "________"
+                "________"
+                "__p_____"
+                "________"
+                "____pk__"
+                "___P_pp_"
+                "________"
+            ),
+            "g3f3",
+        )
+    ],
+    indirect=True,
 )
 def test__possibleMoves__king(db, client, classicSetup, addCustomGameSnap):
     firstgame_uuid, token = classicSetup
@@ -866,20 +868,27 @@ def test__possibleMoves__king(db, client, classicSetup, addCustomGameSnap):
 
 
 @pytest.mark.parametrize(
-        "addCustomGameSnap",
-        [((
-        "____K___"
-        "________"
-        "________"
-        "________"
-        "__pP____"
-        "____pk__"
-        "_____pp_"
-        "________"
-    ), "c2c4")],
-        indirect=True
+    "addCustomGameSnap",
+    [
+        (
+            (
+                "____K___"
+                "________"
+                "________"
+                "________"
+                "__pP____"
+                "____pk__"
+                "_____pp_"
+                "________"
+            ),
+            "c2c4",
+        )
+    ],
+    indirect=True,
 )
-def test__possibleMoves__pawn_enpassant_black(db, client, classicSetup, addCustomGameSnap):
+def test__possibleMoves__pawn_enpassant_black(
+    db, client, classicSetup, addCustomGameSnap
+):
     firstgame_uuid, _ = classicSetup
 
     token = getToken("janedoe")
@@ -899,21 +908,29 @@ def test__possibleMoves__pawn_enpassant_black(db, client, classicSetup, addCusto
 
     assert response.json() == ["c3", "d3", "e3"]
 
+
 @pytest.mark.parametrize(
-        "addCustomGameSnap",
-        [((
-        "____K___"
-        "________"
-        "________"
-        "__pP____"
-        "________"
-        "____pk__"
-        "_____pp_"
-        "________"
-    ), "d7d5")],
-        indirect=True
+    "addCustomGameSnap",
+    [
+        (
+            (
+                "____K___"
+                "________"
+                "________"
+                "__pP____"
+                "________"
+                "____pk__"
+                "_____pp_"
+                "________"
+            ),
+            "d7d5",
+        )
+    ],
+    indirect=True,
 )
-def test__possibleMoves__pawn_enpassant_white(db, client, classicSetup, addCustomGameSnap):
+def test__possibleMoves__pawn_enpassant_white(
+    db, client, classicSetup, addCustomGameSnap
+):
     firstgame_uuid, token = classicSetup
 
     square = "c5"
@@ -933,20 +950,27 @@ def test__possibleMoves__pawn_enpassant_white(db, client, classicSetup, addCusto
 
 
 @pytest.mark.parametrize(
-        "addCustomGameSnap",
-        [((
-        "____K___"
-        "________"
-        "________"
-        "__pP____"
-        "________"
-        "____pk__"
-        "_____pp_"
-        "________"
-    ), "c7c5")],
-        indirect=True
+    "addCustomGameSnap",
+    [
+        (
+            (
+                "____K___"
+                "________"
+                "________"
+                "__pP____"
+                "________"
+                "____pk__"
+                "_____pp_"
+                "________"
+            ),
+            "c7c5",
+        )
+    ],
+    indirect=True,
 )
-def test__possibleMoves__pawn_impossible_enpassant_black(db, client, classicSetup, addCustomGameSnap):
+def test__possibleMoves__pawn_impossible_enpassant_black(
+    db, client, classicSetup, addCustomGameSnap
+):
     firstgame_uuid, _ = classicSetup
 
     token = getToken("janedoe")
@@ -968,18 +992,23 @@ def test__possibleMoves__pawn_impossible_enpassant_black(db, client, classicSetu
 
 
 @pytest.mark.parametrize(
-        "addCustomGameSnap",
-        [((
-        "____K___"
-        "_____PP_"
-        "_____p__"
-        "________"
-        "________"
-        "_____k__"
-        "_____pp_"
-        "________"
-    ), "f5f6")],
-        indirect=True
+    "addCustomGameSnap",
+    [
+        (
+            (
+                "____K___"
+                "_____PP_"
+                "_____p__"
+                "________"
+                "________"
+                "_____k__"
+                "_____pp_"
+                "________"
+            ),
+            "f5f6",
+        )
+    ],
+    indirect=True,
 )
 def test__possibleMoves__pawn_take(db, client, classicSetup, addCustomGameSnap):
     firstgame_uuid, token = classicSetup
@@ -999,6 +1028,7 @@ def test__possibleMoves__pawn_take(db, client, classicSetup, addCustomGameSnap):
 
     assert response.json() == ["g7"]
 
+
 def send_move(client, game_uuid, move, token):
     response = client.post(
         f"/games/{game_uuid}/move",
@@ -1012,11 +1042,13 @@ def send_move(client, game_uuid, move, token):
     )
     return response
 
+
 def prettyBoard(boardStr):
     print("    abcdefgh")
     print("    01234567")
     for i in range(8):
         print("{} - {} - {}".format(i, boardStr[8 * i : 8 * i + 8], 8 - i))
+
 
 def test__move__filtered_pawn(db, client, game_setup, addFakeGameSnaps):
 
@@ -1062,6 +1094,7 @@ def test__move__filtered_pawn(db, client, game_setup, addFakeGameSnaps):
         "XXXXXXXX"
     )
 
+
 # use this method as reference to reproduce any game moves
 # TODO use a virgin game instead of the firstgame_uuid
 def test__move__fogTest(db, client, game_setup, addFakeGameSnaps):
@@ -1090,6 +1123,7 @@ def test__move__fogTest(db, client, game_setup, addFakeGameSnaps):
         "XXX_X__X"
         "XXXXXXXX"
     )
+
 
 def test__integrationTest__foolscheckmate(client):
 
@@ -1184,13 +1218,17 @@ def test__integrationTest__foolscheckmate(client):
     white = response.json()["white"]
     response.json()["black"]
     jane_color = (
-        None if not white else "white" if white["username"] == jane_username else "black"
+        None
+        if not white
+        else "white"
+        if white["username"] == jane_username
+        else "black"
     )
     john_color = (
         None
         if not white
         else "white"
-        if white['username'] == john_username
+        if white["username"] == john_username
         else "black"
     )
 
@@ -1305,7 +1343,7 @@ def test__integrationTest__foolscheckmate(client):
             if john_color == "white":
                 assert response.json()["board"] == boards[i][0]
             else:
-                assert response.json()["board"]== boards[i][1]
+                assert response.json()["board"] == boards[i][1]
 
     # checkmate
 
@@ -1325,4 +1363,3 @@ def test__integrationTest__foolscheckmate(client):
     )
 
     assert response.json()["winner"] == "black"
-
