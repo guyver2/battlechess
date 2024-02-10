@@ -1,4 +1,5 @@
 import time
+import asyncio
 from datetime import timedelta
 from typing import List, Union
 
@@ -403,7 +404,7 @@ def query_board(
 
 # who's turn is it (None means that the game is over)
 @app.get("/games/{gameUUID}/turn")
-def query_turn(
+async def query_turn(
     gameUUID: str,
     current_user: schemas.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
@@ -434,7 +435,7 @@ def query_turn(
             print(
                 f"turn request {elapsed} s: {current_user.username} is {game.get_player_color(current_user.id)}. It's {game.turn} turn"
             )
-        time.sleep(1)
+        await asyncio.sleep(1)
 
     # should we return exception instead?
     return game.turn
