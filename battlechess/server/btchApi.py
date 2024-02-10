@@ -118,9 +118,6 @@ def set_player(
 def version():
     return {"version": "1.0"}
 
-@app.get("/")
-async def root():
-    return {"message": "Tomato"}
 
 @app.post("/token", response_model=schemas.Token)
 def login_for_access_token(
@@ -294,7 +291,7 @@ def get_game_by_uuid(
     current_user: schemas.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ):
-    game =  crud.get_game_by_uuid(db, gameUUID)
+    game = crud.get_game_by_uuid(db, gameUUID)
     if not game:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -302,6 +299,7 @@ def get_game_by_uuid(
             headers={"WWW-Authenticate": "Bearer"},
         )
     return game
+
 
 # TODO test and should it be a pydantic GameStatus?
 @app.get("/games/{gameUUID}/status", response_model=str)
@@ -409,12 +407,12 @@ def query_turn(
     gameUUID: str,
     current_user: schemas.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
-    long_polling: bool = False
+    long_polling: bool = False,
 ):
     game = get_game(gameUUID, current_user, db)
     if not long_polling:
         return game.turn
-    
+
     print("long polling")
     start = time.time()
     elapsed = 0
@@ -422,7 +420,9 @@ def query_turn(
         elapsed = time.time() - start
         game = get_game(gameUUID, current_user, db)
         if game.turn != game.get_player_color(current_user.id):
-            print(f"{current_user.username} is {game.get_player_color(current_user.id)} is not {game.turn}")
+            print(
+                f"{current_user.username} is {game.get_player_color(current_user.id)} is not {game.turn}"
+            )
             return game.turn
         time.sleep(1)
 
@@ -600,7 +600,7 @@ def get_snap_by_move(
         player_color = "black" if current_user.id == game.black_id else "white"
         snap4player.prepare_for_player(player_color)
     else:
-        print("game is over and snap is",snap4player)
+        print("game is over and snap is", snap4player)
     return snap4player
 
 

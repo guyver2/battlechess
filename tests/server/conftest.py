@@ -1,17 +1,18 @@
-import pytest
 from datetime import datetime, timedelta, timezone
 
+import pytest
 from fastapi.testclient import TestClient
+from httpx import AsyncClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-from sqlalchemy_utils import create_database
-from sqlalchemy_utils import database_exists
+from sqlalchemy_utils import create_database, database_exists
 
 from battlechess.server import crud, models
 from battlechess.server.btchApi import app, get_db
 from battlechess.server.btchApiDB import Base
 from battlechess.server.schemas import GameStatus
 from battlechess.server.utils import get_password_hash, verify_password
+
 
 @pytest.fixture
 def fakeusersdb():
@@ -37,6 +38,7 @@ def fakeusersdb():
     }
     return fake_users_db
 
+
 @pytest.fixture(scope="function")
 def janedoe():
     return {
@@ -46,6 +48,7 @@ def janedoe():
         "username": "janedoe",
     }
 
+
 @pytest.fixture(scope="function")
 def johndoe():
     return {
@@ -54,6 +57,7 @@ def johndoe():
         "full_name": "John Doe",
         "username": "johndoe",
     }
+
 
 @pytest.fixture
 def fakegamesdb():
@@ -110,6 +114,7 @@ def fakegamesdb():
     }
     return fake_games_db
 
+
 def fakegamesnapsdb():
     fake_games_snaps = [
         {
@@ -151,6 +156,7 @@ def fakegamesnapsdb():
     ]
     return fake_games_snaps
 
+
 @pytest.fixture(scope="function")
 def addFakeUsers(db, fakeusersdb):
     for username, user in fakeusersdb.items():
@@ -169,19 +175,13 @@ def addFakeUsers(db, fakeusersdb):
 def addFakeGamesFromDict(db, gamesdb):
     for uuid, game in gamesdb.items():
         owner = (
-            db.query(models.User)
-            .filter(models.User.username == game["owner"])
-            .first()
+            db.query(models.User).filter(models.User.username == game["owner"]).first()
         )
         white = (
-            db.query(models.User)
-            .filter(models.User.username == game["white"])
-            .first()
+            db.query(models.User).filter(models.User.username == game["white"]).first()
         )
         black = (
-            db.query(models.User)
-            .filter(models.User.username == game["black"])
-            .first()
+            db.query(models.User).filter(models.User.username == game["black"]).first()
         )
         db_game = models.Game(
             created_at=game["created_at"],
@@ -206,10 +206,12 @@ def addFakeGamesFromDict(db, gamesdb):
         )
     return uuid
 
+
 @pytest.fixture(scope="function")
 def addFakeGames(db, fakegamesdb):
     gamesdb = fakegamesdb
     return addFakeGamesFromDict(db, gamesdb)
+
 
 @pytest.fixture(scope="function")
 def addFakeDoneGames(db, fakegamesdb):
@@ -217,6 +219,7 @@ def addFakeDoneGames(db, fakegamesdb):
     gamesdbmod["123fr12339"]["status"] = "done"
     gamesdbmod["da40a3ee5e"]["status"] = "done"
     return addFakeGamesFromDict(db, gamesdbmod)
+
 
 @pytest.fixture(scope="function")
 def addFakeGameSnaps(db):
@@ -238,6 +241,7 @@ def addFakeGameSnaps(db):
         db.add(db_snap)
         db.commit()
 
+
 @pytest.fixture(scope="function")
 def addFakeGameStartSnap(db):
     snap = fakegamesnapsdb()[0]
@@ -256,6 +260,7 @@ def addFakeGameStartSnap(db):
     )
     db.add(db_snap)
     db.commit()
+
 
 @pytest.fixture(scope="function")
 def addCustomGameSnap(request, db):
@@ -276,10 +281,12 @@ def addCustomGameSnap(request, db):
     db.add(db_snap)
     db.commit()
 
+
 def getToken(username):
     return crud.create_access_token(
         data={"sub": username}, expires_delta=timedelta(minutes=3000)
     )
+
 
 @pytest.fixture(scope="function")
 def classicSetup(db, addFakeUsers, addFakeGames, fakegamesdb, addFakeGameSnaps):
@@ -287,6 +294,7 @@ def classicSetup(db, addFakeUsers, addFakeGames, fakegamesdb, addFakeGameSnaps):
     firstgame_uuid = list(fakegamesdb.values())[0]["uuid"]
 
     return firstgame_uuid, token
+
 
 @pytest.fixture(scope="session")
 def db_engine():
@@ -324,6 +332,15 @@ def client(db):
     with TestClient(app) as c:
         yield c
 
+
+@pytest.fixture(scope="function")
+async def asyncclient(db):
+    app.dependency_overrides[get_db] = lambda: db
+
+    async with AsyncClient(app=app, base_url="http://test") as c:
+        yield c
+
+
 def getToken(username):
     return crud.create_access_token(
         data={"sub": username}, expires_delta=timedelta(minutes=3000)
@@ -338,5 +355,3 @@ def game_setup(db, addFakeUsers, addFakeGames, addFakeGameStartSnap, fakegamesdb
     firstgame_uuid = list(fakegamesdb.values())[0]["uuid"]
 
     return firstgame_uuid, john_token, jane_token
-
-
