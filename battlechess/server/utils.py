@@ -1,20 +1,23 @@
 import random
 import string
-
-from passlib.context import CryptContext
+import bcrypt
 
 from battlechess.server.config import HANDLEBASEURL
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
 def verify_password(plain_password, hashed_password):
-    # TODO catch UnknownHashError for plain-text stored passwords
-    return pwd_context.verify(plain_password, hashed_password)
+    # hash driectly from db is bytes, but json is str
+    if type(hashed_password) is str:
+        hashed_password = bytes(hashed_password.encode('utf-8'))
+
+    password_byte_enc = plain_password.encode('utf-8')
+    return bcrypt.checkpw(password=password_byte_enc, hashed_password=hashed_password)
 
 
 def get_password_hash(password):
-    return pwd_context.hash(password)
+    pwd_bytes = password.encode('utf-8')
+    salt = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(password=pwd_bytes, salt=salt)
+    return hashed_password
 
 
 # TODO use Random-Word or something for more user-friendly handles
