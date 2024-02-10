@@ -24,7 +24,7 @@ from battlechess.server.schemas import GameStatus
 from battlechess.server.utils import get_password_hash, verify_password
 
 
-def testDataDir():
+def dataTestDir():
     return Path(__file__).parent.parent / "data" / "avatars"
 
 
@@ -129,7 +129,7 @@ def test__upload_user__avatarImage(db, client, addFakeUsers):
     token, _ = addFakeUsers
 
     oneUser = db.query(models.User)[1]
-    filename = testDataDir() / "test_avatar.jpeg"
+    filename = dataTestDir() / "test_avatar.jpeg"
     with open(filename, "rb") as f:
         img = Image.open(f)
         try:
