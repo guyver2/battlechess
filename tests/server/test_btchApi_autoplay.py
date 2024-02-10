@@ -57,11 +57,13 @@ def test__move__MrExonGame__OneGame__EnPassant(client, game_setup):
                 print(response.json())
             response.status_code == 200
 
-def test__move__MrExonGame__Enpassant2(client, game_setup):
+def test__move__MrExonGame__Enpassant2(db, client, game_setup):
  
     firstgame_uuid, john_token, jane_token = game_setup
 
-    tokens = [jane_token, john_token]
+    tokens = [john_token, jane_token]
+
+    resetGame(db, firstgame_uuid)
 
     # read games
     # for game in games:
@@ -82,7 +84,9 @@ def test__move__MrExonGame__Enpassant2(client, game_setup):
 def test__move__MrExonGames(db, client, game_setup):
     firstgame_uuid, john_token, jane_token = game_setup
 
-    tokens = [jane_token, john_token]
+    tokens = [john_token, jane_token]
+
+    resetGame(db, firstgame_uuid)
 
     # read games
     # for game in games:
@@ -91,8 +95,8 @@ def test__move__MrExonGames(db, client, game_setup):
         data = json.load(json_file)
         for game, moves in data.items():
             print("Game: {} moves {}".format(game, moves))
-            for move in moves:
-                response = send_move(client, firstgame_uuid, move, tokens[0 % 2])
+            for i, move in enumerate(moves):
+                response = send_move(client, firstgame_uuid, move, tokens[i % 2])
 
                 if response.status_code == 200:
                     prettyBoard(response.json()["board"])

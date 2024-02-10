@@ -690,7 +690,7 @@ def test__getTurn__long_polling(client, classicSetup):
 
 def test__move(db, client, classicSetup):
     firstgame_uuid, token = classicSetup
-
+    jane_token = getToken('janedoe')
     # get previous game/board
 
     game_before = (
@@ -702,7 +702,7 @@ def test__move(db, client, classicSetup):
     response = client.post(
         f"/games/{firstgame_uuid}/move",
         headers={
-            "Authorization": "Bearer " + token,
+            "Authorization": "Bearer " + jane_token,
             "Content-Type": "application/json",
         },
         json={
@@ -735,6 +735,22 @@ def test__move(db, client, classicSetup):
         "ppp_pppp"
         "rnbqkbnr"
     )
+
+def test__move__wrong_turn(db, client, classicSetup):
+    firstgame_uuid, john_token = classicSetup
+  
+    response = client.post(
+        f"/games/{firstgame_uuid}/move",
+        headers={
+            "Authorization": "Bearer " + john_token,
+            "Content-Type": "application/json",
+        },
+        json={
+            "move": "d7d5",
+        },
+    )
+
+    assert response.status_code == 403
 
 def test__move__filtered(db, client, classicSetup):
     firstgame_uuid, _ = classicSetup

@@ -447,6 +447,14 @@ def post_move(
             headers={"Authorization": "Bearer"},
         )
 
+    player_color = game.get_player_color(current_user.id)
+    if game.turn != player_color:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"It's {game.turn} turn and you're {player_color}",
+            headers={"Authorization": "Bearer"},
+        )
+
     # It looks like modifying the pydantic model does not change the db model
     snap = crud.create_snap_by_move(db, current_user, game, gameMove)
     snap4player = schemas.GameSnap.model_validate(snap)
