@@ -410,6 +410,14 @@ def query_turn(
     long_polling: bool = False,
 ):
     game = get_game(gameUUID, current_user, db)
+
+    if not game:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="game not found",
+            headers={"Authorization": "Bearer"},
+        )
+
     if not long_polling:
         return game.turn
 
@@ -419,14 +427,19 @@ def query_turn(
     while elapsed < 10:
         elapsed = time.time() - start
         game = get_game(gameUUID, current_user, db)
-        if game.turn != game.get_player_color(current_user.id):
-            print(
-                f"{current_user.username} is {game.get_player_color(current_user.id)} is not {game.turn}"
-            )
+        if game.turn == game.get_player_color(current_user.id):
+            print(f":) it's {game.turn} turn and {current_user.username} is {game.get_player_color(current_user.id)}!")
             return game.turn
+        else:
+            print(
+                f"turn request {elapsed} s: {current_user.username} is {game.get_player_color(current_user.id)}. It's {game.turn} turn"
+            )
         time.sleep(1)
 
+    # should we return exception instead?
+    return game.turn
 
+# TODO we're not checking it's the request's player turn LOL
 @app.post("/games/{gameUUID}/move", response_model=schemas.GameSnap)
 def post_move(
     gameUUID: str,
