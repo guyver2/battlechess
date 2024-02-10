@@ -67,12 +67,13 @@ async def test__getTurn__long_polling_move(asyncclient, classicSetup):
         },
         params={"long_polling": long_polling},
     )
-    elapsed = time.time() - start
+    short_polling_elapsed = time.time() - start
     assert response.status_code == 200
     assert response.json() == 'black'
     # ensure that non-long-polling get is non blocking
-    assert elapsed < 1
+    assert short_polling_elapsed < 1
 
+    start = time.time()
     # ask turn again but with long polling
     long_polling = True
     premature_turn_ask_task = asyncio.create_task(
@@ -86,9 +87,16 @@ async def test__getTurn__long_polling_move(asyncclient, classicSetup):
         )
     )
 
+    create_task_elapsed = time.time() - start
+    # ensure that create_task get is non blocking
+    assert create_task_elapsed < 1
+
     background_tasks.add(premature_turn_ask_task)
     premature_turn_ask_task.add_done_callback(background_tasks.discard)
-    await asyncio.sleep(1)
+    await asyncio.sleep(1) # only blocks current task
+    # time.sleep(1) # blocks everything
+    if premature_turn_ask_task.done():
+        print("turn returned too early!", premature_turn_ask_task.result().json())
     assert not premature_turn_ask_task.done()
     
     # Jane (black) moves
