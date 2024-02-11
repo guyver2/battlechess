@@ -401,6 +401,50 @@ def query_board(
 ):
     pass
 
+@app.get("/games/{gameUUID}/turn/me")
+async def query_turn(
+    gameUUID: str,
+    current_user: schemas.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+    long_polling: bool = False,
+):
+    game = get_game(gameUUID, current_user, db)
+
+    if not game:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="game not found",
+            headers={"Authorization": "Bearer"},
+        )
+
+    if game.get_player_color(current_user.id) is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"{current_user.username} is not a player of game {gameUUID}",
+            headers={"Authorization": "Bearer"},
+        )
+
+    if game.is_finished():
+        raise HTTPException(
+            status_code=status.HTTP_412_PRECONDITION_FAILED,
+            detail="game is over",
+            headers={"Authorization": "Bearer"},
+        )
+
+    if not long_polling:
+        return game.turn == game.get_player_color(current_user.id)
+
+    game = get_game(gameUUID, current_user, db)
+    start = time.time()
+    while True:
+        elapsed = time.time() - start
+        db.refresh(game)
+        caller_turn = (game.turn == game.get_player_color(current_user.id))
+        print(f"username: {current_user.username} game: {game.__dict__} and caller_turn {caller_turn}")
+        if caller_turn or elapsed >= 10:
+            return caller_turn
+        else:
+            await asyncio.sleep(1)
 
 # who's turn is it (None means that the game is over)
 @app.get("/games/{gameUUID}/turn")
@@ -422,14 +466,12 @@ async def query_turn(
     if not long_polling:
         return game.turn
 
-    print("long polling")
     start = time.time()
     elapsed = 0
     while elapsed < 10:
         elapsed = time.time() - start
         game = get_game(gameUUID, current_user, db)
         if game.turn == game.get_player_color(current_user.id):
-            print(f":) it's {game.turn} turn and {current_user.username} is {game.get_player_color(current_user.id)}!")
             return game.turn
         else:
             print(

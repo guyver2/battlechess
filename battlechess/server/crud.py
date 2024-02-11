@@ -267,7 +267,7 @@ def create_snap_by_move(
         print(
             f"Game {game.uuid} {game.white_id} vs {game.black_id} won by {game.winner}"
         )
-
+    game.last_move_time = datetime.now(timezone.utc)
     game.refresh_turn()
 
     db.commit()

@@ -183,4 +183,3 @@ class Move(BaseModel):
     origin: Tuple[int, int]
     destination: Tuple[int, int]
     color: str
-
