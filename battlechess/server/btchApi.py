@@ -452,7 +452,6 @@ async def query_turn(
     gameUUID: str,
     current_user: schemas.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
-    long_polling: bool = False,
 ):
     game = get_game(gameUUID, current_user, db)
 
@@ -463,23 +462,20 @@ async def query_turn(
             headers={"Authorization": "Bearer"},
         )
 
-    if not long_polling:
-        return game.turn
+    if game.get_player_color(current_user.id) is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"{current_user.username} is not a player of game {gameUUID}",
+            headers={"Authorization": "Bearer"},
+        )
 
-    start = time.time()
-    elapsed = 0
-    while elapsed < 10:
-        elapsed = time.time() - start
-        game = get_game(gameUUID, current_user, db)
-        if game.turn == game.get_player_color(current_user.id):
-            return game.turn
-        else:
-            print(
-                f"turn request {elapsed} s: {current_user.username} is {game.get_player_color(current_user.id)}. It's {game.turn} turn"
-            )
-        await asyncio.sleep(1)
+    if game.is_finished():
+        raise HTTPException(
+            status_code=status.HTTP_412_PRECONDITION_FAILED,
+            detail="game is over",
+            headers={"Authorization": "Bearer"},
+        )
 
-    # should we return exception instead?
     return game.turn
 
 # TODO we're not checking it's the request's player turn LOL
