@@ -444,7 +444,7 @@ async def query_turn(
         if caller_turn or elapsed >= 10:
             return caller_turn
         else:
-            await asyncio.sleep(1)
+            await asyncio.sleep(2)
 
 # who's turn is it (None means that the game is over)
 @app.get("/games/{gameUUID}/turn")
