@@ -60,7 +60,7 @@ async def test__getTurn__long_polling_move(asyncclient, classicSetup):
     # Check that's it's not john'd turn
     long_polling = False
     response = await asyncclient.get(
-        f"/games/{firstgame_uuid}/turn",
+        f"/games/{firstgame_uuid}/turn/me",
         headers={
             "Authorization": "Bearer " + john_token,
             "Content-Type": "application/json",
@@ -69,7 +69,7 @@ async def test__getTurn__long_polling_move(asyncclient, classicSetup):
     )
     short_polling_elapsed = time.time() - start
     assert response.status_code == 200
-    assert response.json() == 'black'
+    assert response.json() == False
     # ensure that non-long-polling get is non blocking
     assert short_polling_elapsed < 1
 
@@ -78,7 +78,7 @@ async def test__getTurn__long_polling_move(asyncclient, classicSetup):
     long_polling = True
     premature_turn_ask_task = asyncio.create_task(
         asyncclient.get(
-            f"/games/{firstgame_uuid}/turn",
+            f"/games/{firstgame_uuid}/turn/me",
             headers={
                 "Authorization": "Bearer " + john_token,
                 "Content-Type": "application/json",
@@ -118,5 +118,5 @@ async def test__getTurn__long_polling_move(asyncclient, classicSetup):
     assert elapsed < hard_turn_timeout/2
     response = premature_turn_ask_task.result()
     print(f"task result {response.json()}")
-    assert response.json() == 'white'
+    assert response.json() == True
     assert response.status_code == 200

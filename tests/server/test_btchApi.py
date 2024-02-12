@@ -1297,8 +1297,10 @@ def test__integrationTest__foolscheckmate(client):
             },
         )
 
-        assert response.status_code == 200
+        assert response.status_code == 200 or response.status_code == 412
+
         jane_turn = response.json()
+
         response = client.get(
             f"/games/{game_uuid}/turn",
             headers={
@@ -1307,10 +1309,12 @@ def test__integrationTest__foolscheckmate(client):
             },
         )
 
-        assert response.status_code == 200
+        assert response.status_code == 200 or response.status_code == 412
+
+        game_finished = not (response.status_code == 200)
+
         john_turn = response.json()
 
-        # TODO what happens after checkmate?
         assert jane_turn == john_turn
 
         response = client.get(
@@ -1324,7 +1328,7 @@ def test__integrationTest__foolscheckmate(client):
         print(prettyBoard(response.json()["board"]))
 
         # no winner
-        if john_turn or jane_turn:
+        if not game_finished:
             # TODO note that this assert will fail if an enemy piece is seen
             if jane_color == "white":
                 assert response.json()["board"] == boards[i][0]
@@ -1339,7 +1343,7 @@ def test__integrationTest__foolscheckmate(client):
             },
         )
 
-        if john_turn or jane_turn:
+        if not game_finished:
             if john_color == "white":
                 assert response.json()["board"] == boards[i][0]
             else:
