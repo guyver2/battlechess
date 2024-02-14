@@ -1,13 +1,13 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime
-from sqlalchemy.orm import relationship
+import datetime
 from fastapi import HTTPException, status
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
 
-from .btchApiDB import Base
-from .schemas import GameStatus
-from core.Board import Board
-from core.btchBoard import BtchBoard
-
-from .utils import ad2extij, extij2ad, ad2ij
+from battlechess.core.Board import Board
+from battlechess.core.btchBoard import BtchBoard
+from battlechess.server.btchApiDB import Base
+from battlechess.server.schemas import GameSnap, GameStatus
+from battlechess.server.utils import ad2extij, ad2ij, extij2ad
 
 
 class User(Base):
@@ -21,7 +21,7 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     status = Column(String, default="active")
-    created_at = Column(DateTime)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     # games = relationship("Game", back_populates="owner", foreign_keys='Game.owner_id')
     # whites = relationship("Game", back_populates="white")
@@ -30,12 +30,13 @@ class User(Base):
     def is_active(self):
         return self.status == "active"
 
+
 class Game(Base):
 
     __tablename__ = "game"
 
     id = Column(Integer, primary_key=True, index=True)
-    created_at = Column(DateTime)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
     uuid = Column(String)
     owner_id = Column(Integer, ForeignKey("user.id"))
     white_id = Column(Integer, ForeignKey("user.id"))
@@ -56,7 +57,7 @@ class Game(Base):
     snaps = relationship("GameSnap", back_populates="game")
 
     def reset(self):
-        self.turn = 'white'
+        self.turn = "white"
         self.winner = None
         firstsnap = self.snaps[0]
         self.snaps[:] = [firstsnap]
@@ -64,11 +65,7 @@ class Game(Base):
     def set_player(self, user: User):
 
         if self.white_id == user.id or self.black_id == user.id:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Player is already in this game",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+            return
 
         if not self.white_id and not self.black_id:
             # TODO random
@@ -78,7 +75,7 @@ class Game(Base):
         elif not self.black_id:
             self.black_id = user.id
         else:
-            #error player already set
+            # error player already set
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Game is full",
@@ -94,6 +91,9 @@ class Game(Base):
         if user_id == self.black_id:
             return "black"
         return None
+
+    def is_waiting(self):
+        return self.status == GameStatus.WAITING
 
     def is_finished(self):
         return self.status == GameStatus.OVER
@@ -112,16 +112,17 @@ class Game(Base):
     def refresh_turn(self):
         if not self.snaps:
             print("[warning] game had no snaps. turn is white.")
-            self.turn = 'white'
+            self.turn = "white"
         self.turn = self.snaps[-1].getNextTurn()
 
     # TODO ensure that the turn color is guaranteed to be correct to the caller user's color
     # TODO should we create the snap here instead of returning
     # the snap options and delegating to the client?
-    def moveGame(self, move):
+    def moveGame(self, move) -> GameSnap:
         current_snap = self.get_latest_snap()
         new_snap_options = current_snap.moveSnap(move)
         return new_snap_options
+
 
 class GameSnap(Base):
 
@@ -141,16 +142,16 @@ class GameSnap(Base):
     def getNextTurn(self):
         if not self.game.is_running():
             return None
-        colors = ['white', 'black']
-        return colors[self.move_number%2]
+        colors = ["white", "black"]
+        return colors[self.move_number % 2]
 
     # TODO we need forfeit as an option
     # TODO does draw exist in battlechess?
     def winner(self):
-        if 'K' in self.taken:
-            return 'white'
-        if 'k' in self.taken:
-            return 'black'
+        if "K" in self.taken:
+            return "white"
+        if "k" in self.taken:
+            return "black"
         return None
 
     def snapOptionsFromBoard(self, board: Board, accepted_move):
@@ -161,13 +162,13 @@ class GameSnap(Base):
     # TODO handle errors
     # TODO could be static method, utils ...
     def coordListToMove(self, coords):
-        abc = 'abcdefgh'
-        dig = '87654321'
-        return abc[coords[1]]+dig[coords[0]]+abc[coords[3]]+dig[coords[2]]
+        abc = "abcdefgh"
+        dig = "87654321"
+        return abc[coords[1]] + dig[coords[0]] + abc[coords[3]] + dig[coords[2]]
 
     # TODO handle errors
     def moveToCoordList(self, move):
-        dig = [None,7,6,5,4,3,2,1,0]
+        dig = [None, 7, 6, 5, 4, 3, 2, 1, 0]
         i = dig[int(move[1])]
         j = ord(move[0]) - 97
         ii = dig[int(move[3])]
@@ -178,7 +179,6 @@ class GameSnap(Base):
         # TODO sync with board
         color = self.getNextTurn()
 
-        snapOptions = None
         # build board from model
         coordlist = self.moveToCoordList(move)
         board = self.toBoard()
@@ -206,15 +206,21 @@ class GameSnap(Base):
         board = Board()
         board.reset()
         enpassantColumn = self.enpassantColumn()
-        enpassant = chr(enpassantColumn + ord('a')) if enpassantColumn is not None else None
-        winner = None # TODO better way to get for unit testing self.game.winner
-        board.updateFromElements(self.board, self.taken, self.castleable, enpassant, winner)
+        enpassant = (
+            chr(enpassantColumn + ord("a")) if enpassantColumn is not None else None
+        )
+        winner = None  # TODO better way to get for unit testing self.game.winner
+        board.updateFromElements(
+            self.board, self.taken, self.castleable, enpassant, winner
+        )
         return board
 
     def toBtchBoard(self) -> BtchBoard:
         enpassantColumn = self.enpassantColumn()
         enpassant = enpassantColumn + 2 if enpassantColumn is not None else None
-        return BtchBoard.factoryFromElements(self.board, self.taken, self.castleable, enpassant)
+        return BtchBoard.factoryFromElements(
+            self.board, self.taken, self.castleable, enpassant
+        )
 
     def enpassantColumn(self):
         if not self.move:
@@ -224,7 +230,7 @@ class GameSnap(Base):
         ii, jj = ad2ij(self.move[2:4])
         piece = self.board[ii * 8 + jj]
 
-        if piece in ['p', 'P']:
+        if piece in ["p", "P"]:
             return j if i in [1, 6] and ii in [3, 4] else None
 
         return None

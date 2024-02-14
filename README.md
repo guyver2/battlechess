@@ -35,6 +35,8 @@ That new rule has some direct consequences on the gameplay.
 
 ## Installation :
 
+### Battlechess standalone (LAN)
+
 - What you need :
 	* [python 3.7](https://www.python.org/downloads/) (or more I guess...)
 	* [pygame 1.9.2](http://www.pygame.org/download.shtml). On OS X with python 2.7, you should donwload this [installation file](http://www.pygame.org/ftp/pygame-1.9.2pre-py2.7-macosx10.7.mpkg.zip)
@@ -57,9 +59,11 @@ That new rule has some direct consequences on the gameplay.
 	`python battleChess.py -p http://sxbn.org/~antoine/games/2014_03_07_14_06_37_lance_hardwood_Vs_sniper.txt`
 	`python battleChess.py -p ./2014_03_07_14_06_37_lance_hardwood_Vs_sniper.txt`
 
+### Battlechess api server
+
 - Using the server application :
 	If you want to host your own server (you don't have to). You just need to run the api with
-	`$ uvicorn server.btchApi:app --reload`
+	`$ uvicorn battleches.server.btchApi:app --reload`
 	program on a computer that can be reached through the network. Change the port and hostname if you want and pass those informations to the client application. Check `$ uvicorn --help`.
 	You'll need to install the packages listed in `requirements.txt`. You can do so with `$ pip install -r requirements.txt`
 

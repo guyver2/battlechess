@@ -5,17 +5,18 @@
 
 # create a board for each player
 # using list of lists requires deepcopy
-class BtchBoard():
-
+class BtchBoard:
     def __init__(self, board=None):
         self.board = board or self.startBoard()
-        self.taken = ''
-        self.castleable = 'LSKlsk'  # TODO change for 'LSls'
-        self.enpassant = None  #column -> 2-9
+        self.taken = ""
+        self.castleable = "LSKlsk"  # TODO change for 'LSls'
+        self.enpassant = None  # column -> 2-9
         self.winner = None
 
     def startBoard(self):
-        board = [[None, None, *['' for j in range(8)], None, None] for i in range(0, 12)]
+        board = [
+            [None, None, *["" for j in range(8)], None, None] for i in range(0, 12)
+        ]
 
         # yapf: disable
         board[0] = [None]*12
@@ -32,8 +33,8 @@ class BtchBoard():
 
     def reset(self):
         self.board = self.startBoard()
-        self.taken = ''
-        self.castleable = 'KLSkls'
+        self.taken = ""
+        self.castleable = "KLSkls"
         self.enpassant = None
         self.winner = None
 
@@ -57,29 +58,34 @@ class BtchBoard():
         # board, taken, castleable, enpassant = boardstr.split("#")
         b = BtchBoard()
         for i, c in enumerate(boardstr):
-            b.board[i // 8 + 2][i % 8 + 2] = c if c != '_' else ''
+            b.board[i // 8 + 2][i % 8 + 2] = c if c != "_" else ""
         return b
 
     @classmethod
-    def factoryFromElements(cls, board: str, taken: str, castleable: str, enpassant: int):
+    def factoryFromElements(
+        cls, board: str, taken: str, castleable: str, enpassant: int
+    ):
         b = BtchBoard()
         for i, c in enumerate(board):
-            b.board[i // 8 + 2][i % 8 + 2] = c if c != '_' else ''
+            b.board[i // 8 + 2][i % 8 + 2] = c if c != "_" else ""
         b.taken = taken
         b.castleable = castleable
         b.enpassant = enpassant
         return b
 
     def boardToStr(self):
-
         def bpiece(p):
-            return '_' if not p else p
+            return "_" if not p else p
 
-        return ''.join([bpiece(self.board[i][j]) for i in range(2, 10) for j in range(2, 10)])
+        return "".join(
+            [bpiece(self.board[i][j]) for i in range(2, 10) for j in range(2, 10)]
+        )
 
     def prettyBoard(self):
         boardstr = self.boardToStr()
-        return '\n'.join([boardstr[index:index + 8] for index in range(0, len(boardstr), 8)])
+        return "\n".join(
+            [boardstr[index : index + 8] for index in range(0, len(boardstr), 8)]
+        )
 
     def toElements(self):
 
@@ -88,12 +94,14 @@ class BtchBoard():
             "taken": self.taken,
             "board": self.boardToStr(),
             "enpassant": self.enpassant,
-            "winner": self.winner
+            "winner": self.winner,
         }
         return elements
 
     def empty(self):
-        self.board = [[None, None, *['' for j in range(8)], None, None] for i in range(0, 12)]
+        self.board = [
+            [None, None, *["" for j in range(8)], None, None] for i in range(0, 12)
+        ]
         self.board[0] = [None] * 12
         self.board[1] = [None] * 12
         self.board[10] = [None] * 12
@@ -107,27 +115,39 @@ class BtchBoard():
 
     @staticmethod
     def isWhite(color):
-        return color == 'white'
+        return color == "white"
 
     @staticmethod
     def isBlack(color):
-        return color == 'black'
+        return color == "black"
 
     @staticmethod
     def getColor(c):
-        return 'black' if c.isupper() else 'white' if c.islower() else None
+        return "black" if c.isupper() else "white" if c.islower() else None
 
     def isFree(self, i, j):
-        return self.board[i][j] == ''
+        return self.board[i][j] == ""
 
     @staticmethod
     def isEnemy(color, piece):
-        return True if piece and (piece.isupper() and color == 'white' \
-                    or piece.islower() and color == 'black') else False
+        return (
+            True
+            if piece
+            and (
+                piece.isupper()
+                and color == "white"
+                or piece.islower()
+                and color == "black"
+            )
+            else False
+        )
 
     def extendboard(self, boardStr):
-        return "_" * 10 + "".join(["_" + boardStr[j * 8:(j + 1) * 8] + "_" for j in range(8)
-                                  ]) + "_" * 10
+        return (
+            "_" * 10
+            + "".join(["_" + boardStr[j * 8 : (j + 1) * 8] + "_" for j in range(8)])
+            + "_" * 10
+        )
 
     def shrinkboard(self):
         return [[self.board[i][j] for j in range(2, 10)] for i in range(2, 10)]
@@ -137,7 +157,7 @@ class BtchBoard():
         for jj in [j - 1, j, j + 1]:
             for ii in [i - 1, i, i + 1]:
                 cc = self.board[ii][jj]
-                if cc == '' or cc is None:
+                if cc == "" or cc is None:
                     continue
                 elif c.isupper() and cc.islower():
                     return True
@@ -146,26 +166,28 @@ class BtchBoard():
 
     def filterSquare(self, color, i, j):
         c = self.board[i][j]
-        if c is None or c == '' or self.hasEnemy(i, j):
+        if c is None or c == "" or self.hasEnemy(i, j):
             return c
-        elif color == 'black':
-            return c if c.isupper() else ''
-        elif color == 'white':
-            return c if c.islower() else ''
+        elif color == "black":
+            return c if c.isupper() else ""
+        elif color == "white":
+            return c if c.islower() else ""
         else:
             print(f"{color} is not a color")
             return None
 
     # TODO we could filter the shrunk board if speed is an issue
     def filterBoard(self, color):
-        return [[self.filterSquare(color, i, j) for j in range(0, 12)] for i in range(0, 12)]
+        return [
+            [self.filterSquare(color, i, j) for j in range(0, 12)] for i in range(0, 12)
+        ]
 
     def filterCastleable(self, color):
-        if color == 'black':
-            self.castleable = ''.join(c for c in self.castleable if c.isupper())
+        if color == "black":
+            self.castleable = "".join(c for c in self.castleable if c.isupper())
             # self.move = self.move if not self.move_number % 2 else None
-        elif color == 'white':
-            self.castleable = ''.join(c for c in self.castleable if c.islower())
+        elif color == "white":
+            self.castleable = "".join(c for c in self.castleable if c.islower())
             # self.move = self.move if self.move_number % 2 else None
 
     def filterEnpassant(self, color):
@@ -197,22 +219,22 @@ class BtchBoard():
 
         moves = list()
 
-        if c.lower() == 'p':
+        if c.lower() == "p":
             moves = list(self.pawnMoves(color, i, j))
-        elif c.lower() == 'r':
+        elif c.lower() == "r":
             moves = list(self.rookMoves(color, i, j))
-        elif c.lower() == 'n':
+        elif c.lower() == "n":
             moves = list(self.knightMoves(color, i, j))
-        elif c.lower() == 'b':
+        elif c.lower() == "b":
             moves = list(self.bishopMoves(color, i, j))
-        elif c.lower() == 'q':
+        elif c.lower() == "q":
             moves = list(self.queenMoves(color, i, j))
-        elif c.lower() == 'k':
+        elif c.lower() == "k":
             moves = list(self.kingMoves(color, i, j))
         else:
-            print('Unknown piece {}'.format(c))
+            print("Unknown piece {}".format(c))
 
-        print('Possible moves {} at {}, {}: {}'.format(c, i, j, moves))
+        print("Possible moves {} at {}, {}: {}".format(c, i, j, moves))
 
         moves.sort()
 
@@ -264,8 +286,8 @@ class BtchBoard():
                     if self.isEnemy(color, self.board[ii][jj]):
                         yield (ii, jj)
 
-        #castles
-        k, l, s = 'KLS' if self.isBlack(color) else 'kls'
+        # castles
+        k, l, s = "KLS" if self.isBlack(color) else "kls"
         r = 2 if self.isBlack(color) else 9
         if k in self.castleable:
             if l in self.castleable:
@@ -276,10 +298,22 @@ class BtchBoard():
                     yield (r, 8)
 
     def knightMoves(self, color, i, j):
-        deltas = [(2, 1), (2, -1), (-2, 1), (-2, -1), (1, 2), (-1, 2), (1, -2), (-1, -2)]
-        return [(i + di, j + dj)
-                for di, dj in deltas
-                if self.isFree(i + di, j + dj) or self.isEnemy(color, self.board[i + di][j + dj])]
+        deltas = [
+            (2, 1),
+            (2, -1),
+            (-2, 1),
+            (-2, -1),
+            (1, 2),
+            (-1, 2),
+            (1, -2),
+            (-1, -2),
+        ]
+        return [
+            (i + di, j + dj)
+            for di, dj in deltas
+            if self.isFree(i + di, j + dj)
+            or self.isEnemy(color, self.board[i + di][j + dj])
+        ]
 
     def pawnMoves(self, color, i, j):
         di = -1 if self.isWhite(color) else +1
@@ -289,9 +323,12 @@ class BtchBoard():
             yield (i + di, j)
 
         # 2-square move
-        if i == (8 if self.isWhite(color) else 3) \
-                   and self.isFree(i + di, j) and self.isFree(i + 2*di, j):
-            yield (i + 2  *  di, j)
+        if (
+            i == (8 if self.isWhite(color) else 3)
+            and self.isFree(i + di, j)
+            and self.isFree(i + 2 * di, j)
+        ):
+            yield (i + 2 * di, j)
 
         # kill
         if self.isEnemy(color, self.board[i + di][j - 1]):
