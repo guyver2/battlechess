@@ -564,6 +564,7 @@ def get_moves(
     # TODO remove this if we're happy with a weird validation error message
     if moves:
         assert isinstance(moves[0], str)
+
     return moves
 
 
