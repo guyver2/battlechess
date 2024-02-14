@@ -11,7 +11,7 @@ from battlechess.server import crud, models
 from battlechess.server.btchApi import app, get_db
 from battlechess.server.btchApiDB import Base
 from battlechess.server.schemas import GameStatus
-from battlechess.server.utils import get_password_hash, verify_password
+from battlechess.server.utils import get_password_hash
 
 
 @pytest.fixture
@@ -202,7 +202,9 @@ def addFakeGamesFromDict(db, gamesdb):
             db_game.turn = None
             db.commit()
         print(
-            f"adding game between {white.id if white is not None else None} and {black.id if black is not None else None}"
+            f"""adding game between {white.id if white is not None else None}
+            and {black.id if black is not None else None}
+        """
         )
     return uuid
 
@@ -313,7 +315,7 @@ def db(db_engine):
     connection = db_engine.connect()
 
     # begin a non-ORM transaction
-    transaction = connection.begin()
+    transaction = connection.begin()  # noqa
 
     # bind an individual Session to the connection
     db = Session(bind=connection)
@@ -339,12 +341,6 @@ async def asyncclient(db):
 
     async with AsyncClient(app=app, base_url="http://test") as c:
         yield c
-
-
-def getToken(username):
-    return crud.create_access_token(
-        data={"sub": username}, expires_delta=timedelta(minutes=3000)
-    )
 
 
 @pytest.fixture(scope="function")

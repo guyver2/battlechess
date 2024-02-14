@@ -1,25 +1,18 @@
-import asyncio
 import sys
 import time
 import unittest.mock as mock
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from pathlib import Path
 
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 try:
     from PIL import Image
 except ImportError:
     print("PIL module is not installed. Some tests will be skipped")
 
-from fastapi.testclient import TestClient
-from httpx import AsyncClient
 
 from battlechess.server import crud, models
-from battlechess.server.btchApi import app, get_db
-from battlechess.server.btchApiDB import Base
 from battlechess.server.schemas import GameStatus
 from battlechess.server.utils import get_password_hash, verify_password
 
@@ -179,7 +172,6 @@ def test__getUsers__unauthorized(client):
 
 
 def test__authenticate(client):
-
     # add a user
     response = client.post(
         "/users/",
@@ -290,7 +282,6 @@ def test__getUserById__malformedId(db, client, addFakeUsers):
 
 
 def test__db_cleanup(db):
-
     users = db.query(models.User).all()
 
     assert users == []
@@ -621,13 +612,13 @@ def test__getsnaps(db, client, classicSetup):
         'castleable': 'lks',
         'move_number': 0,
         'board': ('xxxxxxxx'
-                    'xxxxxxxx'
-                    '________'
-                    '________'
-                    '________'
-                    '________'
-                    'pppppppp'
-                    'rnbqkbnr'),
+                  'xxxxxxxx'
+                  '________'
+                  '________'
+                  '________'
+                  '________'
+                  'pppppppp'
+                  'rnbqkbnr'),
     }, {
         'game_id': 1,
         'created_at': mock.ANY,
@@ -637,13 +628,13 @@ def test__getsnaps(db, client, classicSetup):
         'castleable': 'lks',
         'move_number': 1,
         'board': ('xxxxxxxx'
-                    'xxxxxxxx'
-                    '________'
-                    '________'
-                    '___p____'
-                    '________'
-                    'ppp_pppp'
-                    'rnbqkbnr'),
+                  'xxxxxxxx'
+                  '________'
+                  '________'
+                  '___p____'
+                  '________'
+                  'ppp_pppp'
+                  'rnbqkbnr'),
     }]
     # yapf: enable
 
@@ -704,7 +695,7 @@ def test__getTurn__long_polling(client, classicSetup):
     token = getToken("janedoe")
 
     start = time.time()
-    response = client.get(
+    _ = client.get(
         f"/games/{firstgame_uuid}/turn",
         headers={
             "Authorization": "Bearer " + token,
@@ -719,7 +710,7 @@ def test__getTurn__long_polling(client, classicSetup):
 
 def test__move(db, client, classicSetup):
     firstgame_uuid, token = classicSetup
-    jane_token = getToken('janedoe')
+    jane_token = getToken("janedoe")
     # get previous game/board
 
     game_before = (
@@ -761,9 +752,10 @@ def test__move(db, client, classicSetup):
         "rnbqkbnr"
     )
 
+
 def test__move__wrong_turn(db, client, classicSetup):
     firstgame_uuid, john_token = classicSetup
-  
+
     response = client.post(
         f"/games/{firstgame_uuid}/move",
         headers={
@@ -776,6 +768,7 @@ def test__move__wrong_turn(db, client, classicSetup):
     )
 
     assert response.status_code == 403
+
 
 def test__move__filtered(db, client, classicSetup):
     firstgame_uuid, _ = classicSetup
@@ -1051,7 +1044,6 @@ def prettyBoard(boardStr):
 
 
 def test__move__filtered_pawn(db, client, game_setup, addFakeGameSnaps):
-
     firstgame_uuid, john_token, jane_token = game_setup
 
     tokens = [jane_token, john_token]
@@ -1098,7 +1090,6 @@ def test__move__filtered_pawn(db, client, game_setup, addFakeGameSnaps):
 # use this method as reference to reproduce any game moves
 # TODO use a virgin game instead of the firstgame_uuid
 def test__move__fogTest(db, client, game_setup, addFakeGameSnaps):
-
     firstgame_uuid, john_token, jane_token = game_setup
 
     tokens = [jane_token, john_token]
@@ -1126,7 +1117,6 @@ def test__move__fogTest(db, client, game_setup, addFakeGameSnaps):
 
 
 def test__integrationTest__foolscheckmate(client):
-
     # create johndoe
     # create janedoe
 

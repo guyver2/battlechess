@@ -1,22 +1,16 @@
 import json
+
 import pytest
-from datetime import datetime, timedelta, timezone
 
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from battlechess.server import models
 
-from battlechess.server import crud, models
-from battlechess.server.btchApi import app, get_db
-from battlechess.server.btchApiDB import Base
-from battlechess.server.schemas import GameStatus
-from battlechess.server.utils import get_password_hash
 
 def prettyBoard(boardStr):
     print("    abcdefgh")
     print("    01234567")
     for i in range(8):
         print("{} - {} - {}".format(i, boardStr[8 * i : 8 * i + 8], 8 - i))
+
 
 def send_move(client, game_uuid, move, token):
     response = client.post(
@@ -31,10 +25,12 @@ def send_move(client, game_uuid, move, token):
     )
     return response
 
+
 def resetGame(db, uuid):
     game = db.query(models.Game).filter(models.Game.uuid == uuid).first()
     game.reset()
     db.commit()
+
 
 def test__move__MrExonGame__OneGame__EnPassant(client, game_setup):
 
@@ -57,8 +53,9 @@ def test__move__MrExonGame__OneGame__EnPassant(client, game_setup):
                 print(response.json())
             response.status_code == 200
 
+
 def test__move__MrExonGame__Enpassant2(db, client, game_setup):
- 
+
     firstgame_uuid, john_token, jane_token = game_setup
 
     tokens = [john_token, jane_token]
@@ -79,6 +76,7 @@ def test__move__MrExonGame__Enpassant2(db, client, game_setup):
             else:
                 print(response.json())
             assert response.status_code == 200
+
 
 @pytest.mark.skip(reason="Extremely slow test. Run with -s option.")
 def test__move__MrExonGames(db, client, game_setup):

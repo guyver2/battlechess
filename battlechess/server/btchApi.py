@@ -1,5 +1,5 @@
-import time
 import asyncio
+import time
 from datetime import timedelta
 from typing import List, Union
 
@@ -201,7 +201,8 @@ def create_user(new_user: schemas.UserCreate, db: Session = Depends(get_db)):
     ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"username should be of lenght (3-15) and password at least {PASSWORD_MIN_LENGTH} chars.",
+            detail=f"""username should be of lenght (3-15)
+            and password at least {PASSWORD_MIN_LENGTH} chars.""",
             headers={"WWW-Authenticate": "Bearer"},
         )
     if new_user.email is None:
@@ -370,7 +371,8 @@ def join_game(
 #     return game
 
 
-# either creates a new game or joins an existing unstarted random game. Random games can not be joined via "join_game".
+# either creates a new game or joins an existing unstarted random game.
+# Random games can not be joined via "join_game".
 @app.patch("/games", response_model=schemas.Game)
 def join_random_game(
     current_user: schemas.User = Depends(get_current_active_user),
@@ -401,8 +403,9 @@ def query_board(
 ):
     pass
 
+
 @app.get("/games/{gameUUID}/turn/me")
-async def query_turn(
+async def query_me_turn(
     gameUUID: str,
     current_user: schemas.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
@@ -439,12 +442,15 @@ async def query_turn(
     while True:
         elapsed = time.time() - start
         db.refresh(game)
-        caller_turn = (game.turn == game.get_player_color(current_user.id))
-        print(f"username: {current_user.username} game: {game.__dict__} and caller_turn {caller_turn}")
+        caller_turn = game.turn == game.get_player_color(current_user.id)
+        print(
+            f"username: {current_user.username} game: {game.__dict__} and caller_turn {caller_turn}"
+        )
         if caller_turn or elapsed >= 10:
             return caller_turn
         else:
             await asyncio.sleep(2)
+
 
 # who's turn is it (None means that the game is over)
 @app.get("/games/{gameUUID}/turn")
@@ -478,11 +484,13 @@ async def query_turn(
 
     return game.turn
 
+
 # TODO we're not checking it's the request's player turn LOL
 @app.post("/games/{gameUUID}/move", response_model=schemas.GameSnap)
 def post_move(
     gameUUID: str,
-    # move: dict = Body(...), # or pydantic or query parameter? Probably pydantic to make clear what a move is
+    # or pydantic or query parameter? Probably pydantic to make clear what a move is
+    # move: dict = Body(...),
     gameMove: schemas.GameMove,
     current_user: schemas.User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
@@ -555,7 +563,7 @@ def get_moves(
 
     # TODO remove this if we're happy with a weird validation error message
     if moves:
-        assert type(moves[0]) == str
+        assert isinstance(moves[0], str)
     return moves
 
 
