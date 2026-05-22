@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}BattleChess{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+  <script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@main/bundles/datastar.js"></script>
+  <link rel="stylesheet" href="/static/btch.css?v=9">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/">
+      <span class="brand-mark" aria-hidden="true">♞</span>
+      <span class="brand-text">BattleChess</span>
+    </a>
+    <button
+      type="button"
+      class="nav-menu-btn"
+      aria-expanded="false"
+      aria-controls="site-nav-menu"
+      aria-label="Open menu"
+    >
+      <span class="nav-menu-icon" aria-hidden="true"></span>
+    </button>
+    <nav id="site-nav-menu" class="site-nav" aria-label="Main">
+      {% if user.is_some() %}
+      <a href="/lobby">Lobby</a>
+      <a href="/leaderboard">Leaderboard</a>
+      <a href="/archive">Archive</a>
+      <form class="nav-logout" method="post" action="/logout">
+        <button type="submit" class="btn btn-ghost btn-sm btn-block-nav">Logout</button>
+      </form>
+      {% else %}
+      <a href="/archive">Archive</a>
+      <a href="/login">Login</a>
+      <a href="/register" class="btn btn-primary btn-sm">Register</a>
+      {% endif %}
+    </nav>
+  </header>
+  <main class="page-main">
+    {% block content %}{% endblock %}
+  </main>
+  <script>
+    (function () {
+      var btn = document.querySelector(".nav-menu-btn");
+      var nav = document.getElementById("site-nav-menu");
+      if (!btn || !nav) return;
+
+      function setOpen(open) {
+        nav.classList.toggle("is-open", open);
+        btn.setAttribute("aria-expanded", open ? "true" : "false");
+        btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+      }
+
+      btn.addEventListener("click", function () {
+        setOpen(!nav.classList.contains("is-open"));
+      });
+
+      nav.querySelectorAll("a").forEach(function (link) {
+        link.addEventListener("click", function () {
+          setOpen(false);
+        });
+      });
+
+      document.addEventListener("click", function (e) {
+        if (
+          nav.classList.contains("is-open") &&
+          !nav.contains(e.target) &&
+          !btn.contains(e.target)
+        ) {
+          setOpen(false);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,14 +1,19 @@
-.*.swp
+# Rust
+/target/
+
+# Runtime / local DB
+battlechess.db
+*.db-journal
+
+# Editor / OS
 .DS_Store
 *~
-*.pyc
-BattleChess.sublime-*
-games
-obj
-build
-env/
-#assets
-bin
-.vscode
-sql_app.db
-test.db
+.*.swp
+.vscode/
+.idea/
+
+# Legacy Python (if run from legacy/)
+legacy/**/__pycache__/
+legacy/**/*.pyc
+legacy/env/
+legacy/**/node_modules/

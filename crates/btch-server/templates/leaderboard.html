@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard — BattleChess{% endblock %}
+{% block content %}
+<div class="page-stack">
+  <header class="page-header">
+    <h1>Leaderboard</h1>
+    <p class="page-subtitle">Players ranked by ELO rating</p>
+  </header>
+
+  {% if players.is_empty() %}
+  <div class="card">
+    <p class="empty-state">No players yet.</p>
+  </div>
+  {% else %}
+  <div class="card leaderboard-card">
+    <ol class="leaderboard-list">
+    {% for p in players %}
+      <li class="leaderboard-row{% if p.is_you %} leaderboard-row-you{% endif %}">
+        <span class="leaderboard-rank">{{ p.rank }}</span>
+        <span class="leaderboard-name">{% if p.is_you %}<strong>{{ p.username }}</strong> (you){% else %}{{ p.username }}{% endif %}</span>
+        <span class="leaderboard-elo">{{ p.elo }} ELO</span>
+      </li>
+    {% endfor %}
+    </ol>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Archive — BattleChess{% endblock %}
+{% block content %}
+<div class="page-stack">
+  <header class="page-header">
+    <h1>Game archive</h1>
+  </header>
+
+  {% if games.is_empty() %}
+  <div class="card">
+    <p class="empty-state">No finished games yet.</p>
+  </div>
+  {% else %}
+  <ul class="archive-list">
+  {% for g in games %}
+    <li class="archive-item card card-flat">
+      <div class="archive-item-main">
+        <p class="archive-match"><strong>{{ g.white_name }}</strong> vs <strong>{{ g.black_name }}</strong></p>
+        <p class="archive-meta">{{ g.winner_label }} · {{ g.played_at }}</p>
+      </div>
+      <a href="/games/{{ g.uuid }}/replay" class="btn btn-secondary btn-sm">Replay</a>
+    </li>
+  {% endfor %}
+  </ul>
+
+  <nav class="archive-pagination card card-flat">
+    {% if has_prev %}
+    <a href="/archive?page={{ page - 1 }}" class="btn btn-ghost btn-sm">← Previous</a>
+    {% endif %}
+    <span class="archive-page-info">Page {{ page }} of {{ total_pages }} · {{ total_count }} games</span>
+    {% if has_next %}
+    <a href="/archive?page={{ page + 1 }}" class="btn btn-ghost btn-sm">Next →</a>
+    {% endif %}
+  </nav>
+  {% endif %}
+</div>
+{% endblock %}

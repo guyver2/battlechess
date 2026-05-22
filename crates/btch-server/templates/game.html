@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Game — BattleChess{% endblock %}
+{% block content %}
+<div id="game-sse" data-game-uuid="{{ uuid }}" hidden aria-hidden="true"></div>
+
+<div id="game-root" class="page-game" data-player-color="{{ player_color }}">
+  <div id="game-status" class="game-status-bar">
+    {{ status_html|safe }}
+  </div>
+
+  <div class="board-scene">
+    <div class="board-stack">
+      <div id="captured-white" class="captured-tray">
+        {{ captured_white_html|safe }}
+      </div>
+
+      <div id="board" class="board">
+        {{ board_html|safe }}
+      </div>
+
+      <div id="captured-black" class="captured-tray">
+        {{ captured_black_html|safe }}
+      </div>
+
+      <div id="game-modal" class="game-modal">
+        {{ overlay_html|safe }}
+      </div>
+    </div>
+  </div>
+
+  <div id="move-area" class="game-actions">
+    {{ controls_html|safe }}
+  </div>
+</div>
+
+<script src="/static/game-sse.js"></script>
+{% endblock %}

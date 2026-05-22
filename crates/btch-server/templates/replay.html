@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Replay — BattleChess{% endblock %}
+{% block content %}
+<div id="replay-root" class="page-game page-replay">
+  <header class="page-header">
+    <h1 class="replay-matchup">
+      <span class="replay-player replay-player-white">
+        {% if white_player.badge.is_some() %}<span class="replay-badge" aria-hidden="true">{{ white_player.badge.as_ref().unwrap() }}</span>{% endif %}
+        <span class="replay-player-info">
+          <span class="replay-player-name">{{ white_player.name }}</span>
+          <span class="replay-player-color">{{ white_player.color }}</span>
+        </span>
+      </span>
+      <span class="replay-vs">vs</span>
+      <span class="replay-player replay-player-black">
+        <span class="replay-player-info">
+          <span class="replay-player-name">{{ black_player.name }}</span>
+          <span class="replay-player-color">{{ black_player.color }}</span>
+        </span>
+        {% if black_player.badge.is_some() %}<span class="replay-badge" aria-hidden="true">{{ black_player.badge.as_ref().unwrap() }}</span>{% endif %}
+      </span>
+    </h1>
+    <p class="replay-meta">{{ played_at }}</p>
+    {% if show_live_link %}
+    <nav class="breadcrumb">
+      <a href="/games/{{ live_uuid }}">Live game</a>
+    </nav>
+    {% endif %}
+  </header>
+
+  <div class="replay-workspace">
+    <aside class="replay-sidebar" aria-label="Replay controls">
+      <div class="replay-controls card card-flat">
+        <label class="field field-inline">
+          <span class="field-label">Fog</span>
+          <select id="fog-mode" class="select">
+            <option value="none">No fog</option>
+            <option value="white">White view</option>
+            <option value="black">Black view</option>
+            <option value="turn" selected>Opponent view</option>
+          </select>
+        </label>
+        <label class="replay-trace-toggle">
+          <input type="checkbox" id="trace-move" checked>
+          <span>Trace last move</span>
+        </label>
+        <div class="replay-transport" role="group" aria-label="Replay steps">
+          <button type="button" class="btn btn-ghost btn-sm" id="replay-first" title="First">⏮</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="replay-prev" title="Previous">◀</button>
+          <span id="replay-counter" class="replay-counter">Move 0 / 0</span>
+          <button type="button" class="btn btn-ghost btn-sm" id="replay-next" title="Next">▶</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="replay-last" title="Last">⏭</button>
+        </div>
+        <span id="replay-move-label" class="replay-move-label"></span>
+      </div>
+    </aside>
+
+    <div class="board-scene replay-scene">
+      <div id="replay-captured-white" class="captured-tray"></div>
+      <div class="replay-board-stage">
+        <button type="button" class="replay-edge-nav replay-edge-prev" id="replay-edge-prev" aria-label="Previous move"></button>
+        <div id="replay-board" class="board"></div>
+        <button type="button" class="replay-edge-nav replay-edge-next" id="replay-edge-next" aria-label="Next move"></button>
+      </div>
+      <div id="replay-captured-black" class="captured-tray"></div>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="replay-data">{{ replay_json|safe }}</script>
+<script>
+  window.__REPLAY_INITIAL_STEP__ = {{ initial_step }};
+</script>
+<script src="/static/replay.js"></script>
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Lobby — BattleChess{% endblock %}
+{% block content %}
+<div id="lobby-root" class="page-stack" data-on:load="@get('/lobby/events')">
+  <header class="page-header">
+    <h1>Lobby</h1>
+    <p class="page-subtitle">Welcome back, <strong>{{ username }}</strong> · <span class="elo-badge">{{ elo }} ELO</span></p>
+  </header>
+
+  <section id="queue-status" class="card card-highlight">
+    <h2 class="card-title">Quick match</h2>
+    <p class="card-desc">Open your waiting room or join someone else’s random game.</p>
+    <form data-on:submit="@post('/queue', {contentType: 'form'})">
+      <button type="submit" class="btn btn-primary btn-lg btn-block">Play random opponent</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2 class="card-title">Invite player</h2>
+    {% if invite_msg.is_some() %}
+    <p class="alert alert-error">{{ invite_msg.as_ref().unwrap() }}</p>
+    {% endif %}
+    <form class="form-stack" method="post" action="/invites">
+      <label class="field">
+        <span class="field-label">Username</span>
+        <input name="username" placeholder="Opponent’s username" required autocomplete="username">
+      </label>
+      <label class="field">
+        <span class="field-label">Message <span class="optional">(optional)</span></span>
+        <input name="message" placeholder="Say hello…">
+      </label>
+      <button type="submit" class="btn btn-secondary">Send invite</button>
+    </form>
+  </section>
+
+  <section id="invites" class="card">
+    <h2 class="card-title">Pending invites</h2>
+    {% for inv in received %}
+    <article class="invite">
+      <div class="invite-body">
+        <p class="invite-main">From <strong>{{ inv.from_name }}</strong></p>
+        {% if inv.message != "" %}<p class="invite-message">{{ inv.message }}</p>{% endif %}
+        <p class="invite-sent-on">Sent {{ inv.sent_on }}</p>
+      </div>
+      <div class="invite-actions">
+        <form data-on:submit="@post('/invites/{{ inv.id }}/accept', {contentType: 'form'})">
+          <button type="submit" class="btn btn-primary btn-sm">Accept</button>
+        </form>
+        <form data-on:submit="@post('/invites/{{ inv.id }}/decline', {contentType: 'form'})">
+          <button type="submit" class="btn btn-ghost btn-sm">Decline</button>
+        </form>
+      </div>
+    </article>
+    {% else %}
+    <p class="empty-state">No pending invites.</p>
+    {% endfor %}
+  </section>
+
+  <section id="sent-invites" class="card">
+    <h2 class="card-title">Invites sent</h2>
+    {% for inv in sent %}
+    <article class="invite invite-sent">
+      <div class="invite-body">
+        <p class="invite-main">To <strong>{{ inv.to_name }}</strong></p>
+        {% if inv.message != "" %}<p class="invite-message">{{ inv.message }}</p>{% endif %}
+        <p class="invite-sent-on">Sent {{ inv.sent_on }}</p>
+      </div>
+      <div class="invite-actions">
+        {% if inv.game_uuid.is_some() %}
+        <a href="/games/{{ inv.game_uuid.as_ref().unwrap() }}" class="btn btn-secondary btn-sm">Go to game</a>
+        {% endif %}
+        {% if inv.status == "declined" || inv.status == "pending" %}
+        <form data-on:submit="@post('/invites/{{ inv.id }}/delete', {contentType: 'form'})">
+          <button type="submit" class="btn btn-ghost btn-sm">{% if inv.status == "pending" %}Cancel{% else %}Delete{% endif %}</button>
+        </form>
+        {% endif %}
+        <span class="invite-status invite-status-{{ inv.status }}">{{ inv.status_label }}</span>
+      </div>
+    </article>
+    {% else %}
+    <p class="empty-state">No invites sent yet.</p>
+    {% endfor %}
+  </section>
+
+  <section id="games-list" class="card">
+    <h2 class="card-title">Active games</h2>
+    {% if games.is_empty() %}
+    <p class="empty-state">No active games. <a href="/archive">Browse finished games</a>.</p>
+    {% else %}
+    <ul class="game-links">
+    {% for g in games %}
+      <li>
+        <a href="/games/{{ g.uuid }}" class="game-link">
+          <span class="game-link-opponent">vs {{ g.opponent }}</span>
+          <span class="game-link-meta">{{ g.status }}{% if g.your_turn %} · your turn{% endif %}</span>
+        </a>
+      </li>
+    {% endfor %}
+    </ul>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
