@@ -1,0 +1,15 @@
+services:
+  battlechess:
+    build: .
+    ports:
+      - "${PORT:-3100}:3100"
+    environment:
+      PORT: "3100"
+      DATABASE_URL: "sqlite:/data/battlechess.db?mode=rwc"
+      RUST_LOG: "${RUST_LOG:-info}"
+    volumes:
+      - btch-data:/data
+    restart: unless-stopped
+
+volumes:
+  btch-data:

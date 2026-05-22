@@ -9,8 +9,9 @@ Fog-of-war chess with accounts, invites, random matchmaking, and a Datastar-powe
 
 ## Run
 
+### Local (Rust)
+
 ```bash
-cd /home/pi/battlechess
 cargo run -p btch-server
 ```
 
@@ -20,6 +21,27 @@ Environment variables:
 
 - `PORT` — default `3100`
 - `DATABASE_URL` — default `sqlite:./battlechess.db?mode=rwc`
+
+### Docker
+
+```bash
+docker compose up --build -d
+```
+
+Open **http://localhost:3100**. The SQLite database is stored in the named volume `btch-data` at `/data/battlechess.db` inside the container (survives restarts and image rebuilds).
+
+```bash
+# Logs
+docker compose logs -f battlechess
+
+# Stop
+docker compose down
+
+# Stop and remove the database volume (destructive)
+docker compose down -v
+```
+
+Override the host port: `PORT=8080 docker compose up --build -d` (maps host 8080 → container 3100).
 
 ## Development
 
@@ -62,6 +84,8 @@ cargo build -p btch-server
 ├── crates/btch-server/   # HTTP server + templates
 ├── migrations/           # SQLite schema
 ├── static/               # CSS and client scripts
+├── Dockerfile            # Container image
+├── docker-compose.yml    # Run with persistent DB volume
 └── legacy/               # Original Python, Vue, and Cocos2d-x code (not used)
 ```
 

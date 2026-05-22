@@ -1,0 +1,7 @@
+target/
+legacy/
+.git/
+.cursor/
+*.db
+*.db-journal
+.env
